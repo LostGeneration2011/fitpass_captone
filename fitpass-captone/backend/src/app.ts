@@ -44,20 +44,18 @@ app.use(morgan('dev', {
   }
 }));
 
-// Enhanced CORS for ngrok and admin panel
+// Dynamic CORS config using ALLOWED_ORIGINS env variable
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000'];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://onagraceous-unblenchingly-ebony.ngrok-free.dev',
-    /.*\.ngrok-free\.dev$/,
-    /.*\.ngrok\.io$/
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type', 
     'Authorization', 
-    'ngrok-skip-browser-warning',
     'User-Agent',
     'X-Forwarded-Proto',
     'Cache-Control',
