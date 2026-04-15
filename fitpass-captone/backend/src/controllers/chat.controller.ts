@@ -1,3 +1,48 @@
+export const editMessage = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as Express.UserPayload;
+    const messageId = req.params.messageId;
+    const { content } = req.body;
+    if (!messageId || !content?.trim()) {
+      return res.status(400).json({ error: 'Message ID and new content are required' });
+    }
+    const updated = await chatService.editMessage(user, messageId, content);
+    // Optionally, broadcast edit event via WebSocket
+    const wss = (global as any).wss;
+    if (wss && updated) {
+      const payload = JSON.stringify({
+        type: 'chat.message.edit',
+        threadId: updated.threadId,
+        message: updated,
+      });
+      wss.clients.forEach((client: any) => {
+        if (client.readyState === 1) {
+          if (client.subscribedThreads?.has(updated.threadId) || client.user?.role === 'ADMIN') {
+            client.send(payload);
+          }
+        }
+      });
+    }
+    return res.json({ message: 'Message updated', data: updated });
+  } catch (err: any) {
+    const status = err.status || 400;
+    return res.status(status).json({ error: err.message });
+  }
+};
+export const markThreadAsRead = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as Express.UserPayload;
+    const threadId = req.params.id;
+    if (!threadId) {
+      return res.status(400).json({ error: 'Thread ID is required' });
+    }
+    const result = await chatService.markThreadAsRead(user, threadId);
+    return res.json({ message: 'Thread marked as read', data: result });
+  } catch (err: any) {
+    const status = err.status || 400;
+    return res.status(status).json({ error: err.message });
+  }
+};
 import { Request, Response } from 'express';
 import { ChatService } from '../services/chat.service';
 

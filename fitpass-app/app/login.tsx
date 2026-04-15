@@ -248,30 +248,23 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+
       const response = await authAPI.login(email, password);
       console.log('Login response:', response); // Debug log
-      
-      // Extract token and user from response
-      const { token, user } = response;
-      const refreshToken = response?.refreshToken;
 
-      if (!token || !user) {
+      // Extract user from response (no token expected)
+      const { user } = response;
+      if (!user) {
         throw new Error('Invalid response format');
       }
 
-      // Save token and user to storage
-      console.log('Saving token and user to storage...');
-      await saveToken(token);
-      if (refreshToken) {
-        await saveRefreshToken(refreshToken);
-      }
+      // Save user to storage
+      console.log('Saving user to storage...');
       await saveUser(user);
       await registerFcmTokenWithBackend();
-      console.log('Token and user saved successfully');
+      console.log('User saved successfully');
 
-      // Connect WebSocket with new token
-      console.log('Connecting WebSocket...');
-      reconnect();
+      // Nếu websocket cần token, cần refactor lại logic, còn không thì bỏ reconnect();
 
       // Validate user role and navigate accordingly
       if (user.role === 'TEACHER') {

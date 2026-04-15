@@ -1,3 +1,9 @@
+import { editMessage } from '../controllers/chat.controller';
+// Edit message
+router.put('/messages/:messageId', editMessage);
+import { markThreadAsRead } from '../controllers/chat.controller';
+// Mark thread as read
+router.post('/threads/:id/read', markThreadAsRead);
 import { Router } from 'express';
 import {
   listThreads,

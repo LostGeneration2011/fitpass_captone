@@ -1,3 +1,42 @@
+    async editMessage(user: { id: string; role: UserRole }, messageId: string, content: string) {
+      if (!content?.trim()) throw new Error('Message content is required');
+      const message = await prisma.chatMessage.findUnique({ where: { id: messageId } });
+      if (!message) throw new Error('Message not found');
+      // Only sender can edit
+      if (message.senderId !== user.id) {
+        const err = new Error('Unauthorized');
+        (err as any).status = 403;
+        throw err;
+      }
+      // Optionally: Only allow edit within X minutes (not implemented here)
+      const updated = await prisma.chatMessage.update({
+        where: { id: messageId },
+        data: { content: content.trim() },
+        include: { sender: { select: { id: true, fullName: true, role: true } } },
+      });
+      return updated;
+    }
+  async markThreadAsRead(user: { id: string; role: UserRole }, threadId: string) {
+    await this.ensureThreadAccessible(threadId, user);
+    // Upsert ChatThreadRead
+    const result = await prisma.chatThreadRead.upsert({
+      where: {
+        threadId_userId: {
+          threadId,
+          userId: user.id,
+        },
+      },
+      update: {
+        lastReadAt: new Date(),
+      },
+      create: {
+        threadId,
+        userId: user.id,
+        lastReadAt: new Date(),
+      },
+    });
+    return result;
+  }
 import { ChatThreadType, UserRole } from '@prisma/client';
 import { prisma } from '../config/prisma';
 

@@ -107,6 +107,28 @@ if (process.env.NODE_ENV !== "production") {
           }
         }
 
+        // Typing indicator: broadcast to all clients in thread (except sender)
+        if (data.type === 'chat.typing') {
+          const { threadId } = data;
+          if (!ws.user || !threadId) return;
+          wss.clients.forEach((client: any) => {
+            if (
+              client !== ws &&
+              client.readyState === 1 &&
+              client.subscribedThreads?.has(threadId)
+            ) {
+              client.send(
+                JSON.stringify({
+                  type: 'chat.typing',
+                  threadId,
+                  userId: ws.user.id,
+                  fullName: ws.user.fullName,
+                })
+              );
+            }
+          });
+        }
+
         if (data.type === 'chat.send') {
           const { threadId, content } = data;
           if (!ws.user || !threadId || !content) {

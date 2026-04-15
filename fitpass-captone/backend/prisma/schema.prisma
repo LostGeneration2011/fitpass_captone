@@ -1,3 +1,13 @@
+model ChatThreadRead {
+  id         String   @id @default(cuid())
+  threadId   String
+  userId     String
+  lastReadAt DateTime @default(now())
+  thread     ChatThread @relation(fields: [threadId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([threadId, userId])
+}
 generator client {
   provider = "prisma-client-js"
 }
@@ -47,6 +57,7 @@ model User {
   chatThreadsAsTeacher ChatThread[] @relation("ChatTeacher")
   chatThreadsCreated   ChatThread[] @relation("ChatCreator")
   chatMessages     ChatMessage[]
+  chatThreadReads ChatThreadRead[]
 
   // Forum relations
   forumPosts      ForumPost[]      @relation("UserForumPosts")
@@ -97,6 +108,7 @@ model ChatThread {
   teacher         User?        @relation("ChatTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
   createdBy       User         @relation("ChatCreator", fields: [createdById], references: [id], onDelete: Cascade)
   messages        ChatMessage[]
+  reads           ChatThreadRead[]
 
   @@index([studentId])
   @@index([teacherId])
