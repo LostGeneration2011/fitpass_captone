@@ -33,4 +33,7 @@ router.post('/comments/:id/report', authMiddleware, forumModeration.reportCommen
 router.patch('/posts/:id/hide', authMiddleware, forumModeration.hidePost);
 router.patch('/comments/:id/hide', authMiddleware, forumModeration.hideComment);
 
+// Lấy danh sách report cho admin
+router.get('/admin/reports', authMiddleware, forumModeration.getAdminReports);
+
 export default router;

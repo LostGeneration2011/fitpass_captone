@@ -147,3 +147,22 @@ export const deletePackage = async (req: Request, res: Response) => {
     });
   }
 };
+
+// Get all packages for admin (không filter isActive)
+export const getAllPackagesForAdmin = async (req: Request, res: Response) => {
+  try {
+    const packages = await prisma.package.findMany({
+      orderBy: { price: 'asc' }
+    });
+    res.json({
+      success: true,
+      data: packages
+    });
+  } catch (error) {
+    console.error('Get all packages (admin) error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi lấy danh sách gói (admin)'
+    });
+  }
+};

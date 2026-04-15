@@ -53,3 +53,48 @@ export async function hideComment(req: Request, res: Response) {
   await prisma.forumComment.update({ where: { id }, data: { isHidden: !!hide } });
   res.json({ success: true });
 }
+
+// Lấy danh sách report cho admin
+export async function getAdminReports(req: Request, res: Response) {
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+  // Lấy tất cả post có report
+  const posts = await prisma.forumPost.findMany({
+    where: {
+      reports: {
+        not: [],
+      },
+    },
+    select: {
+      id: true,
+      content: true,
+      authorId: true,
+      createdAt: true,
+      reports: true,
+      isHidden: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Lấy tất cả comment có report
+  const comments = await prisma.forumComment.findMany({
+    where: {
+      reports: {
+        not: [],
+      },
+    },
+    select: {
+      id: true,
+      content: true,
+      authorId: true,
+      postId: true,
+      createdAt: true,
+      reports: true,
+      isHidden: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  res.json({ posts, comments });
+}

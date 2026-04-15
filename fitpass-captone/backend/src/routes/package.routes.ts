@@ -20,4 +20,7 @@ router.patch('/:id', adminOnly(), updatePackage);
 router.put('/:id', adminOnly(), updatePackage);
 router.delete('/:id', adminOnly(), deletePackage);
 
+// Admin: lấy tất cả gói tập (kể cả không active)
+router.get('/admin/all', adminOnly(), getAllPackagesForAdmin);
+
 export default router;
