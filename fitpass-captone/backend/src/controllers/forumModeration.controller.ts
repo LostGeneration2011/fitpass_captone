@@ -59,13 +59,8 @@ export async function getAdminReports(req: Request, res: Response) {
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  // Lấy tất cả post có report
-  const posts = await prisma.forumPost.findMany({
-    where: {
-      reports: {
-        not: [],
-      },
-    },
+  // Lấy tất cả post có report (filter bằng JS do Prisma không hỗ trợ not: [] cho Json[])
+  const posts = (await prisma.forumPost.findMany({
     select: {
       id: true,
       content: true,
@@ -75,15 +70,10 @@ export async function getAdminReports(req: Request, res: Response) {
       isHidden: true,
     },
     orderBy: { createdAt: 'desc' },
-  });
+  })).filter(post => Array.isArray(post.reports) && post.reports.length > 0);
 
-  // Lấy tất cả comment có report
-  const comments = await prisma.forumComment.findMany({
-    where: {
-      reports: {
-        not: [],
-      },
-    },
+  // Lấy tất cả comment có report (filter bằng JS)
+  const comments = (await prisma.forumComment.findMany({
     select: {
       id: true,
       content: true,
@@ -94,7 +84,7 @@ export async function getAdminReports(req: Request, res: Response) {
       isHidden: true,
     },
     orderBy: { createdAt: 'desc' },
-  });
+  })).filter(comment => Array.isArray(comment.reports) && comment.reports.length > 0);
 
   res.json({ posts, comments });
 }
