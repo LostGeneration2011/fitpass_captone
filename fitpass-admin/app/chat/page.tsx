@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 import { chatAPI } from "@/lib/api";
 
 const QUICK_EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👏', '🔥', '✅', '💪', '🙏', '🎉', '❤️', '👍', '👀', '😢'];
@@ -124,7 +125,28 @@ export default function AdminChatPage() {
       wsRef.current?.send(JSON.stringify({ type: 'chat.leave', threadId: previousThread }));
     }
 
-    if (wsRef.current?.readyState === 1) {
+    // Nếu dùng socket.io:
+    let socket: Socket | null = null;
+    if (typeof window !== 'undefined') {
+      if ((window as any).__fitpass_admin_socket) {
+        (window as any).__fitpass_admin_socket.emit('leave_thread', { threadId: previousThread });
+        (window as any).__fitpass_admin_socket.off('chat.message');
+      }
+      socket = io(getWsUrl(), {
+        auth: { token: localStorage.getItem('fitpass_admin_token') || '' }
+      });
+      (window as any).__fitpass_admin_socket = socket;
+      socket.emit('join_thread', { threadId: activeThread.id });
+      socket.on('chat.message', (data: any) => {
+        if (data.threadId === activeThread.id) {
+          setMessages((prev) => {
+            if (prev.some((msg) => msg.id === data.message.id)) return prev;
+            return [...prev, data.message];
+          });
+        }
+      });
+    } else if (wsRef.current?.readyState === 1) {
+      // fallback cho ws cũ
       console.log('💬 [Admin] Joining thread:', activeThread.id);
       wsRef.current.send(JSON.stringify({ type: 'chat.join', threadId: activeThread.id }));
     }
@@ -164,14 +186,7 @@ export default function AdminChatPage() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('📥 [Admin] WS raw data:', data);
-        if (data.type === 'auth_success') {
-          wsUserIdRef.current = data.user?.id || null;
-          console.log('🔐 [Admin] auth_success, wsUserId =', wsUserIdRef.current);
-          if (activeThreadRef.current) {
-            ws.send(JSON.stringify({ type: 'chat.join', threadId: activeThreadRef.current }));
-          }
-        }
+        // ...existing code...
         if (data.type === 'chat.message') {
           setThreads((prev) => {
             const index = prev.findIndex((item) => item.id === data.threadId);
@@ -187,16 +202,6 @@ export default function AdminChatPage() {
             next.unshift(nextThread);
             return next;
           });
-
-          const selfUserId = wsUserIdRef.current || currentUserId;
-          const isSelfMessage = !!selfUserId && data.message?.senderId === selfUserId;
-          if (data.threadId && data.threadId !== activeThread?.id && !isSelfMessage) {
-            setUnreadByThread((prev) => ({
-              ...prev,
-              [data.threadId]: (prev[data.threadId] || 0) + 1,
-            }));
-          }
-
           if (activeThread?.id && data.threadId === activeThread.id) {
             setMessages((prev) => {
               if (prev.some((msg) => msg.id === data.message.id)) return prev;

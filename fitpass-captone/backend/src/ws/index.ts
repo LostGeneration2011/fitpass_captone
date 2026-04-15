@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { UserRole } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fitpass_jwt_secret_key_2024';
 
@@ -55,26 +56,52 @@ export default function setupWebSocket(server: HTTPServer) {
     // Join user to their role-based room
     socket.join(`role_${user.role.toLowerCase()}`);
 
-    // Handle joining session room for real-time attendance
-    socket.on('join_session', (data: { sessionId: string }) => {
-      const { sessionId } = data;
-      
-      if (!sessionId) {
-        socket.emit('error', { message: 'Session ID required' });
+
+    // --- CHAT REAL-TIME LOGIC ---
+    // Join chat thread room
+    socket.on('join_thread', (data: { threadId: string }) => {
+      const { threadId } = data;
+      if (!threadId) {
+        socket.emit('error', { message: 'Thread ID required' });
         return;
       }
-
-      socket.join(`session_${sessionId}`);
-      socket.emit('joined_session', { sessionId });
-      console.log(`👥 ${user.fullName} joined session room: session_${sessionId}`);
+      socket.join(`thread_${threadId}`);
+      socket.emit('joined_thread', { threadId });
+      console.log(`💬 ${user.fullName} joined chat thread: thread_${threadId}`);
     });
 
-    // Handle leaving session room
-    socket.on('leave_session', (data: { sessionId: string }) => {
-      const { sessionId } = data;
-      socket.leave(`session_${sessionId}`);
-      socket.emit('left_session', { sessionId });
-      console.log(`👋 ${user.fullName} left session room: session_${sessionId}`);
+    // Leave chat thread room
+    socket.on('leave_thread', (data: { threadId: string }) => {
+      const { threadId } = data;
+      socket.leave(`thread_${threadId}`);
+      socket.emit('left_thread', { threadId });
+      console.log(`💬 ${user.fullName} left chat thread: thread_${threadId}`);
+    });
+
+    // Handle receiving chat message from client (optional, if you want to support sending via socket.io)
+    socket.on('chat_message', async (data: { threadId: string, content: string }) => {
+      const { threadId, content } = data;
+      if (!threadId || !content?.trim()) {
+        socket.emit('error', { message: 'Thread ID and content required' });
+        return;
+      }
+      // Save message to DB (reuse chatService if possible)
+      try {
+        const { ChatService } = await import('../services/chat.service');
+        const chatService = new ChatService();
+        const message = await chatService.sendMessage(
+          { id: user.id, role: user.role as UserRole },
+          threadId,
+          content
+        );
+        // Emit to all in thread
+        io.to(`thread_${threadId}`).emit('chat.message', { threadId, message });
+        // Optionally: emit to admin room
+        io.to('role_admin').emit('chat.message', { threadId, message });
+      } catch (err) {
+        console.error('Error sending chat message:', err);
+        socket.emit('error', { message: 'Failed to send message' });
+      }
     });
 
     // Handle teacher requesting current attendance for a session
@@ -118,6 +145,8 @@ export default function setupWebSocket(server: HTTPServer) {
     socket.on('disconnect', () => {
       console.log(`🔌 User ${user.fullName} disconnected from WebSocket`);
     });
+
+    // --- END CHAT LOGIC ---
   });
 
   // Utility function to emit attendance updates

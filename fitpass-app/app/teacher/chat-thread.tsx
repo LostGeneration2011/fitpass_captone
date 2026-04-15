@@ -250,13 +250,31 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
       setThreadMembers([]);
     }
 
-    const joinThread = () => sendWebSocketMessage({ type: 'chat.join', threadId });
-    joinThread();
-    const joinTimeout = setTimeout(joinThread, 400);
+    // Nếu dùng socket.io:
+    let socket: any = null;
+    if (typeof window !== 'undefined' && (window as any).io) {
+      socket = (window as any).io(
+        Constants.expoConfig?.extra?.EXPO_PUBLIC_WS_URL || 'ws://localhost:3001',
+        { auth: { token: null } }
+      );
+      socket.emit('join_thread', { threadId });
+      socket.on('chat.message', (data: any) => {
+        if (data.threadId === threadId) {
+          setMessages((prev) => {
+            if (prev.some((msg) => msg.id === data.message.id)) return prev;
+            return [...prev, data.message];
+          });
+        }
+      });
+    } else {
+      const joinThread = () => sendWebSocketMessage({ type: 'chat.join', threadId });
+      joinThread();
+      const joinTimeout = setTimeout(joinThread, 400);
+    }
     const removeStatusListener = addWebSocketStatusListener((status) => {
-      if (status === 'open') {
-        joinThread();
-      }
+      // if (status === 'open') {
+      //   joinThread();
+      // }
       if (status === 'close') {
         setIsJoined(false);
         isJoinedRef.current = false;
@@ -264,7 +282,7 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
     });
     const removeListener = addWebSocketMessageListener((data) => {
       if (data.type === 'auth_success') {
-        joinThread();
+        // joinThread();
         return;
       }
       if (data.type === 'chat.joined' && data.threadId === threadId) {
@@ -316,14 +334,14 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
     });
 
     const refreshInterval = setInterval(() => {
-      if (!isJoinedRef.current) {
-        joinThread();
-      }
+      // if (!isJoinedRef.current) {
+      //   joinThread();
+      // }
       loadMessages(true);
     }, 5000);
 
     return () => {
-      clearTimeout(joinTimeout);
+      // clearTimeout(joinTimeout);
       clearInterval(refreshInterval);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
