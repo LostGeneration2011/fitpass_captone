@@ -1,9 +1,4 @@
-import { editMessage } from '../controllers/chat.controller';
-// Edit message
-router.put('/messages/:messageId', editMessage);
-import { markThreadAsRead } from '../controllers/chat.controller';
-// Mark thread as read
-router.post('/threads/:id/read', markThreadAsRead);
+import { editMessage, markThreadAsRead } from '../controllers/chat.controller';
 import { Router } from 'express';
 import {
   listThreads,
@@ -19,6 +14,11 @@ import {
 import { adminOnly, studentOnly } from '../middlewares/rbac';
 
 const router = Router();
+
+// Edit message
+router.put('/messages/:messageId', editMessage);
+// Mark thread as read
+router.post('/threads/:id/read', markThreadAsRead);
 
 // Threads
 router.get('/threads', listThreads);
