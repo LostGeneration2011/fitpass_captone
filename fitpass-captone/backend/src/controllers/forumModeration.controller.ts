@@ -98,3 +98,25 @@ export async function getAdminReports(req: Request, res: Response) {
 
   res.json({ posts, comments });
 }
+
+// Lấy tất cả bài viết trên forum cho admin (kể cả bài ẩn)
+export async function getAllPostsForAdmin(req: Request, res: Response) {
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+  try {
+    const posts = await prisma.forumPost.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: { select: { id: true, fullName: true, role: true, email: true } },
+        comments: true,
+        reactions: true,
+        images: true,
+      },
+    });
+    res.json({ success: true, data: posts });
+  } catch (error) {
+    console.error('Get all forum posts (admin) error:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi lấy danh sách bài viết forum' });
+  }
+}

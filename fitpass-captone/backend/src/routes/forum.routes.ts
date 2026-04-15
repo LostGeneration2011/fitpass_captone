@@ -36,4 +36,7 @@ router.patch('/comments/:id/hide', authMiddleware, forumModeration.hideComment);
 // Lấy danh sách report cho admin
 router.get('/admin/reports', authMiddleware, forumModeration.getAdminReports);
 
+// Admin: xem tất cả bài viết trên forum
+router.get('/admin/posts', authMiddleware, forumModeration.getAllPostsForAdmin);
+
 export default router;
