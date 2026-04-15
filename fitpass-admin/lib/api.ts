@@ -5,7 +5,7 @@ type RequestConfigWithOptions = AxiosRequestConfig & {
 };
 
 const LOCAL_API_BASE_URL = 'http://localhost:3001/api';
-const DEFAULT_REMOTE_API_BASE_URL = 'https://onagraceous-unblenchingly-ebony.ngrok-free.dev/api';
+const DEFAULT_REMOTE_API_BASE_URL = 'https://fortunate-wholeness-production.up.railway.app/api';
 
 const normalizeBaseUrl = (value?: string) => {
   if (!value) return '';
@@ -24,15 +24,10 @@ const API_BASE_URL = (() => {
   if (isLocalHostRuntime && !forceRemoteApiOnLocal) {
     return LOCAL_API_BASE_URL;
   }
-
   if (configuredBaseUrl) {
     return configuredBaseUrl;
   }
-
-  if (isLocalHostRuntime) {
-    return LOCAL_API_BASE_URL;
-  }
-
+  // Fallback: production backend only, never ngrok
   return DEFAULT_REMOTE_API_BASE_URL;
 })();
 
