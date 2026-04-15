@@ -1,0 +1,446 @@
+/* Web-specific styles for NativeWind compatibility */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #0f172a !important;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Target React Native Web root elements */
+#root, 
+#root > div,
+[data-reactroot],
+[data-reactroot] > div {
+  background-color: #0f172a !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100vh !important;
+}
+
+/* Force all React Native Web View components to be dark */
+div[style*="flex"] {
+  background-color: transparent !important;
+}
+
+/* Specific targeting for login screen container */
+div[style*="flex: 1"] {
+  background-color: #0f172a !important;
+  min-height: 100vh !important;
+}
+
+/* Remove white backgrounds from all nested components */
+div[style*="background-color: rgba(0, 0, 0, 0)"],
+div[style*="background-color: transparent"],
+div[style*="background-color: white"],
+div[style*="background-color: #ffffff"],
+div[style*="background-color: rgb(255, 255, 255)"] {
+  background-color: #0f172a !important;
+}
+
+/* Responsive design for web - mobile-like frame */
+@media (min-width: 768px) {
+  #root {
+    max-width: 390px;
+    margin: 40px auto;
+    height: calc(100vh - 80px);
+    border: 8px solid #1e293b;
+    border-radius: 36px;
+    box-shadow: 
+      0 0 0 2px #334155,
+      0 25px 50px -12px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    position: relative;
+    background-color: #0f172a !important;
+    backdrop-filter: blur(20px);
+  }
+  
+  body {
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+      linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    padding: 40px 20px;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Ambient lighting effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+        rgba(59, 130, 246, 0.05), 
+        transparent 40%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  /* Premium status bar */
+  #root::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 30px;
+    background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+    border-radius: 0 0 16px 16px;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Screen reflection effect */
+  #root::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+    z-index: 1001;
+  }
+}
+
+/* Better scrolling on web */
+@media (min-width: 768px) {
+  div[style*="overflow: scroll"],
+  div[data-rn-scroll="true"] {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(71, 85, 105, 0.5) transparent;
+  }
+  
+  div[style*="overflow: scroll"]::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  div[style*="overflow: scroll"]::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  div[style*="overflow: scroll"]::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, 
+      rgba(71, 85, 105, 0.5) 0%, 
+      rgba(71, 85, 105, 0.8) 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(71, 85, 105, 0.2);
+  }
+  
+  div[style*="overflow: scroll"]::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, 
+      rgba(71, 85, 105, 0.7) 0%, 
+      rgba(71, 85, 105, 1) 100%);
+  }
+}
+
+/* Premium text styling */
+@media (min-width: 768px) {
+  /* Enhanced text shadows for better readability */
+  [style*="color: rgb(255, 255, 255)"],
+  .text-white {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Premium text gradients for headers */
+  div[style*="font-weight: bold"] {
+    background: linear-gradient(135deg, 
+      #ffffff 0%, 
+      #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Loading states enhancement */
+@media (min-width: 768px) {
+  div[style*="opacity: 0.5"] {
+    background: rgba(30, 41, 59, 0.6) !important;
+    backdrop-filter: blur(8px);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+}
+
+/* Force override NativeWind text colors */
+.text-white,
+[class*="text-white"],
+div[style*="color: rgb(255, 255, 255)"],
+div[style*="color: #ffffff"],
+div[style*="color: white"] {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.text-slate-300,
+[class*="text-slate-300"],
+div[style*="color: rgb(203, 213, 225)"],
+div[style*="color: #cbd5e1"] {
+  color: #cbd5e1 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.text-slate-400,
+[class*="text-slate-400"],
+div[style*="color: rgb(148, 163, 184)"],
+div[style*="color: #94a3b8"] {
+  color: #94a3b8 !important;
+}
+
+.text-blue-400,
+.text-cyan-400,
+[class*="text-blue-400"],
+[class*="text-cyan-400"],
+div[style*="color: rgb(96, 165, 250)"],
+div[style*="color: #60a5fa"] {
+  color: #60a5fa !important;
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.3) !important;
+}
+
+/* Force text sizing and weights */
+.text-2xl,
+[class*="text-2xl"] {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+  font-weight: 700 !important;
+}
+
+.text-xl,
+[class*="text-xl"] {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+  font-weight: 600 !important;
+}
+
+.text-lg,
+[class*="text-lg"] {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+  font-weight: 500 !important;
+}
+
+/* Force padding and margins */
+.p-4,
+[class*="p-4"] {
+  padding: 1rem !important;
+}
+
+.p-6,
+[class*="p-6"] {
+  padding: 1.5rem !important;
+}
+
+.mb-4,
+[class*="mb-4"] {
+  margin-bottom: 1rem !important;
+}
+
+.mb-6,
+[class*="mb-6"] {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Force rounded corners */
+.rounded-xl,
+[class*="rounded-xl"] {
+  border-radius: 0.75rem !important;
+}
+
+.rounded-lg,
+[class*="rounded-lg"] {
+  border-radius: 0.5rem !important;
+}
+
+/* Enhanced components for premium look */
+@media (min-width: 768px) {
+  /* Force override all slate backgrounds */
+  .bg-slate-950,
+  [class*="bg-slate-950"],
+  div[style*="background-color: rgb(2, 6, 23)"],
+  div[style*="background-color: #020617"] {
+    background: rgba(2, 6, 23, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(71, 85, 105, 0.2) !important;
+  }
+  
+  /* Force override slate-800 cards */
+  .bg-slate-800,
+  [class*="bg-slate-800"], 
+  div[style*="background-color: rgb(30, 41, 59)"],
+  div[style*="background-color: #1e293b"] {
+    background: rgba(30, 41, 59, 0.8) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(71, 85, 105, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  /* Force override slate-700 cards */
+  .bg-slate-700,
+  [class*="bg-slate-700"],
+  div[style*="background-color: rgb(51, 65, 85)"],
+  div[style*="background-color: #334155"] {
+    background: rgba(51, 65, 85, 0.8) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(71, 85, 105, 0.3) !important;
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  /* Hover effects for cards */
+  .bg-slate-800:hover,
+  [class*="bg-slate-800"]:hover,
+  div[style*="background-color: rgb(30, 41, 59)"]:hover,
+  div[style*="background-color: #1e293b"]:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    background: rgba(30, 41, 59, 0.95) !important;
+  }
+  
+  /* Premium blue buttons */
+  .bg-blue-600,
+  .bg-cyan-600,
+  [class*="bg-blue-600"],
+  [class*="bg-cyan-600"],
+  div[style*="background-color: rgb(59, 130, 246)"],
+  div[style*="background-color: #3b82f6"],
+  div[style*="background-color: rgb(8, 145, 178)"],
+  div[style*="background-color: #0891b2"] {
+    background: linear-gradient(135deg, 
+      #3b82f6 0%, 
+      #2563eb 50%, 
+      #1d4ed8 100%) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    box-shadow: 
+      0 4px 12px rgba(59, 130, 246, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  
+  .bg-blue-600:hover,
+  .bg-cyan-600:hover,
+  [class*="bg-blue-600"]:hover,
+  [class*="bg-cyan-600"]:hover,
+  div[style*="background-color: rgb(59, 130, 246)"]:hover,
+  div[style*="background-color: #3b82f6"]:hover,
+  div[style*="background-color: rgb(8, 145, 178)"]:hover,
+  div[style*="background-color: #0891b2"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 
+      0 8px 25px rgba(59, 130, 246, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  }
+}
+.text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Background colors for React Native Web */
+[style*="background-color: rgb(15, 23, 42)"],
+.bg-slate-900 {
+  background-color: #0f172a !important;
+}
+
+[style*="background-color: rgb(30, 41, 59)"],
+.bg-slate-800 {
+  background-color: #1e293b !important;
+}
+
+[style*="background-color: rgb(51, 65, 85)"],
+.bg-slate-700 {
+  background-color: #334155 !important;
+}
+
+/* Button colors */
+[style*="background-color: rgb(37, 99, 235)"],
+.bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+[style*="background-color: rgb(22, 163, 74)"],
+.bg-green-600 {
+  background-color: #16a34a !important;
+}
+
+/* Input styling for web */
+input {
+  background-color: #334155 !important;
+  color: white !important;
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+}
+
+input::placeholder {
+  color: #94a3b8 !important;
+}
+
+input:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Button styling for web */
+button,
+[role="button"] {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s !important;
+}
+
+button:hover,
+[role="button"]:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Remove any scrollbars on web that might cause white space */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

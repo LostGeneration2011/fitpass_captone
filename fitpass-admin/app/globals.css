@@ -1,0 +1,226 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Toast animations */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+/* TailAdmin Free Theme Styles */
+@layer base {
+  html {
+    font-family: 'Satoshi', sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-100 text-gray-900 dark:bg-gray-dark dark:text-white;
+  }
+}
+
+@layer components {
+  .modal-overlay {
+    @apply fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4;
+  }
+
+  .modal {
+    @apply w-full max-w-2xl rounded-xl border border-stroke bg-white p-6 shadow-2xl dark:border-strokedark dark:bg-boxdark;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    @apply mb-6 text-xl font-semibold text-black dark:text-white;
+  }
+
+  /* TailAdmin Sidebar Styles */
+  .sidebar {
+    @apply fixed left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-sidebar-bg duration-300 ease-linear lg:static lg:translate-x-0;
+  }
+  
+  .sidebar-logo {
+    @apply flex items-center justify-center px-6 py-5.5 lg:py-6.5;
+  }
+  
+  .sidebar-nav {
+    @apply no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear;
+  }
+  
+  .sidebar-nav-item {
+    @apply relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-sidebar-text duration-300 ease-in-out hover:bg-graydark hover:text-white;
+  }
+  
+  .sidebar-nav-item.active {
+    @apply bg-sidebar-active text-white;
+  }
+  
+  /* TailAdmin Card Styles */
+  .card {
+    @apply rounded-lg border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6;
+  }
+  
+  .card-header {
+    @apply mb-4 flex items-center justify-between;
+  }
+  
+  .card-title {
+    @apply text-xl font-semibold text-black dark:text-white;
+  }
+  
+  /* TailAdmin Table Styles */
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+  
+  .table {
+    @apply w-full table-auto border-collapse;
+  }
+  
+  .table thead {
+    @apply bg-gray-2 dark:bg-meta-4;
+  }
+  
+  .table th {
+    @apply px-4 py-4 font-medium text-black dark:text-white;
+  }
+  
+  .table td {
+    @apply border-b border-stroke px-4 py-5 dark:border-strokedark;
+  }
+  
+  /* TailAdmin Form Styles */
+  .form-input {
+    @apply w-full rounded-lg border border-stroke bg-transparent px-4 py-3 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary;
+  }
+  
+  .form-label {
+    @apply mb-2.5 block text-sm font-medium text-black dark:text-white;
+  }
+  
+  /* TailAdmin Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-center font-medium transition duration-300 ease-in-out;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-opacity-90;
+  }
+  
+  .btn-success {
+    @apply bg-success text-white hover:bg-opacity-90;
+  }
+  
+  .btn-warning {
+    @apply bg-warning text-white hover:bg-opacity-90;
+  }
+  
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 text-white hover:bg-opacity-90;
+  }
+  
+  /* TailAdmin Status Badge Styles */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-success bg-opacity-10 text-success;
+  }
+  
+  .badge-warning {
+    @apply bg-warning bg-opacity-10 text-warning;
+  }
+  
+  .badge-danger {
+    @apply bg-danger bg-opacity-10 text-danger;
+  }
+  
+  .badge-primary {
+    @apply bg-primary bg-opacity-10 text-primary;
+  }
+  
+  /* TailAdmin Stats Card */
+  .stats-card {
+    @apply rounded-lg border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark;
+  }
+  
+  .stats-number {
+    @apply text-3xl font-bold text-black dark:text-white;
+  }
+  
+  .stats-label {
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400;
+  }
+  
+  /* Button Components */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-400;
+  }
+  
+  .btn-warning {
+    @apply bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-400;
+  }
+  
+  .btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-400;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+  }
+}
+
+/* Additional TailAdmin Theme Variables */
+:root {
+  --color-primary: #3b82f6;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-stroke: #e5e7eb;
+  --color-strokedark: #374151;
+  --color-graydark: #374151;
+  --color-boxdark: #1f2937;
+  --color-form-strokedark: #4b5563;
+  --color-form-input: #1f2937;
+  --color-gray-2: #f9fafb;
+  --color-meta-4: #374151;
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-stroke: #374151;
+  --color-graydark: #1f2937;
+}
+
+/* Custom scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

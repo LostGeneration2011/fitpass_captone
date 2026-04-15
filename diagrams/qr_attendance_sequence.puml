@@ -1,0 +1,100 @@
+@startuml QR_Attendance_Sequence
+!theme plain
+title QR Attendance System - Sequence Diagram
+
+actor "Teacher" as teacher
+actor "Student" as student
+participant "Teacher App" as teacherApp
+participant "Student App" as studentApp
+participant "QR Controller" as qrController
+participant "Auth Service" as auth
+participant "WebSocket" as websocket
+participant "Database" as database
+
+== Session Preparation ==
+
+teacher -> teacherApp : Start session
+teacherApp -> qrController : POST /api/qr/sessions/{id}/start
+activate qrController
+
+qrController -> auth : Validate teacher JWT
+auth -> qrController : Teacher authorized
+
+qrController -> qrController : Generate QR JWT token
+note right
+  QR Token contains:
+  - sessionId
+  - teacherId  
+  - expiryTime (15 mins)
+  - signature
+end note
+
+qrController -> database : Update session status to ACTIVE
+qrController -> qrController : Create QR code URL
+qrController -> teacherApp : Return QR data
+deactivate qrController
+
+teacherApp -> teacher : Display QR code
+
+== Student Check-in ==
+
+student -> studentApp : Open QR scanner
+student -> studentApp : Scan QR code
+studentApp -> studentApp : Decode QR token
+
+studentApp -> qrController : POST /api/qr/attendance/qr-checkin
+activate qrController
+
+qrController -> auth : Validate student JWT
+auth -> qrController : Student authorized
+
+qrController -> qrController : Verify QR token signature
+qrController -> qrController : Check token expiry
+qrController -> database : Verify session exists & active
+
+alt Valid QR Token
+    qrController -> database : Check student enrollment
+    
+    alt Student Enrolled
+        qrController -> database : Record attendance
+        database -> qrController : Attendance saved
+        
+        qrController -> websocket : Emit attendance update
+        activate websocket
+        websocket -> teacherApp : Real-time notification
+        websocket -> studentApp : Confirmation message
+        deactivate websocket
+        
+        qrController -> studentApp : Success response
+        studentApp -> student : "Attendance marked!"
+        
+    else Student Not Enrolled
+        qrController -> studentApp : Error: Not enrolled
+    end
+    
+else Invalid/Expired Token
+    qrController -> studentApp : Error: Invalid QR code
+end
+
+deactivate qrController
+
+== Real-time Updates ==
+
+note over websocket
+  **WebSocket Event Structure:**
+  
+  Event: "attendance:update"
+  Data: {
+    studentId: "cuid_123",
+    studentName: "John Doe", 
+    sessionId: "session_456",
+    status: "PRESENT",
+    checkedInAt: "2024-12-10T10:30:00Z",
+    type: "qr_checkin"
+  }
+end note
+
+websocket -> teacherApp : Update attendance list
+teacherApp -> teacher : Show updated attendance
+
+@enduml

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ES2015"
+    ],
+    "jsx": "react-native",
+    "target": "ES2015",
+    "module": "preserve",
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "extends": "expo/tsconfig.base",
+  "typeRoots": ["./node_modules/@types"],
+  "types": ["expo"]
+}

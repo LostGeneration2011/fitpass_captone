@@ -1,0 +1,180 @@
+@startuml FitPass Use Case Diagram
+!define RECTANGLE class
+
+skinparam usecase {
+    BackgroundColor #E8F5E8
+    BorderColor #2E7D32
+    FontSize 10
+}
+
+skinparam actor {
+    BackgroundColor #E1F5FE
+    BorderColor #01579B
+    FontSize 12
+}
+
+left to right direction
+
+' External Systems
+rectangle "FitPass System" as system {
+    rectangle "Payment Gateway" as payment_gw
+    rectangle "Email Service" as email_svc
+    rectangle "QR Code Generator" as qr_gen
+    rectangle "Database" as database
+}
+
+' Actors
+actor Student as student
+actor Teacher as teacher  
+actor Admin as admin
+
+' Authentication Package
+package "Authentication" #LightBlue {
+    usecase "Register Account" as register
+    usecase "Verify Email" as verify_email
+    usecase "Login" as login
+    usecase "Reset Password" as reset_pwd
+    usecase "Logout" as logout
+}
+
+' Student Package
+package "Student Functions" #LightGreen {
+    usecase "Browse Classes" as browse
+    usecase "Search Classes" as search
+    usecase "View Class Details" as view_details
+    usecase "Select Package" as select_pkg
+    usecase "Make Payment" as payment
+    usecase "Enroll in Class" as enroll
+    usecase "View My Classes" as my_classes
+    usecase "View Schedule" as schedule
+    usecase "Check In (QR)" as checkin
+    usecase "View Package Status" as pkg_status
+    usecase "Cancel Enrollment" as cancel
+}
+
+' Teacher Package  
+package "Teacher Functions" #LightYellow {
+    usecase "Create Class" as create_class
+    usecase "Manage Sessions" as manage_sessions
+    usecase "Generate QR Code" as gen_qr
+    usecase "Take Attendance" as attendance
+    usecase "Mark Present/Absent" as mark_attend
+    usecase "View Student List" as student_list
+    usecase "View Salary" as view_salary
+    usecase "Export Reports" as export_reports
+}
+
+' Admin Package
+package "Admin Functions" #LightCoral {
+    usecase "Admin Dashboard" as dashboard
+    usecase "Manage Users" as manage_users
+    usecase "Manage Classes" as manage_classes
+    usecase "Manage Packages" as manage_pkgs
+    usecase "Manage Rooms" as manage_rooms
+    usecase "View All Attendance" as view_attendance
+    usecase "Calculate Teacher Salary" as calc_salary
+    usecase "Generate Reports" as gen_reports
+    usecase "Manage Transactions" as manage_trans
+    usecase "View System Analytics" as analytics
+}
+
+' System Internal Functions
+package "System Functions" #LightGray {
+    usecase "Process Payment" as process_pay
+    usecase "Send Email Notification" as send_email
+    usecase "Generate QR Code" as sys_gen_qr
+    usecase "Update Database" as update_db
+    usecase "Backup Data" as backup
+    usecase "Validate Session" as validate_session
+}
+
+' Student Connections
+student --> register
+student --> login
+student --> browse
+student --> search
+student --> enroll
+student --> payment
+student --> my_classes
+student --> schedule
+student --> checkin
+student --> cancel
+student --> logout
+
+' Teacher Connections  
+teacher --> login
+teacher --> create_class
+teacher --> manage_sessions
+teacher --> gen_qr
+teacher --> attendance
+teacher --> mark_attend
+teacher --> view_salary
+teacher --> student_list
+teacher --> logout
+
+' Admin Connections
+admin --> login
+admin --> dashboard
+admin --> manage_users
+admin --> manage_classes
+admin --> manage_pkgs
+admin --> manage_rooms
+admin --> view_attendance
+admin --> calc_salary
+admin --> gen_reports
+admin --> analytics
+admin --> logout
+
+' Includes Relationships
+register ..> verify_email : <<includes>>
+login ..> validate_session : <<includes>>
+browse ..> search : <<includes>>
+enroll ..> select_pkg : <<includes>>
+select_pkg ..> payment : <<includes>>
+checkin ..> sys_gen_qr : <<includes>>
+attendance ..> gen_qr : <<includes>>
+mark_attend ..> update_db : <<includes>>
+manage_sessions ..> update_db : <<includes>>
+calc_salary ..> gen_reports : <<includes>>
+
+' Extends Relationships  
+view_details ..> browse : <<extends>>
+pkg_status ..> my_classes : <<extends>>
+export_reports ..> view_salary : <<extends>>
+manage_trans ..> dashboard : <<extends>>
+
+' Precedes Relationships
+register --> login : <<precedes>>
+login --> browse : <<precedes>>
+select_pkg --> payment : <<precedes>>
+payment --> enroll : <<precedes>>
+enroll --> schedule : <<precedes>>
+gen_qr --> attendance : <<precedes>>
+attendance --> mark_attend : <<precedes>>
+
+' System Connections
+verify_email --> send_email
+payment --> process_pay  
+gen_qr --> sys_gen_qr
+register --> update_db
+login --> update_db
+enroll --> update_db
+attendance --> update_db
+calc_salary --> update_db
+
+' External System Connections
+process_pay --> payment_gw
+send_email --> email_svc
+sys_gen_qr --> qr_gen
+update_db --> database
+backup --> database
+
+note right of system : External Payment Gateway\nEmail Service Provider\nQR Code Generation API\nDatabase Management
+
+note left of student : Primary user\nPays for classes\nAttends sessions
+
+note left of teacher : Creates and teaches classes\nTakes attendance\nViews salary information
+
+note left of admin : Manages entire system\nOversees all operations\nGenerates reports
+
+@enduml

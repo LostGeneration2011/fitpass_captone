@@ -1,0 +1,79 @@
+@startuml FitPass_System_Architecture
+!theme plain
+title FitPass System Architecture
+
+package "Client Layer" {
+  component "Mobile App" as mobile #lightblue {
+    [React Native + Expo]
+    [NativeBase UI]
+    [React Navigation] 
+    [AsyncStorage]
+  }
+  
+  component "Admin Dashboard" as admin #lightgreen {
+    [Vite + React]
+    [Tailwind CSS]
+    [Heroicons]
+    [Axios]
+  }
+}
+
+package "Backend Services" {
+  component "API Server" as api #orange {
+    [Node.js + Express]
+    [TypeScript]
+    [JWT Authentication]
+    [Prisma ORM]
+  }
+  
+  component "WebSocket Server" as ws #purple {
+    [Socket.IO]
+    [Room Management]
+    [Live Updates]
+    [QR Events]
+  }
+}
+
+package "Data Layer" {
+  database "PostgreSQL" as db #yellow {
+    [Users & Roles]
+    [Classes & Sessions]
+    [Attendance & QR]
+    [Enrollments]
+  }
+}
+
+' Connections
+mobile --> api : "REST API\n(HTTPS)"
+admin --> api : "REST API\n(HTTPS)"
+mobile --> ws : "WebSocket\n(Real-time)"
+api --> db : "Prisma ORM\n(SQL Queries)"
+ws --> db : "Direct Access\n(Attendance Updates)"
+
+' Notes
+note right of mobile
+  **Student & Teacher Apps**
+  - Login/Authentication
+  - Class Management
+  - QR Scanning
+  - Real-time Updates
+end note
+
+note right of admin
+  **Admin Management**
+  - User CRUD
+  - Class Approval
+  - Analytics Dashboard
+  - Reports
+end note
+
+note bottom of api
+  **Core API Endpoints**
+  /api/auth - Authentication
+  /api/users - User Management
+  /api/classes - Class Management
+  /api/sessions - Session Management
+  /api/qr - QR Attendance
+end note
+
+@enduml

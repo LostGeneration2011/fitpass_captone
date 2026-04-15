@@ -1,0 +1,72 @@
+@startuml Teacher_User_Flow
+!theme plain
+title Teacher User Flow - FitPass Mobile App
+
+start
+
+:Launch Mobile App;
+:Login as Teacher;
+:Teacher Dashboard;
+
+partition "Class Management" {
+  if (Class Actions?) then (Create Class)
+    :Create New Class;
+    :Set Class Details;
+    :Define Capacity;
+    :Set Schedule Template;
+    :Submit for Admin Approval;
+    note right: Admin must approve\nbefore class becomes active
+  else (Manage Existing)
+    :View My Classes;
+    :Edit Class Information;
+    :Update Capacity/Schedule;
+  endif
+}
+
+partition "Session Management" {
+  :View Session Schedule;
+  
+  if (Session Actions?) then (Create Session)
+    :Create New Session;
+    :Set Date & Time;
+    :Link to Class;
+    :Save Session;
+  else (Start Session)
+    :Select Active Session;
+    :Start Session;
+    :Generate QR Code;
+    
+    note right
+      QR Code contains:
+      - JWT Token
+      - Session ID
+      - Expiry Time
+      - Teacher validation
+    end note
+    
+    :Display QR to Students;
+    :Monitor Real-time Attendance;
+    
+    if (Session Active?) then (Monitor)
+      :WebSocket Updates;
+      :View Student Check-ins;
+      :Update Attendance List;
+    else (End Session)
+      :End Session;
+      :Review Final Attendance;
+      :Save Session Report;
+    endif
+  endif
+}
+
+partition "Student Management" {
+  :View Enrolled Students;
+  :Check Student Progress;
+  :Add Progress Notes;
+  :Review Attendance History;
+}
+
+:Return to Dashboard;
+stop
+
+@enduml

@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Vietnamese Font Support */
+@layer base {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    @apply transition-colors duration-200;
+  }
+  
+  /* Ensure proper Vietnamese characters rendering */
+  * {
+    font-feature-settings: "kern" 1, "liga" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Vietnamese text styles */
+  .vietnamese-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Light Mode Base Styles */
+@layer base {
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #64748b;
+    --text-muted: #94a3b8;
+    
+    --border-light: #e2e8f0;
+    --border-default: #cbd5e1;
+    
+    --accent-primary: #0284c7;
+    --accent-hover: #0369a1;
+    
+    --success: #16a34a;
+    --warning: #ea580c;
+    --error: #dc2626;
+  }
+
+  /* Dark Mode Styles */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-tertiary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --border-light: #334155;
+      --border-default: #475569;
+      
+      --accent-primary: #06b6d4;
+      --accent-hover: #0891b2;
+      
+      --success: #86efac;
+      --warning: #fed7aa;
+      --error: #fca5a5;
+    }
+  }
+}
+
+/* Theme-aware components */
+@layer components {
+  .theme-card {
+    @apply rounded-lg border transition-colors duration-200;
+    background-color: var(--bg-secondary);
+    border-color: var(--border-light);
+  }
+
+  .theme-button {
+    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200;
+    background-color: var(--accent-primary);
+    color: white;
+  }
+
+  .theme-button:hover {
+    background-color: var(--accent-hover);
+  }
+
+  .theme-input {
+    @apply w-full px-3 py-2 rounded-lg border transition-colors duration-200;
+    background-color: var(--bg-primary);
+    border-color: var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .theme-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .theme-text-primary {
+    color: var(--text-primary);
+  }
+
+  .theme-text-secondary {
+    color: var(--text-secondary);
+  }
+
+  .theme-bg-primary {
+    background-color: var(--bg-primary);
+  }
+
+  .theme-bg-secondary {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+  }
+}
+
+/* Selection styles */
+@layer utilities {
+  ::selection {
+    background-color: var(--accent-primary);
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: var(--accent-primary);
+    color: white;
+  }
+}
+
+/* Smooth transitions for theme changes */
+@layer base {
+  html, body, * {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* Safe area support for mobile */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}

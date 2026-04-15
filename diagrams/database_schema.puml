@@ -1,0 +1,222 @@
+@startuml Database_ERD
+!theme plain
+title FitPass Database Schema (PostgreSQL + Prisma)
+
+entity "User" as user {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Basic Information**
+  --
+  * email : String (unique)
+  * password : String (hashed)
+  * fullName : String
+  * role : UserRole (ADMIN|TEACHER|STUDENT)
+  * emailVerified : Boolean
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+  --
+  **Optional Fields**
+  --
+  verificationToken : String?
+  resetToken : String?
+  resetTokenExpiry : DateTime?
+  hourlyRate : Float? (teachers)
+  salaryOwed : Float? (teachers)
+}
+
+entity "Class" as class {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Class Information**
+  --
+  * name : String
+  * description : String
+  * capacity : Int
+  * duration : Int (minutes)
+  * status : ClassStatus
+  --
+  **Pricing**
+  --
+  * price : Float
+  * currency : String
+  --
+  **Relationships**
+  --
+  * teacherId : String (FK)
+  * roomId : String? (FK)
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+}
+
+entity "Session" as session {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Session Details**
+  --
+  * date : DateTime
+  * startTime : DateTime
+  * endTime : DateTime
+  * status : SessionStatus
+  --
+  **QR Attendance**
+  --
+  qrToken : String? (JWT)
+  qrExpiresAt : DateTime?
+  --
+  **Relationships**
+  --
+  * classId : String (FK)
+  * teacherId : String (FK)
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+}
+
+entity "Attendance" as attendance {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Attendance Info**
+  --
+  * status : AttendanceStatus
+  * checkedInAt : DateTime?
+  * method : CheckInMethod (QR|MANUAL)
+  --
+  **Relationships**
+  --
+  * sessionId : String (FK)
+  * studentId : String (FK)
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+}
+
+entity "Enrollment" as enrollment {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Enrollment Details**
+  --
+  * status : EnrollmentStatus
+  * enrolledAt : DateTime
+  * expiresAt : DateTime?
+  --
+  **Relationships**
+  --
+  * studentId : String (FK)
+  * classId : String (FK)
+  * packageId : String? (FK)
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+}
+
+entity "Package" as package {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Package Details**
+  --
+  * name : String
+  * description : String
+  * price : Float
+  * sessions : Int
+  * validityDays : Int
+  * active : Boolean
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+}
+
+entity "Room" as room {
+  **Primary Key**
+  --
+  * id : String (cuid)
+  --
+  **Room Information**
+  --
+  * name : String
+  * capacity : Int
+  * location : String?
+  * equipment : String?
+  * active : Boolean
+  --
+  **Timestamps**
+  --
+  * createdAt : DateTime
+  * updatedAt : DateTime
+}
+
+' Relationships
+user ||--o{ class : teaches (teacherId)
+user ||--o{ session : conducts (teacherId) 
+user ||--o{ enrollment : enrolls (studentId)
+user ||--o{ attendance : attends (studentId)
+
+class ||--o{ session : has
+class ||--o{ enrollment : for
+class }o--|| room : uses
+
+session ||--o{ attendance : tracks
+
+enrollment }o--|| package : uses
+
+' Enum Notes
+note right of user
+  **UserRole ENUM:**
+  - ADMIN
+  - TEACHER  
+  - STUDENT
+end note
+
+note right of class
+  **ClassStatus ENUM:**
+  - PENDING
+  - APPROVED
+  - REJECTED
+  - SUSPENDED
+end note
+
+note right of session
+  **SessionStatus ENUM:**
+  - SCHEDULED
+  - ACTIVE
+  - COMPLETED
+  - CANCELLED
+end note
+
+note right of attendance
+  **AttendanceStatus ENUM:**
+  - PRESENT
+  - ABSENT
+  - LATE
+  
+  **CheckInMethod ENUM:**
+  - QR
+  - MANUAL
+end note
+
+@enduml

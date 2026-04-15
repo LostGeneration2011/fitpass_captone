@@ -1,0 +1,33 @@
+{
+  "name": "fitpass-monorepo", 
+  "version": "1.0.0",
+  "description": "FitPass - Fitness Management Platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:app\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:admin": "cd fitpass-admin && npm run dev",
+    "dev:app": "cd fitpass-app && npm start",
+    "build:backend": "cd backend && npm run build",
+    "build:admin": "cd fitpass-admin && npm run build",
+    "vercel-build": "cd backend && npm install && npx prisma generate",
+    "install:all": "npm install && npm run install:backend && npm run install:admin && npm run install:app",
+    "install:backend": "cd backend && npm install",
+    "install:admin": "cd fitpass-admin && npm install",
+    "install:app": "cd fitpass-app && npm install",
+    "clean": "rm -rf node_modules backend/node_modules fitpass-admin/node_modules fitpass-app/node_modules",
+    "lint": "npm run lint:backend && npm run lint:admin",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:admin": "cd fitpass-admin && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": ["fitpass", "fitness", "monorepo", "react-native", "nextjs", "express"],
+  "author": "FitPass Team",
+  "license": "MIT"
+}

@@ -1,0 +1,851 @@
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Image,
+  Linking,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import Constants from 'expo-constants';
+import { chatAPI } from '../../lib/api';
+import { addWebSocketMessageListener, addWebSocketStatusListener, sendWebSocketMessage } from '../../lib/websocket';
+import { useTheme } from '../../lib/theme';
+import { getUser } from '../../lib/auth';
+
+const QUICK_EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👏', '🔥', '✅', '💪', '🙏', '🎉', '❤️', '👍', '👀', '😢'];
+
+// Component hiển thị preview file văn bản
+function TextFilePreview({ url, isDark }: { url: string; isDark: boolean }) {
+  const [textContent, setTextContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const fetchText = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(url);
+        const text = await response.text();
+        setTextContent(text);
+      } catch (error) {
+        setTextContent('Không thể tải nội dung văn bản');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchText();
+  }, [url]);
+
+  if (loading) {
+    return (
+      <View className="py-2">
+        <ActivityIndicator size="small" color="#60A5FA" />
+      </View>
+    );
+  }
+
+  if (!textContent) return null;
+
+  const preview = expanded ? textContent : textContent.slice(0, 200);
+  const needsExpansion = textContent.length > 200;
+
+  return (
+    <View 
+      className={`mt-2 p-2 rounded ${isDark ? 'bg-slate-700' : 'bg-slate-100'}`}
+      style={{ maxWidth: '100%' }}
+    >
+      <Text 
+        className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+        style={{ fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}
+      >
+        {preview}
+        {!expanded && needsExpansion && '...'}
+      </Text>
+      {needsExpansion && (
+        <TouchableOpacity onPress={() => setExpanded(!expanded)} className="mt-1">
+          <Text className="text-xs text-blue-400">
+            {expanded ? 'Thu gọn' : 'Xem thêm'}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+export default function StudentChatThreadScreen({ route, navigation }: any) {
+  const { isDark } = useTheme();
+  const { threadId, title, threadType } = route.params || {};
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [content, setContent] = useState('');
+  const [isJoined, setIsJoined] = useState(false);
+  const [typingActive, setTypingActive] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [readMap, setReadMap] = useState<Record<string, string>>({});
+  const [pendingAttachments, setPendingAttachments] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [threadMembers, setThreadMembers] = useState<any[]>([]);
+  const [mentionUserIds, setMentionUserIds] = useState<string[]>([]);
+  const [replyTo, setReplyTo] = useState<any | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showThreadActions, setShowThreadActions] = useState(false);
+  const isJoinedRef = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const partnerTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
+  const shouldAutoScrollRef = useRef(true);
+  const initialAutoScrollDoneRef = useRef(false);
+
+  // Helper: Convert relative URL to full URL
+  const getFullUrl = (url: string): string => {
+    if (!url) return '';
+    let fullUrl = '';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      fullUrl = url;
+    } else {
+      // Relative URL - add API base
+      const apiUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL || 
+                     Constants.expoConfig?.extra?.EXPO_PUBLIC_API ||
+                     'http://localhost:3001/api';
+      const baseUrl = apiUrl.replace(/\/api$/, '');
+      fullUrl = `${baseUrl}${url}`;
+    }
+    
+    // Add ngrok bypass for image loading (required for ngrok URLs)
+    if (fullUrl.includes('ngrok')) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 'ngrok-skip-browser-warning=true';
+    }
+    
+    return fullUrl;
+  };
+
+  // Helper: Download file to device
+  const handleDownloadFile = async (url: string, fileName: string) => {
+    try {
+      const fullUrl = getFullUrl(url);
+      
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        // Fallback to opening in browser
+        await Linking.openURL(fullUrl);
+        return;
+      }
+
+      Toast.show({
+        type: 'info',
+        text1: 'Đang tải xuống...',
+        text2: fileName,
+      });
+
+      // Download file
+      const timestamp = Date.now();
+      const tempFileName = `download_${timestamp}_${fileName}`;
+      const downloadResumable = FileSystem.createDownloadResumable(
+        fullUrl,
+        `${FileSystem.cacheDirectory}${tempFileName}`,
+        {}
+      );
+      
+      const result = await downloadResumable.downloadAsync();
+      
+      if (result && result.uri) {
+        // Share/Save file
+        await Sharing.shareAsync(result.uri, {
+          mimeType: 'image/jpeg',
+          dialogTitle: 'Lưu file',
+        });
+        
+        Toast.show({
+          type: 'success',
+          text1: 'Tải xuống thành công!',
+          text2: fileName,
+        });
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error: any) {
+      console.error('Download error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi tải xuống',
+        text2: error?.message || 'Không thể tải file',
+      });
+    }
+  };
+
+  const screenClass = isDark ? 'bg-slate-950' : 'bg-slate-50';
+  const cardClass = isDark ? 'bg-slate-800' : 'bg-white border border-slate-200';
+  const textPrimary = isDark ? 'text-white' : 'text-slate-900';
+  const textSecondary = isDark ? 'text-slate-500' : 'text-slate-600';
+
+  const loadMessages = async (silent = false) => {
+    try {
+      if (!silent) {
+        setLoading(true);
+      }
+      const res = await chatAPI.getMessages(threadId, { limit: 50 });
+      const fetched = Array.isArray(res) ? res : [];
+      setMessages((prev) => {
+        const seen = new Set(prev.map((msg) => msg.id));
+        const merged = [...prev];
+        fetched.forEach((msg: any) => {
+          if (!seen.has(msg.id)) {
+            merged.push(msg);
+          }
+        });
+        return merged;
+      });
+      chatAPI.markRead(threadId).catch(() => undefined);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: error?.message || 'Không thể tải tin nhắn',
+      });
+    } finally {
+      if (!silent) {
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!threadId) return;
+    shouldAutoScrollRef.current = true;
+    initialAutoScrollDoneRef.current = false;
+    setShowThreadActions(false);
+    
+    // Load current user ID
+    getUser().then((user) => {
+      if (user?.id) {
+        setCurrentUserId(user.id);
+        currentUserIdRef.current = user.id;
+      }
+    });
+    
+    loadMessages();
+    if (threadType === 'CLASS_GROUP') {
+      chatAPI.listMembers(threadId)
+        .then((res) => setThreadMembers(Array.isArray(res) ? res : []))
+        .catch(() => setThreadMembers([]));
+    } else {
+      setThreadMembers([]);
+    }
+
+    const joinThread = () => sendWebSocketMessage({ type: 'chat.join', threadId });
+    joinThread();
+    const joinTimeout = setTimeout(joinThread, 400);
+    const removeStatusListener = addWebSocketStatusListener((status) => {
+      if (status === 'open') {
+        joinThread();
+      }
+      if (status === 'close') {
+        setIsJoined(false);
+        isJoinedRef.current = false;
+      }
+    });
+    const removeListener = addWebSocketMessageListener((data) => {
+      if (data.type === 'auth_success') {
+        joinThread();
+        return;
+      }
+      if (data.type === 'chat.joined' && data.threadId === threadId) {
+        setIsJoined(true);
+        isJoinedRef.current = true;
+        return;
+      }
+      if (data.type === 'chat.message' && data.threadId === threadId) {
+        setMessages((prev) => {
+          if (prev.some((msg) => msg.id === data.message.id)) return prev;
+          return [...prev, data.message];
+        });
+        chatAPI.markRead(threadId).catch(() => undefined);
+      }
+      if (data.type === 'chat.message_edited' && data.threadId === threadId) {
+        setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
+      }
+      if (data.type === 'chat.message_revoked' && data.threadId === threadId) {
+        setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
+      }
+      if (data.type === 'chat.typing' && data.threadId === threadId) {
+        const senderId = data.userId || data.senderId || data.user?.id;
+        const isSelf = !!senderId && !!currentUserIdRef.current && senderId === currentUserIdRef.current;
+        if (!isSelf) {
+          if (!!data.isTyping) {
+            setTypingActive(true);
+            if (partnerTypingTimeoutRef.current) {
+              clearTimeout(partnerTypingTimeoutRef.current);
+            }
+            partnerTypingTimeoutRef.current = setTimeout(() => {
+              setTypingActive(false);
+              partnerTypingTimeoutRef.current = null;
+            }, 2500);
+          } else {
+            setTypingActive(false);
+            if (partnerTypingTimeoutRef.current) {
+              clearTimeout(partnerTypingTimeoutRef.current);
+              partnerTypingTimeoutRef.current = null;
+            }
+          }
+        }
+      }
+      if (data.type === 'chat.read' && data.threadId === threadId) {
+        setReadMap((prev) => ({
+          ...prev,
+          [data.userId]: data.lastReadAt,
+        }));
+      }
+    });
+
+    const refreshInterval = setInterval(() => {
+      if (!isJoinedRef.current) {
+        joinThread();
+      }
+      loadMessages(true);
+    }, 5000);
+
+    return () => {
+      clearTimeout(joinTimeout);
+      clearInterval(refreshInterval);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (partnerTypingTimeoutRef.current) {
+        clearTimeout(partnerTypingTimeoutRef.current);
+        partnerTypingTimeoutRef.current = null;
+      }
+      setTypingActive(false);
+      sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: false });
+      removeStatusListener();
+      sendWebSocketMessage({ type: 'chat.leave', threadId });
+      removeListener();
+    };
+  }, [threadId]);
+
+  const handleSend = async () => {
+    if (!content.trim() && pendingAttachments.length === 0) return;
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: false });
+
+    try {
+      setSending(true);
+      if (editingMessageId) {
+        const message = await chatAPI.editMessage(editingMessageId, content.trim());
+        setMessages((prev) => prev.map((msg) => (msg.id === message.id ? message : msg)));
+        setEditingMessageId(null);
+        setContent('');
+      } else {
+        const message = await chatAPI.sendMessage(threadId, content.trim(), {
+          attachments: pendingAttachments,
+          mentionUserIds,
+          replyToId: replyTo?.id,
+        });
+        setMessages((prev) => {
+          if (prev.some((msg) => msg.id === message.id)) return prev;
+          return [...prev, message];
+        });
+        setContent('');
+        setPendingAttachments([]);
+        setMentionUserIds([]);
+        setReplyTo(null);
+      }
+      chatAPI.markRead(threadId).catch(() => undefined);
+      scrollRef.current?.scrollToEnd({ animated: true });
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: error?.message || 'Không thể gửi tin nhắn',
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleSelectMention = (member: any) => {
+    const name = member.user?.fullName || 'user';
+    const next = content.replace(/@[^\s]*$/, `@${name} `);
+    setContent(next);
+    if (!mentionUserIds.includes(member.user.id)) {
+      setMentionUserIds((prev) => [...prev, member.user.id]);
+    }
+  };
+
+  const mentionQuery = content.match(/@([^\s]*)$/)?.[1]?.toLowerCase() || '';
+  const mentionSuggestions = threadType === 'CLASS_GROUP' && content.includes('@')
+    ? threadMembers.map((member) => member.user).filter(Boolean).filter((user: any) =>
+        !mentionQuery || user.fullName?.toLowerCase().includes(mentionQuery)
+      )
+    : [];
+
+  const handleEditMessage = (messageId: string, currentContent: string) => {
+    setEditingMessageId(messageId);
+    setContent(currentContent);
+  };
+
+  const handleRevokeMessage = (messageId: string) => {
+    Alert.alert('Thu hồi tin nhắn', 'Bạn muốn thu hồi tin nhắn này?', [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Thu hồi',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const message = await chatAPI.revokeMessage(messageId);
+            setMessages((prev) => prev.map((msg) => (msg.id === message.id ? message : msg)));
+          } catch (error: any) {
+            Toast.show({
+              type: 'error',
+              text1: 'Lỗi',
+              text2: error?.message || 'Không thể thu hồi tin nhắn',
+            });
+          }
+        },
+      },
+    ]);
+  };
+
+  const handlePickMedia = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Vui lòng cấp quyền truy cập thư viện ảnh',
+      });
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+
+    try {
+      setUploading(true);
+      const uploadedAttachments: any[] = [];
+      const warningMessages = new Set<string>();
+
+      for (const asset of result.assets) {
+        let uri = asset.uri;
+        let fileName = asset.fileName || `chat-${Date.now()}`;
+        let mimeType = asset.mimeType || (asset.type === 'video' ? 'video/mp4' : 'image/jpeg');
+
+        // Convert HEIC/HEIF (iPhone default) to JPEG before upload
+        if (mimeType === 'image/heic' || mimeType === 'image/heif' || fileName.toLowerCase().endsWith('.heic')) {
+          const converted = await ImageManipulator.manipulateAsync(
+            uri,
+            [],
+            { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+          );
+          uri = converted.uri;
+          mimeType = 'image/jpeg';
+          fileName = fileName.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
+        }
+
+        const formData = new FormData();
+        formData.append('file', {
+          uri,
+          name: fileName,
+          type: mimeType,
+        } as any);
+
+        const uploaded = await chatAPI.uploadMedia(formData);
+        if (uploaded?.warning) {
+          warningMessages.add(uploaded.warning);
+        }
+        const attachmentType = mimeType.startsWith('video') ? 'VIDEO' : 'IMAGE';
+
+        uploadedAttachments.push({
+          type: attachmentType,
+          url: uploaded.url,
+          fileName: uploaded.fileName || fileName,
+          fileSize: uploaded.fileSize,
+          mimeType: uploaded.mimeType || mimeType,
+        });
+      }
+
+      if (uploadedAttachments.length) {
+        setPendingAttachments((prev) => [...prev, ...uploadedAttachments]);
+      }
+
+      if (warningMessages.size) {
+        Toast.show({
+          type: 'info',
+          text1: 'Tep dang dung luu tru du phong',
+          text2: Array.from(warningMessages).join(' '),
+        });
+      }
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: error?.message || 'Không thể tải file',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTyping = () => {
+    if (!threadId) {
+      return;
+    }
+    sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: true });
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: false });
+      typingTimeoutRef.current = null;
+    }, 2000);
+  };
+
+  const handleInsertEmoji = (emoji: string) => {
+    setContent((prev) => `${prev}${emoji}`);
+    handleTyping();
+  };
+
+  const handleDeleteThread = () => {
+    setShowThreadActions(false);
+    if (!threadId) return;
+    Alert.alert('Xóa cuộc hội thoại', 'Bạn muốn xóa toàn bộ cuộc hội thoại này?', [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Xóa',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await chatAPI.deleteThread(threadId);
+            navigation.goBack();
+          } catch (error: any) {
+            Toast.show({
+              type: 'error',
+              text1: 'Lỗi',
+              text2: error?.message || 'Không thể xóa cuộc hội thoại',
+            });
+          }
+        },
+      },
+    ]);
+  };
+  if (loading) {
+    return (
+      <SafeAreaView className={`flex-1 ${screenClass}`}>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text className={`${textSecondary} mt-4`}>Đang tải tin nhắn...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className={`flex-1 ${screenClass}`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
+        className="flex-1"
+      >
+        {showThreadActions ? (
+          <TouchableOpacity
+            activeOpacity={1}
+            className="absolute inset-0 z-10"
+            onPress={() => setShowThreadActions(false)}
+          />
+        ) : null}
+
+        <View className={`flex-row items-center justify-between px-4 pt-4 pb-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={isDark ? '#94a3b8' : '#475569'} />
+          </TouchableOpacity>
+          <View className="items-center flex-1">
+            <Text className={`${textPrimary} text-lg font-semibold`}>{title || 'Chat'}</Text>
+          </View>
+          <View className="relative z-20">
+            <TouchableOpacity onPress={() => setShowThreadActions((prev) => !prev)}>
+              <Ionicons name="ellipsis-vertical" size={20} color={isDark ? '#94a3b8' : '#64748b'} />
+            </TouchableOpacity>
+            {showThreadActions ? (
+              <View className={`absolute right-0 top-8 min-w-[170px] rounded-xl border py-1 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                <TouchableOpacity
+                  className="px-3 py-2 flex-row items-center"
+                  onPress={handleDeleteThread}
+                >
+                  <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                  <Text className="text-red-500 ml-2 text-sm font-medium">Xóa cuộc hội thoại</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        <ScrollView
+          ref={scrollRef}
+          className="flex-1 px-4"
+          contentContainerStyle={{ paddingVertical: 16 }}
+          scrollEventThrottle={16}
+          onScroll={(event) => {
+            const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+            const distanceToBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+            shouldAutoScrollRef.current = distanceToBottom < 120;
+          }}
+          onContentSizeChange={() => {
+            if (!initialAutoScrollDoneRef.current) {
+              initialAutoScrollDoneRef.current = true;
+              requestAnimationFrame(() => {
+                scrollRef.current?.scrollToEnd({ animated: false });
+              });
+              return;
+            }
+            if (!shouldAutoScrollRef.current) return;
+            requestAnimationFrame(() => {
+              scrollRef.current?.scrollToEnd({ animated: true });
+            });
+          }}
+        >
+          {messages.length === 0 ? (
+            <Text className={`${textSecondary} text-center`}>Chưa có tin nhắn</Text>
+          ) : (
+            messages.map((msg, index) => (
+              <TouchableOpacity
+                key={msg.id}
+                className={`mb-3 ${msg.senderRole === 'STUDENT' ? 'items-end' : 'items-start'}`}
+                onLongPress={() => setReplyTo(msg)}
+                activeOpacity={0.8}
+              >
+                <View
+                  className={`px-4 py-2 rounded-xl max-w-[80%] ${
+                    msg.senderRole === 'STUDENT' ? 'bg-blue-600' : cardClass
+                  }`}
+                >
+                  {msg.replyTo ? (
+                    <Text className="text-xs text-blue-200 mb-1">Trả lời: {msg.replyTo.content || 'Tin nhắn'}</Text>
+                  ) : null}
+                  {msg.content && !msg.revokedAt ? (
+                    <Text className={`${msg.senderRole === 'STUDENT' ? 'text-white' : textPrimary}`}>
+                      {msg.content}
+                    </Text>
+                  ) : msg.revokedAt ? (
+                    <Text className={`${msg.senderRole === 'STUDENT' ? 'text-white' : textPrimary}`}>
+                      Tin nhắn đã được thu hồi
+                    </Text>
+                  ) : null}
+                  {msg.attachments?.length ? (
+                    <View className="mt-2 space-y-2">
+                      {msg.attachments.map((file: any) => {
+                        const isImage = file.type === 'IMAGE' || file.mimeType?.startsWith('image/');
+                        const isText = file.mimeType?.startsWith('text/');
+                        const fullUrl = getFullUrl(file.url);
+                        
+                        return (
+                          <View key={file.id || file.url} className="mt-2">
+                            {/* Hiển thị ảnh */}
+                            {isImage && fullUrl ? (
+                              <TouchableOpacity 
+                                onPress={() => Linking.openURL(fullUrl)}
+                                activeOpacity={0.9}
+                              >
+                                <Image
+                                  source={{ uri: fullUrl }}
+                                  style={{
+                                    width: 200,
+                                    height: 200,
+                                    borderRadius: 8,
+                                    marginBottom: 4,
+                                  }}
+                                  resizeMode="cover"
+                                />
+                              </TouchableOpacity>
+                            ) : null}
+                            
+                            {/* Hiển thị preview văn bản */}
+                            {isText && fullUrl && !isImage ? (
+                              <TextFilePreview url={fullUrl} isDark={isDark} />
+                            ) : null}
+                            
+                            {/* Thông tin file */}
+                            <View className="flex-row items-center justify-between">
+                              <View className="flex-1 mr-2">
+                                <Text 
+                                  className={`text-xs ${
+                                    msg.senderRole === 'STUDENT' ? 'text-blue-100' : 'text-slate-600'
+                                  }`}
+                                  numberOfLines={1}
+                                >
+                                  {file.fileName || 'Tệp đính kèm'}
+                                </Text>
+                                {file.fileSize ? (
+                                  <Text 
+                                    className={`text-[10px] ${
+                                      msg.senderRole === 'STUDENT' ? 'text-blue-200' : 'text-slate-500'
+                                    }`}
+                                  >
+                                    {(file.fileSize / 1024).toFixed(1)} KB
+                                  </Text>
+                                ) : null}
+                              </View>
+                              
+                              {/* Nút tải xuống */}
+                              <TouchableOpacity
+                                onPress={() => handleDownloadFile(file.url, file.fileName || 'file')}
+                                className={`px-2 py-1 rounded ${
+                                  msg.senderRole === 'STUDENT' 
+                                    ? 'bg-blue-500' 
+                                    : (isDark ? 'bg-slate-700' : 'bg-slate-200')
+                                }`}
+                              >
+                                <Ionicons 
+                                  name="download-outline" 
+                                  size={14} 
+                                  color={msg.senderRole === 'STUDENT' ? '#ffffff' : (isDark ? '#e2e8f0' : '#475569')} 
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ) : null}
+                  {msg.editedAt ? (
+                    <Text className="text-[10px] text-blue-200 mt-1">(đã chỉnh sửa)</Text>
+                  ) : null}
+                </View>
+                <View className="flex-row items-center mt-1">
+                  <Text className={`${textSecondary} text-xs`}>
+                    {msg.sender?.fullName || msg.senderRole}
+                  </Text>
+                  {msg.senderRole === 'STUDENT' ? (
+                    <View className="flex-row items-center">
+                      <TouchableOpacity onPress={() => handleEditMessage(msg.id, msg.content || '')} className="ml-2">
+                        <Ionicons name="pencil" size={12} color="#64748b" />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRevokeMessage(msg.id)} className="ml-2">
+                        <Ionicons name="arrow-undo" size={12} color="#64748b" />
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                </View>
+                {msg.senderRole === 'STUDENT' && Object.keys(readMap).length > 0 ? (
+                  <Text className="text-[10px] text-blue-400 mt-1">✓✓ Seen</Text>
+                ) : null}
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+
+        <View 
+          className={`px-4 pb-4 pt-2 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}
+          style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff' }}
+        >
+          {replyTo ? (
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-xs text-blue-400">Trả lời: {replyTo.content || 'Tin nhắn'}</Text>
+              <TouchableOpacity onPress={() => setReplyTo(null)}>
+                <Text className="text-xs text-slate-400">Hủy</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+          {editingMessageId ? (
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-xs text-blue-400">Đang chỉnh sửa tin nhắn...</Text>
+              <TouchableOpacity onPress={() => { setEditingMessageId(null); setContent(''); }}>
+                <Text className="text-xs text-slate-400">Hủy</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+          {pendingAttachments.length > 0 ? (
+            <View className="flex-row flex-wrap gap-2 mb-2">
+              {pendingAttachments.map((file, index) => (
+                <View key={`${file.url}-${index}`} className={`${cardClass} px-2 py-1 rounded-lg flex-row items-center`}>
+                  <Text className={`text-xs ${textSecondary}`}>{file.fileName || 'Tệp'}</Text>
+                  <TouchableOpacity onPress={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== index))}>
+                    <Ionicons name="close" size={12} color="#94a3b8" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {typingActive ? (
+            <View className="mb-2">
+              <Text className={`${textSecondary} text-xs`}>Người kia đang soạn tin...</Text>
+            </View>
+          ) : null}
+          {showEmojiPicker ? (
+            <View className="mb-2 flex-row flex-wrap gap-2">
+              {QUICK_EMOJIS.map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  onPress={() => handleInsertEmoji(emoji)}
+                  className={`px-2 py-1 rounded-lg ${cardClass}`}
+                >
+                  <Text className="text-lg">{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : null}
+          <View className={`flex-row items-center rounded-xl px-3 ${cardClass}`}>
+            <TouchableOpacity onPress={handlePickMedia} disabled={uploading} className="mr-2">
+              <Ionicons name="attach" size={18} color={uploading ? '#475569' : '#60A5FA'} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowEmojiPicker((prev) => !prev)} className="mr-2">
+              <Ionicons name="happy-outline" size={18} color={isDark ? '#cbd5e1' : '#64748b'} />
+            </TouchableOpacity>
+            <TextInput
+              className={`flex-1 py-3 ${textPrimary}`}
+              placeholder="Nhập tin nhắn..."
+              placeholderTextColor={isDark ? '#94a3b8' : '#94a3b8'}
+              value={content}
+              onChangeText={(value) => {
+                setContent(value);
+                handleTyping();
+              }}
+              onSubmitEditing={handleSend}
+            />
+            <TouchableOpacity onPress={handleSend} disabled={sending}>
+              <Ionicons name={editingMessageId ? 'checkmark' : 'send'} size={20} color={sending ? '#64748b' : '#60A5FA'} />
+            </TouchableOpacity>
+          </View>
+          {mentionSuggestions.length > 0 ? (
+            <View className={`mt-2 rounded-lg border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+              {mentionSuggestions.map((user: any) => (
+                <TouchableOpacity
+                  key={user.id}
+                  className="px-3 py-2"
+                  onPress={() => handleSelectMention({ user })}
+                >
+                  <Text className={textPrimary}>@{user.fullName}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}

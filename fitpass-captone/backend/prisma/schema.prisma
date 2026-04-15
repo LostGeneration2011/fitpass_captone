@@ -1,0 +1,456 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  password          String?        // Nullable for Google OAuth users
+  fullName          String
+  role              UserRole       @default(STUDENT)
+  teacherBio         String?
+  teacherExperienceYears Int?
+  teacherSpecialties String[]       @default([])
+  teacherCertifications String[]    @default([])
+  teacherHighlights  String[]       @default([])
+  teacherCoverImage  String?
+  teacherGalleryImages String[]     @default([])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  emailVerified     Boolean        @default(false)
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  hourlyRate        Float?         @default(250000)
+  salaryOwed        Float?         @default(0)
+  // Google OAuth fields
+  googleId          String?        @unique
+  provider          String         @default("local") // "local" | "google" | "both"
+  avatar            String?
+  attendances       Attendance[]
+  bookings          Booking[]
+  classesTeaching   Class[]        @relation("TeacherClasses")
+  enrollments       Enrollment[]
+  enrollmentsAsUser Enrollment[]   @relation("UserEnrollments")  // Business logic relation
+  salariesConfirmed SalaryRecord[] @relation("SalaryPaidBy")
+  salaryRecords     SalaryRecord[]
+  transactions      Transaction[]
+  userPackages      UserPackage[]
+  classReviews      ClassReview[]
+  classReactions    ClassReaction[]
+  chatThreadsAsStudent ChatThread[] @relation("ChatStudent")
+  chatThreadsAsTeacher ChatThread[] @relation("ChatTeacher")
+  chatThreadsCreated   ChatThread[] @relation("ChatCreator")
+  chatMessages     ChatMessage[]
+
+  // Forum relations
+  forumPosts      ForumPost[]      @relation("UserForumPosts")
+  forumComments   ForumComment[]   @relation("UserForumComments")
+  forumReactions  ForumReaction[]  @relation("UserForumReactions")
+}
+
+model Class {
+  id              String       @id @default(cuid())
+  name            String
+  description     String?
+  capacity        Int
+  duration        Int
+  teacherId       String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  rejectionReason String?
+  status          ClassStatus  @default(PENDING)
+  minStudents     Int          @default(5)   // Business logic: minimum students to run class
+  maxStudents     Int?         // Maximum students (can override capacity)
+  priceAdjustment Float        @default(1.0) // Price multiplier for small classes
+  type            ClassType    @default(OTHER)
+  level           ClassLevel   @default(ALL_LEVELS)
+  teacher         User?        @relation("TeacherClasses", fields: [teacherId], references: [id])
+  enrollments     Enrollment[]
+  sessions        Session[]
+  classImages     ClassImage[]
+  classReviews    ClassReview[]
+  classReactions  ClassReaction[]
+  chatThreads     ChatThread[]
+}
+
+model ChatThread {
+  id              String       @id @default(cuid())
+  type            ChatThreadType
+  classId         String?
+  studentId       String
+  teacherId       String?
+  createdById     String
+  lastMessageAt   DateTime?
+  lastMessagePreview String?
+  deletedByStudentAt DateTime?
+  deletedByStudentId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  class           Class?       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student         User         @relation("ChatStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher         User?        @relation("ChatTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  createdBy       User         @relation("ChatCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  messages        ChatMessage[]
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([classId])
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  threadId   String
+  senderId   String
+  senderRole UserRole
+  content    String
+  deletedByStudentAt DateTime?
+  deletedByStudentId String?
+  deletedByAdminAt   DateTime?
+  deletedByAdminId   String?
+  createdAt  DateTime  @default(now())
+  thread     ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender     User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+}
+
+model ClassImage {
+  id        String   @id @default(cuid())
+  classId   String
+  url       String
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId, order])
+}
+
+model ClassReview {
+  id        String   @id @default(cuid())
+  classId   String
+  studentId String
+  rating    Int
+  comment   String?
+  isHidden  Boolean  @default(false)
+  moderatedBy String?
+  moderatedAt DateTime?
+  moderationReason String?
+  replyText String?
+  repliedAt DateTime?
+  repliedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+  @@index([classId])
+  @@index([classId, isHidden])
+}
+
+model ClassReaction {
+  id        String       @id @default(cuid())
+  classId   String
+  studentId String
+  type      ReactionType
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  class     Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+  @@index([classId, type])
+}
+
+model Room {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  capacity    Int
+  equipment   String?
+  status      RoomStatus @default(AVAILABLE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  sessions    Session[]
+}
+
+model Session {
+  id          String        @id @default(cuid())
+  classId     String
+  startTime   DateTime
+  endTime     DateTime
+  status      SessionStatus @default(UPCOMING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  roomId      String?
+  attendances Attendance[]
+  bookings    Booking[]
+  class       Class         @relation(fields: [classId], references: [id])
+  room        Room?         @relation(fields: [roomId], references: [id])
+}
+
+model Enrollment {
+  id               String            @id @default(cuid())
+  studentId        String
+  userId           String?           // Business logic: link to user
+  classId          String
+  userPackageId    String?           // Business logic: link to user package
+  status           EnrollmentStatus  @default(ACTIVE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  cancelledAt      DateTime?         // Business logic: cancellation tracking
+  refundAmount     Float?            // Business logic: refund amount
+  refundProcessed  Boolean?          @default(false)
+  transferredFrom  String?           // Business logic: transfer tracking
+  // Progress tracking
+  progressNotes    String?           // Teacher notes on student progress
+  lastNoteAt       DateTime?         // Last note timestamp
+  notesUpdatedBy   String?           // Teacher ID who updated notes
+  attendances      Attendance[]
+  class            Class             @relation(fields: [classId], references: [id])
+  student          User              @relation(fields: [studentId], references: [id])
+  user             User?             @relation("UserEnrollments", fields: [userId], references: [id])
+  userPackage      UserPackage?      @relation(fields: [userPackageId], references: [id])
+
+  @@unique([studentId, classId])
+}
+
+model Attendance {
+  id           String           @id @default(cuid())
+  sessionId    String
+  studentId    String
+  enrollmentId String?          // Business logic: link to enrollment
+  status       AttendanceStatus
+  checkedInAt  DateTime         @default(now())
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  session      Session          @relation(fields: [sessionId], references: [id])
+  student      User             @relation(fields: [studentId], references: [id])
+  enrollment   Enrollment?      @relation(fields: [enrollmentId], references: [id])
+
+  @@unique([sessionId, studentId])
+}
+
+model Package {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  credits      Int
+  validDays    Int
+  isActive     Boolean       @default(true)
+  refundRate   Float         @default(0.7)  // Business logic: refund percentage
+  penaltyRate  Float         @default(0.2)  // Business logic: penalty percentage
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userPackages UserPackage[]
+}
+
+model UserPackage {
+  id           String        @id @default(cuid())
+  userId       String
+  packageId    String
+  creditsLeft  Int
+  usedCredits  Int           @default(0)  // Business logic: track used credits
+  status       PackageStatus @default(ACTIVE)
+  purchasedAt  DateTime      @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  enrollments  Enrollment[]  // Business logic: track enrollments
+  bookings     Booking[]
+  transactions Transaction[]
+  package      Package       @relation(fields: [packageId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id            String            @id @default(cuid())
+  userPackageId String?
+  userId        String
+  amount        Float
+  paymentMethod PaymentMethod
+  paymentId     String?
+  status        TransactionStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  user          User              @relation(fields: [userId], references: [id])
+  userPackage   UserPackage?      @relation(fields: [userPackageId], references: [id])
+}
+
+model Booking {
+  id            String       @id @default(cuid())
+  userId        String
+  sessionId     String
+  userPackageId String?
+  creditsUsed   Int          @default(1)
+  createdAt     DateTime     @default(now())
+  session       Session      @relation(fields: [sessionId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+  userPackage   UserPackage? @relation(fields: [userPackageId], references: [id])
+
+  @@unique([userId, sessionId])
+}
+
+model SalaryRecord {
+  id            String    @id @default(cuid())
+  teacherId     String
+  month         Int
+  year          Int
+  totalHours    Float     @default(0)
+  hourlyRate    Float
+  totalAmount   Float
+  status        String    @default("PENDING")
+  paidDate      DateTime?
+  note          String?
+  paidBy        String?
+  paymentMethod String?
+  paymentNote   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  paidByAdmin   User?     @relation("SalaryPaidBy", fields: [paidBy], references: [id])
+  teacher       User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, month, year])
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum SessionStatus {
+  UPCOMING
+  ACTIVE
+  DONE
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum ClassStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ClassType {
+  YOGA
+  CARDIO
+  STRENGTH
+  DANCE
+  PILATES
+  OTHER
+}
+
+enum ClassLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum ReactionType {
+  LIKE
+  DISLIKE
+  LOVE
+  WOW
+}
+
+enum ChatThreadType {
+  SUPPORT
+  CLASS
+}
+
+enum PackageStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ================= FORUM FEATURE MODELS =================
+model ForumPost {
+  id         String        @id @default(cuid())
+  content    String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  authorId   String
+  author     User          @relation("UserForumPosts", fields: [authorId], references: [id])
+  images     ForumMedia[]
+  comments   ForumComment[]
+  reactions  ForumReaction[]
+  isHidden   Boolean       @default(false)
+  reports    Json[]
+}
+
+model ForumComment {
+  id         String        @id @default(cuid())
+  content    String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  authorId   String
+  author     User          @relation("UserForumComments", fields: [authorId], references: [id])
+  postId     String
+  post       ForumPost     @relation(fields: [postId], references: [id])
+  isHidden   Boolean       @default(false)
+  reports    Json[]
+}
+
+model ForumReaction {
+  id         String        @id @default(cuid())
+  type       ReactionType
+  userId     String
+  user       User          @relation("UserForumReactions", fields: [userId], references: [id])
+  postId     String
+  post       ForumPost     @relation(fields: [postId], references: [id])
+  createdAt  DateTime      @default(now())
+  @@unique([userId, postId, type])
+}
+
+model ForumMedia {
+  id         String        @id @default(cuid())
+  url        String
+  order      Int           @default(0)
+  postId     String
+  post       ForumPost     @relation(fields: [postId], references: [id])
+}
+
+enum EnrollmentStatus {
+  ACTIVE // Đang học
+  CANCELLED // Đã hủy
+  TRANSFERRED // Chuyển lớp
+  COMPLETED // Hoàn thành
+  SUSPENDED // Tạm dừng
+}
+
+enum PaymentMethod {
+  PAYPAL
+  MOMO
+  ZALOPAY
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  RESERVED
+}

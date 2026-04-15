@@ -1,0 +1,21 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.import.exclusions": [
+        "**/node_modules/**"
+    ],
+    "files.exclude": {
+        "**/node_modules/**": true
+    },
+    "java.project.sourcePaths": [
+        "fitpass-app/android"
+    ],
+    "java.configuration.workspaceCacheLimit": 90,
+    "files.watcherExclude": {
+        "**/node_modules/**": true
+    },
+    "search.exclude": {
+        "**/node_modules/**": true
+    },
+    "java.import.gradle.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.4.7-hotspot"
+}

@@ -1,0 +1,115 @@
+@startuml Admin_Dashboard_Wireframes
+!theme plain
+title FitPass Admin Dashboard - Wireframes
+
+package "Layout" {
+  component Header {
+    [Logo]
+    [Dashboard]
+    [Profile]
+    [Logout]
+  }
+  
+  component Sidebar {
+    [Dashboard]
+    [Users]
+    [Classes]
+    [Sessions]
+    [Enrollments]
+    [Reports]
+  }
+}
+
+package "Screens" {
+  component MainDashboard {
+    [Welcome Admin]
+    [Stats Row]
+    [Total Users 150]
+    [Active Classes 25]
+    [Sessions Today 12]
+    [Revenue 2500]
+    [Recent Activities]
+    [User registrations]
+    [Class requests]
+    [Quick Actions]
+    [Approve Classes]
+    [View Reports]
+  }
+  
+  component UserManagement {
+    [User Management Title]
+    [Search Bar]
+    [Filter Options]
+    [Add User Button]
+    [Users Table]
+    [User List Items]
+    [Pagination]
+  }
+  
+  component ClassManagement {
+    [Class Management Title]
+    [Search Classes]
+    [Filter Status]
+    [Create Class]
+    [Class Cards]
+    [Class Details]
+    [Approve Reject]
+  }
+  
+  component SessionManagement {
+    [Session Management Title]
+    [Date Picker]
+    [Filters]
+    [Calendar View]
+    [Session Details]
+    [Attendance Info]
+  }
+  
+  component EnrollmentManagement {
+    [Enrollment Title]
+    [Search Students]
+    [Filters]
+    [Enrollment Table]
+    [Student Records]
+    [Actions]
+  }
+  
+  component Reports {
+    [Reports Title]
+    [Date Range]
+    [Generate Report]
+    [Summary Cards]
+    [Charts]
+    [Export Options]
+  }
+}
+
+package "Modals" {
+  component UserModal {
+    [User Photo]
+    [User Info]
+    [Activity Summary]
+    [Edit Button]
+    [Close Button]
+  }
+  
+  component ApprovalModal {
+    [Class Info]
+    [Teacher Details]
+    [Schedule]
+    [Description]
+    [Approve Button]
+    [Reject Button]
+  }
+}
+
+Header --> MainDashboard
+Sidebar --> UserManagement
+Sidebar --> ClassManagement
+Sidebar --> SessionManagement
+Sidebar --> EnrollmentManagement
+Sidebar --> Reports
+UserManagement --> UserModal
+ClassManagement --> ApprovalModal
+
+@enduml

@@ -1,0 +1,64 @@
+@startuml Student_User_Flow
+!theme plain
+title Student User Flow - FitPass Mobile App
+
+start
+
+:Launch Mobile App;
+:Login Screen;
+
+if (Select User Type) then (Student)
+  :Student Dashboard;
+  
+  if (User Action?) then (Browse Classes)
+    :View Available Classes;
+    :Filter by Category/Time;
+    :View Class Details;
+    
+    if (Action?) then (Enroll)
+      :Select Package;
+      :Complete Enrollment;
+      :Payment (if required);
+      note right: Package enrollment\nwith class access
+    else (Book Session)
+      :View Available Sessions;
+      :Book Specific Session;
+      :Confirm Booking;
+    endif
+  else (My Classes)
+    :View My Classes;
+    :Select Upcoming Session;
+  
+  partition "QR Attendance Flow" {
+    :Open QR Scanner;
+    :Scan Teacher's QR Code;
+    note right: QR contains JWT token\nwith session information
+    :Send QR Data to API;
+    
+    if (QR Valid?) then (Yes)
+      :Record Attendance;
+      :Real-time Update via WebSocket;
+      :Show Success Message;
+    else (No)
+      :Show Error Message;
+    endif
+  }
+  endif
+  
+  if (Continue?) then (Profile)
+    :View Personal Profile;
+    :Update Information;
+    :View Progress History;
+    :Check Attendance Records;
+  else (Logout)
+    :Logout;
+  endif
+  
+else (Teacher)
+  :Redirect to Teacher Flow;
+endif
+
+:Logout;
+stop
+
+@enduml

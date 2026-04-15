@@ -1,0 +1,14 @@
+# Ignore other apps when deploying backend
+fitpass-app/
+fitpass-admin/
+
+# Ignore documentation
+SETUP.md
+README.md
+
+# Ignore local files
+backend/.env.example
+backend/.gitignore
+backend/dev.db
+backend/package-lock.json
+backend/prisma/dev.db

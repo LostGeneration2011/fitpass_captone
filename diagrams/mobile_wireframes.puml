@@ -1,0 +1,153 @@
+@startuml Mobile_App_Wireframes
+!theme plain
+title FitPass Mobile App - Wireframes
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor Black
+    FontSize 10
+}
+
+package "Login & Authentication" {
+  rectangle "Login Screen" as login {
+    [Logo]
+    --
+    [Email Input]
+    [Password Input]
+    [Login Button]
+    --
+    [Student] [Teacher]
+    --
+    [Forgot Password?]
+    [Sign Up]
+  }
+}
+
+package "Student Screens" {
+  rectangle "Student Dashboard" as student_dash {
+    [Header: Welcome, Student Name]
+    --
+    [Search Classes]
+    [My Classes (3)]
+    [Upcoming Sessions (2)]
+    --
+    [Browse All Classes]
+    [My Profile]
+    [Attendance History]
+  }
+  
+  rectangle "Browse Classes" as browse {
+    [Search Bar]
+    [Filter: Category, Time, Price]
+    --
+    [Class Card 1: Yoga]
+    [Class Card 2: Gym]
+    [Class Card 3: Swimming]
+    --
+    [View Details] [Enroll Now]
+  }
+  
+  rectangle "Class Details" as class_details {
+    [Class Image]
+    [Class Name: Yoga Basics]
+    [Teacher: John Doe]
+    [Schedule: Mon/Wed/Fri 6PM]
+    [Price: $50/month]
+    --
+    [Description...]
+    [Available Spots: 8/15]
+    --
+    [Enroll Button]
+    [View Sessions]
+  }
+  
+  rectangle "QR Scanner" as qr_scan {
+    [Camera View]
+    [QR Scanning Frame]
+    --
+    [Instructions: Point camera at teacher's QR code]
+    --
+    [Cancel] [Flash Toggle]
+  }
+  
+  rectangle "My Classes" as my_classes {
+    [Active Classes (3)]
+    --
+    [Class 1: Yoga - Next: Today 6PM]
+    [Join Session] [View Details]
+    --
+    [Class 2: Gym - Next: Tomorrow 7AM]
+    [View Schedule]
+    --
+    [Class 3: Swimming - Next: Wed 5PM]
+    [View Progress]
+  }
+}
+
+package "Teacher Screens" {
+  rectangle "Teacher Dashboard" as teacher_dash {
+    [Header: Welcome, Teacher Name]
+    --
+    [My Classes (5)]
+    [Today's Sessions (3)]
+    [Pending Approvals (2)]
+    --
+    [Create New Class]
+    [Start Session]
+    [View Students]
+    [My Profile]
+  }
+  
+  rectangle "Create Class" as create_class {
+    [Class Name Input]
+    [Description TextArea]
+    [Category Dropdown]
+    [Capacity Input]
+    --
+    [Schedule Settings]
+    [Days: Mon/Tue/Wed...]
+    [Time Picker]
+    [Duration Input]
+    --
+    [Submit for Approval]
+    [Save Draft]
+  }
+  
+  rectangle "Session Control" as session_control {
+    [Session: Yoga Class - 6:00 PM]
+    [Status: Active]
+    --
+    [QR Code Display]
+    [Large QR Code Image]
+    --
+    [Students Checked In: 8/15]
+    [Live Student List]
+    --
+    [End Session] [Refresh QR]
+  }
+  
+  rectangle "Student List" as student_list {
+    [Search Students]
+    --
+    [✓ John Smith - 6:05 PM]
+    [✓ Jane Doe - 6:03 PM]
+    [✓ Mike Johnson - 6:01 PM]
+    [○ Sarah Wilson - Not checked in]
+    [○ David Brown - Not checked in]
+    --
+    [Manual Check-in] [Export List]
+  }
+}
+
+' Navigation Flow
+login --> student_dash : Student Login
+login --> teacher_dash : Teacher Login
+student_dash --> browse
+student_dash --> my_classes
+student_dash --> qr_scan
+browse --> class_details
+teacher_dash --> create_class
+teacher_dash --> session_control
+session_control --> student_list
+
+@enduml

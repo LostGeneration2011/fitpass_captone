@@ -1,0 +1,132 @@
+@startuml Authentication_Flow
+!theme plain
+title Authentication Flow - JWT Implementation
+
+participant "Client\n(Mobile/Web)" as client
+participant "Auth Controller" as controller
+participant "Auth Service" as service
+participant "JWT Utility" as jwt
+participant "bcrypt" as bcrypt
+participant "Database\n(Prisma)" as database
+
+== User Registration ==
+
+client -> controller : POST /api/auth/register
+activate controller
+
+controller -> service : register(fullName, email, password, role)
+activate service
+
+service -> database : Check if email exists
+database -> service : Email available
+
+service -> bcrypt : Hash password
+bcrypt -> service : Hashed password
+
+service -> database : Create user record
+database -> service : User created
+
+service -> jwt : Generate JWT token
+jwt -> service : Token created
+
+service -> controller : { user, token }
+controller -> client : 201 Created + { user, token }
+
+deactivate service
+deactivate controller
+
+== User Login ==
+
+client -> controller : POST /api/auth/login\n{ email, password }
+activate controller
+
+controller -> service : login(email, password)
+activate service
+
+service -> database : Find user by email
+database -> service : User data or null
+
+alt User exists
+    service -> bcrypt : Compare password
+    bcrypt -> service : Password valid/invalid
+    
+    alt Password valid
+        alt Email verified
+            service -> jwt : Generate JWT token
+            note right of jwt
+              Token Payload:
+              {
+                id: user.id,
+                userId: user.id,
+                email: user.email, 
+                role: user.role,
+                fullName: user.fullName,
+                exp: 7 days
+              }
+            end note
+            jwt -> service : JWT token
+            service -> controller : { user, token }
+            controller -> client : 200 OK + { user, token }
+        else Email not verified
+            service -> controller : Error: Email not verified
+            controller -> client : 400 Bad Request
+        end
+    else Password invalid
+        service -> controller : Error: Invalid credentials
+        controller -> client : 401 Unauthorized
+    end
+else User not found
+    service -> controller : Error: User not found
+    controller -> client : 401 Unauthorized
+end
+
+deactivate service
+deactivate controller
+
+== Token Validation (Middleware) ==
+
+client -> controller : Any protected endpoint\nHeader: Authorization: Bearer <token>
+activate controller
+
+controller -> jwt : Verify token
+activate jwt
+
+alt Token valid
+    jwt -> jwt : Decode payload
+    jwt -> controller : User payload
+    controller -> controller : Attach user to request
+    controller -> client : Process request normally
+else Token invalid/expired
+    jwt -> controller : Invalid token error
+    controller -> client : 401 Unauthorized
+end
+
+deactivate jwt
+deactivate controller
+
+== Password Reset ==
+
+client -> controller : POST /api/auth/forgot-password
+activate controller
+
+controller -> service : forgotPassword(email)
+activate service
+
+service -> database : Find user by email
+database -> service : User data
+
+alt User exists
+    service -> service : Generate reset token
+    service -> database : Save reset token + expiry
+    service -> service : Send reset email
+    service -> controller : Success message
+    controller -> client : 200 OK
+else User not found
+    service -> controller : Error: User not found  
+    controller -> client : 400 Bad Request
+end
+
+deactivate service
+deactivate controller
+
+@enduml

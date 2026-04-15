@@ -1,0 +1,102 @@
+@startuml Admin_Dashboard_Flow
+!theme plain
+title Admin Dashboard Flow - FitPass Web Application
+
+start
+
+:Access Admin URL;
+:Admin Login (Web);
+:Admin Dashboard;
+
+partition "User Management" {
+  :View All Users;
+  
+  if (User Action?) then (Create)
+    :Create New User Form;
+    :Set Role (Student/Teacher);
+    :Enter User Details;
+    :Generate Initial Password;
+    :Send Welcome Email;
+    :Save User to Database;
+  elseif (Edit) then
+    :Select User;
+    :Update User Information;
+    :Change Role/Permissions;
+    :Save Changes;
+  elseif (Delete) then
+    :Select User;
+    :Confirm Deletion;
+    :Remove User & Dependencies;
+  else (Reset Password)
+    :Select User;
+    :Generate New Password;
+    :Send Reset Email;
+  endif
+}
+
+partition "Class Management" {
+  :View All Classes;
+  :Filter by Status/Teacher;
+  
+  if (Class Action?) then (Review Pending)
+    :View Class Details;
+    :Check Teacher Qualifications;
+    :Review Class Content;
+    
+    if (Decision?) then (Approve)
+      :Approve Class;
+      :Notify Teacher;
+      :Make Class Available;
+    else (Reject)
+      :Reject Class;
+      :Add Rejection Reason;
+      :Notify Teacher;
+    endif
+  elseif (Manage Active) then
+    :Select Class;
+    :Edit Class Details;
+    :Update Pricing;
+    :Save Changes;
+  else (Manage Packages)
+    :Create/Edit Packages;
+    :Set Package Pricing;
+    :Configure Benefits;
+  endif
+}
+
+partition "Session Management" {
+  :View All Sessions;
+  :Monitor Live Sessions;
+  :Check Attendance Rates;
+  :Generate Session Reports;
+}
+
+partition "Analytics & Reports" {
+  :Revenue Dashboard;
+  :User Activity Statistics;
+  :Class Popularity Reports;
+  :Attendance Analytics;
+  :Teacher Performance;
+  :Export Reports (PDF/Excel);
+}
+
+partition "System Configuration" {
+  :Manage System Settings;
+  :Configure Notifications;
+  :Update Pricing Rules;
+  :Manage Email Templates;
+}
+
+:Logout;
+stop
+
+note right
+  **Key Metrics:**
+  - Total Revenue
+  - Active Members  
+  - Class Utilization
+  - Teacher Earnings
+  - Retention Rates
+end note
+
+@enduml
