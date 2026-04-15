@@ -58,8 +58,8 @@ export const login = async (req: Request, res: Response) => {
     // Set JWT as httpOnly cookie, expires in 7 days
     res.cookie('fitpass_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true, // Always secure for cross-domain
+      sameSite: 'none', // Required for cross-site cookie
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
     return res.json({ message: "Login successful", user });
