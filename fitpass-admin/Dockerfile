@@ -14,7 +14,7 @@ RUN npm ci
 
 COPY public ./public
 COPY tsconfig.json ./
-COPY .env.local ./
+## .env.local is not copied in Railway; use Railway dashboard for env variables
 
 # Build
 RUN npm run build
