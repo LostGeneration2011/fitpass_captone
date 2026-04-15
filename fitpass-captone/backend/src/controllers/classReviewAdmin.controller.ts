@@ -54,7 +54,7 @@ export const moderateClassReview = async (req: Request, res: Response) => {
       reviewId,
       isHidden,
       moderationReason,
-      moderatedBy: req.user?.id,
+      moderatedBy: (req.user as Express.UserPayload | undefined)?.id ?? '',
     });
 
     return res.json({ message: 'Review updated', review: updated });

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function reportPost(req: Request, res: Response) {
   const { id } = req.params;
   const { reason, detail } = req.body;
-  const userId = req.user?.id;
+  const userId = (req.user as Express.UserPayload | undefined)?.id;
   if (!userId || !reason) return res.status(400).json({ error: 'Missing data' });
   await prisma.forumPost.update({
     where: { id },
@@ -23,7 +23,7 @@ export async function reportPost(req: Request, res: Response) {
 export async function reportComment(req: Request, res: Response) {
   const { id } = req.params;
   const { reason, detail } = req.body;
-  const userId = req.user?.id;
+  const userId = (req.user as Express.UserPayload | undefined)?.id;
   if (!userId || !reason) return res.status(400).json({ error: 'Missing data' });
   await prisma.forumComment.update({
     where: { id },
@@ -38,7 +38,7 @@ export async function reportComment(req: Request, res: Response) {
 export async function hidePost(req: Request, res: Response) {
   const { id } = req.params;
   const { hide } = req.body;
-  const user = req.user;
+  const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
   await prisma.forumPost.update({ where: { id }, data: { isHidden: !!hide } });
   res.json({ success: true });
@@ -48,7 +48,7 @@ export async function hidePost(req: Request, res: Response) {
 export async function hideComment(req: Request, res: Response) {
   const { id } = req.params;
   const { hide } = req.body;
-  const user = req.user;
+  const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
   await prisma.forumComment.update({ where: { id }, data: { isHidden: !!hide } });
   res.json({ success: true });

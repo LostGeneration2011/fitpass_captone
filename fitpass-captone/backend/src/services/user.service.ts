@@ -85,14 +85,22 @@ export class UserService {
       if (data.avatar === null || data.avatar === '') {
         updateData.avatar = null;
       } else {
-        const base64String = data.avatar.includes(',') ? data.avatar.split(',')[1] : data.avatar;
+        let base64String = '';
+        const avatarStr = typeof data.avatar === 'string' ? data.avatar : '';
+        if (avatarStr.includes(',')) {
+          const parts = avatarStr.split(',');
+          base64String = typeof parts[1] === 'string' ? parts[1] : '';
+        } else {
+          base64String = avatarStr;
+        }
+        // Đảm bảo base64String luôn là string
         const byteLength = Buffer.byteLength(base64String, 'base64');
         const maxBytes = 5 * 1024 * 1024; // 5MB limit
         if (byteLength > maxBytes) {
           throw new Error('Avatar file is too large (max 5MB)');
         }
 
-        const isValidMime = data.avatar.startsWith('data:image/png') || data.avatar.startsWith('data:image/jpeg') || data.avatar.startsWith('data:image/jpg');
+        const isValidMime = typeof data.avatar === 'string' && (data.avatar.startsWith('data:image/png') || data.avatar.startsWith('data:image/jpeg') || data.avatar.startsWith('data:image/jpg'));
         if (!isValidMime) {
           throw new Error('Avatar must be a PNG or JPG image');
         }

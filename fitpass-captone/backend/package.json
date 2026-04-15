@@ -15,7 +15,8 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "seed": "ts-node prisma/seed.ts",
-    "db:seed": "npm run prisma:push && npm run seed"
+    "db:seed": "npm run prisma:push && npm run seed",
+    "check-all": "sh ./check-all.sh"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
@@ -35,7 +36,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.11",
+    "nodemailer": "^8.0.5",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "prisma": "^5.19.1",
@@ -48,6 +49,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/morgan": "^1.9.7",
+    "@types/multer": "^2.1.0",
     "@types/node": "^20.11.24",
     "@vercel/node": "^4.0.0",
     "ts-node": "^10.9.2",
