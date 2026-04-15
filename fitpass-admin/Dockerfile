@@ -9,12 +9,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY next.config.mjs ./
 
+
 # Install deps
 RUN npm ci
 
-COPY public ./public
-COPY tsconfig.json ./
-## .env.local is not copied in Railway; use Railway dashboard for env variables
+# Copy all source code for Next.js build
+COPY . .
 
 # Build
 RUN npm run build
