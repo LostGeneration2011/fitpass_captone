@@ -52,9 +52,7 @@ api.interceptors.request.use(
         baseURL: config.baseURL
       });
     }
-    // Add ngrok headers to bypass browser warning
-    config.headers['ngrok-skip-browser-warning'] = 'true';
-    // Force HTTPS for ngrok URLs
+    // Force HTTPS for ngrok URLs (dev only)
     if (config.baseURL?.includes('ngrok')) {
       config.headers['X-Forwarded-Proto'] = 'https';
     }
