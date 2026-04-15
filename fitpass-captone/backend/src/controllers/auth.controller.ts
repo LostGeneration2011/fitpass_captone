@@ -55,7 +55,14 @@ export const login = async (req: Request, res: Response) => {
     console.log('Login attempt for:', email);
     const { user, token } = await authService.login(email, password);
     console.log('Login successful for:', email);
-    return res.json({ message: "Login successful", token, user });
+    // Set JWT as httpOnly cookie, expires in 7 days
+    res.cookie('fitpass_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+    return res.json({ message: "Login successful", user });
   } catch (err: any) {
     console.error('Login error:', err.message);
     return res.status(400).json({ error: err.message });

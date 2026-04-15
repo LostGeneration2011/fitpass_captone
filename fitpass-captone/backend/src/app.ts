@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
@@ -28,6 +29,8 @@ import { errorHandler } from './middlewares/errorHandler';
 import { healthCheck } from './controllers/health.controller';
 
 const app = express();
+// Cookie parser for httpOnly cookies
+app.use(cookieParser());
 
 // Initialize Passport
 app.use(passport.initialize());

@@ -8,10 +8,15 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
+
+  // Ưu tiên lấy token từ header, nếu không có thì lấy từ cookie
+  let token: string | undefined;
   const authHeader = req.headers['authorization'];
-  const token = authHeader?.startsWith('Bearer ')
-    ? authHeader.slice(7)
-    : undefined;
+  if (authHeader?.startsWith('Bearer ')) {
+    token = authHeader.slice(7);
+  } else if (req.cookies && req.cookies.fitpass_token) {
+    token = req.cookies.fitpass_token;
+  }
 
   console.log('🔐 Auth middleware - authHeader:', authHeader);
   console.log('🔐 Auth middleware - token:', token ? `${token.substring(0, 10)}...` : 'no token');

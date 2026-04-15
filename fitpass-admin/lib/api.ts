@@ -42,40 +42,30 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Gửi cookie httpOnly lên backend
 });
 
 console.log('🔧 API BASE URL:', API_BASE_URL);
 
-// Request interceptor to add auth token
+// Request interceptor chỉ thêm header phụ trợ, KHÔNG thêm token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('fitpass_admin_token');
     if (process.env.NODE_ENV !== 'production') {
       console.log('🔑 Admin API Request:', {
         url: config.url,
         method: config.method?.toUpperCase(),
-        hasToken: !!token,
         baseURL: config.baseURL
       });
     }
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
     // Add ngrok headers to bypass browser warning
     config.headers['ngrok-skip-browser-warning'] = 'true';
-    
     // Force HTTPS for ngrok URLs
     if (config.baseURL?.includes('ngrok')) {
       config.headers['X-Forwarded-Proto'] = 'https';
     }
-    
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle auth errors
@@ -83,51 +73,26 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.warn('🔑 Unauthorized request, clearing auth and redirecting...');
-      localStorage.removeItem('fitpass_admin_token');
-      localStorage.removeItem('fitpass_admin_user');
+      console.warn('🔑 Unauthorized request, redirecting to login...');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-// Helper function to check if token is expired
-function isTokenExpired(token: string): boolean {
-  if (!token) return true;
-  
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const currentTime = Math.floor(Date.now() / 1000);
-    return payload.exp && payload.exp < currentTime;
-  } catch {
-    return true; // If can't decode, consider it expired
-  }
-}
+
 
 // API helper functions
 export async function apiGet(url: string, config?: RequestConfigWithOptions): Promise<any> {
   if (process.env.NODE_ENV !== 'production') {
     console.log('🔥 GETTING FROM:', API_BASE_URL + url);
   }
-  
-  // Check token before making request
-  const token = localStorage.getItem('fitpass_admin_token');
-  if (token && isTokenExpired(token)) {
-    console.warn('🔑 Token expired before request, redirecting to login...');
-    localStorage.clear();
-    window.location.href = '/login';
-    return Promise.reject(new Error('Token expired'));
-  }
-  
   try {
     // Add cache busting for fresh data
     const separator = url.includes('?') ? '&' : '?';
     const urlWithCache = `${url}${separator}_t=${Date.now()}`;
-
     const { suppressErrorLog, ...axiosConfig } = config || {};
     const response: AxiosResponse = await api.get(urlWithCache, axiosConfig);
-    
     return response.data;
   } catch (error: any) {
     if (!config?.suppressErrorLog) {
@@ -141,18 +106,6 @@ export async function apiPost(url: string, data: any, config?: AxiosRequestConfi
   if (process.env.NODE_ENV !== 'production') {
     console.log('🔥 POSTING TO:', API_BASE_URL + url);
   }
-  
-  // Check token before making request (except for login)
-  if (!url.includes('/auth/login')) {
-    const token = localStorage.getItem('fitpass_admin_token');
-    if (token && isTokenExpired(token)) {
-      console.warn('🔑 Token expired before request, redirecting to login...');
-      localStorage.clear();
-      window.location.href = '/login';
-      return Promise.reject(new Error('Token expired'));
-    }
-  }
-
   try {
     const response: AxiosResponse = await api.post(url, data, config);
     return response.data;
@@ -166,15 +119,6 @@ export async function apiPut(url: string, data: any, config?: AxiosRequestConfig
   if (process.env.NODE_ENV !== 'production') {
     console.log('🔥 PUTTING TO:', API_BASE_URL + url);
   }
-  
-  const token = localStorage.getItem('fitpass_admin_token');
-  if (token && isTokenExpired(token)) {
-    console.warn('🔑 Token expired before request, redirecting to login...');
-    localStorage.clear();
-    window.location.href = '/login';
-    return Promise.reject(new Error('Token expired'));
-  }
-
   try {
     const response: AxiosResponse = await api.put(url, data, config);
     return response.data;
@@ -186,15 +130,6 @@ export async function apiPut(url: string, data: any, config?: AxiosRequestConfig
 
 export async function apiDelete(url: string, config?: AxiosRequestConfig): Promise<any> {
   console.log('🔥 DELETING FROM:', API_BASE_URL + url);
-  
-  const token = localStorage.getItem('fitpass_admin_token');
-  if (token && isTokenExpired(token)) {
-    console.warn('🔑 Token expired before request, redirecting to login...');
-    localStorage.clear();
-    window.location.href = '/login';
-    return Promise.reject(new Error('Token expired'));
-  }
-
   try {
     const response: AxiosResponse = await api.delete(url, config);
     return response.data;
@@ -206,15 +141,6 @@ export async function apiDelete(url: string, config?: AxiosRequestConfig): Promi
 
 export async function apiPatch(url: string, data: any, config?: AxiosRequestConfig): Promise<any> {
   console.log('🔥 PATCHING TO:', API_BASE_URL + url);
-  
-  const token = localStorage.getItem('fitpass_admin_token');
-  if (token && isTokenExpired(token)) {
-    console.warn('🔑 Token expired before request, redirecting to login...');
-    localStorage.clear();
-    window.location.href = '/login';
-    return Promise.reject(new Error('Token expired'));
-  }
-
   try {
     const response: AxiosResponse = await api.patch(url, data, config);
     return response.data;
