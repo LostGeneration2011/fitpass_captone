@@ -4,9 +4,11 @@ import {
   getPackageById, 
   createPackage, 
   updatePackage, 
-  deletePackage 
+  deletePackage, 
+  getAllPackagesForAdmin
 } from '../controllers/package.controller';
 import { adminOnly } from '../middlewares/rbac';
+import { authMiddleware } from '../middlewares/auth';
 
 const router = express.Router();
 
@@ -21,6 +23,6 @@ router.put('/:id', adminOnly(), updatePackage);
 router.delete('/:id', adminOnly(), deletePackage);
 
 // Admin: lấy tất cả gói tập (kể cả không active)
-router.get('/admin/all', adminOnly(), getAllPackagesForAdmin);
+router.get('/admin/all', authMiddleware, adminOnly(), getAllPackagesForAdmin);
 
 export default router;
