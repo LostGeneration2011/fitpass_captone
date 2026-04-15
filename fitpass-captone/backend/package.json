@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && prisma generate",
-    "start": "node dist/server.js",
+    "start": "prisma migrate deploy && node dist/server.js",
     "vercel-build": "npm run build",
     "db:switch": "node scripts/switch-db.js",
     "db:local": "npm run db:switch local && npm run prisma:push",
