@@ -4,6 +4,8 @@ type RequestConfigWithOptions = AxiosRequestConfig & {
   suppressErrorLog?: boolean;
 };
 
+const ADMIN_TOKEN_KEY = 'fitpass_admin_token';
+
 const LOCAL_API_BASE_URL = 'http://localhost:3001/api';
 const DEFAULT_REMOTE_API_BASE_URL = 'https://fortunate-wholeness-production.up.railway.app/api';
 
@@ -45,6 +47,12 @@ console.log('🔧 API BASE URL:', API_BASE_URL);
 // Request interceptor chỉ thêm header phụ trợ, KHÔNG thêm token
 api.interceptors.request.use(
   (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
     if (process.env.NODE_ENV !== 'production') {
       console.log('🔑 Admin API Request:', {
         url: config.url,
@@ -69,6 +77,7 @@ api.interceptors.response.use(
       console.warn('🔑 Unauthorized request, clearing session and redirecting to login...');
       if (typeof window !== 'undefined') {
         // Clear stale user data to break any potential redirect loop
+        localStorage.removeItem(ADMIN_TOKEN_KEY);
         localStorage.removeItem('fitpass_admin_user');
         // Only redirect if not already on the login page
         if (window.location.pathname !== '/login') {

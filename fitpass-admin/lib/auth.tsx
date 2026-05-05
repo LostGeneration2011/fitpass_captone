@@ -23,6 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const USER_KEY = 'fitpass_admin_user';
+const TOKEN_KEY = 'fitpass_admin_token';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -31,9 +32,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Không còn kiểm tra token, chỉ lấy user nếu đã lưu
+    const token = getToken();
     const userData = localStorage.getItem(USER_KEY);
-    if (userData) {
+    if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
         if (parsedUser.role === 'ADMIN') {
@@ -44,6 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {
         setUser(null);
       }
+    } else {
+      removeToken();
+      localStorage.removeItem(USER_KEY);
     }
     setIsLoading(false);
   }, []);
@@ -71,11 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await apiPost('/auth/login', { email, password });
-      if (response.user) {
+      if (response.user && response.token) {
         if (response.user.role !== 'ADMIN') {
           return { success: false, error: 'Access denied. Admin access only.' };
         }
-        // Chỉ lưu user vào state (nếu muốn lưu lại user sau reload thì giữ lại dòng dưới)
+        localStorage.setItem(TOKEN_KEY, response.token);
         localStorage.setItem(USER_KEY, JSON.stringify(response.user));
         setUser(response.user);
         return { success: true };
@@ -90,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    removeToken();
     localStorage.removeItem(USER_KEY);
     setUser(null);
     router.push('/login');
@@ -128,14 +133,17 @@ export function redirectIfNotLoggedIn() {
 export function forceLogout() {
   removeToken();
   if (typeof window !== 'undefined') {
+    localStorage.removeItem(USER_KEY);
     window.location.href = '/login';
   }
 }
 function getToken() {
-  throw new Error('Function not implemented.');
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 function removeToken() {
-  throw new Error('Function not implemented.');
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(TOKEN_KEY);
 }
 
