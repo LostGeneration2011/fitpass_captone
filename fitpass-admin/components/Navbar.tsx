@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bars3Icon, BellIcon, SunIcon, MoonIcon, ArrowRightOnRectangleIcon, Cog6ToothIcon, UserCircleIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth';
-import { apiPatch, apiGet } from '@/lib/api';
+import { apiPatch, apiGet, API_BASE_URL } from '@/lib/api';
+import { io } from 'socket.io-client';
 import Link from 'next/link';
 
 interface NavbarProps {
@@ -28,8 +29,9 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
   const modalRef = useRef<HTMLDivElement>(null);
 
   const extractUnreadCount = (payload: any) => {
-    if (typeof payload?.data?.unreadCount === 'number') return payload.data.unreadCount;
     if (typeof payload?.unreadCount === 'number') return payload.unreadCount;
+    if (typeof payload?.data?.unreadCount === 'number') return payload.data.unreadCount;
+    if (typeof payload?.count === 'number') return payload.count;
     return 0;
   };
 
@@ -68,10 +70,23 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
     window.addEventListener('notifications:unread-changed', handleUnreadChanged as EventListener);
     window.addEventListener('focus', loadUnreadCount);
 
+    // Real-time badge via Socket.IO
+    const adminToken = typeof window !== 'undefined' ? localStorage.getItem('fitpass_admin_token') : null;
+    const wsBaseUrl = API_BASE_URL.replace(/\/api$/, '');
+    const socket = io(wsBaseUrl + '/ws', {
+      auth: { token: adminToken },
+      transports: ['websocket'],
+      reconnectionAttempts: 3,
+    });
+    socket.on('notification', () => {
+      setUnreadNotifications((prev) => prev + 1);
+    });
+
     return () => {
       clearInterval(pollingInterval);
       window.removeEventListener('notifications:unread-changed', handleUnreadChanged as EventListener);
       window.removeEventListener('focus', loadUnreadCount);
+      socket.disconnect();
     };
   }, []);
 

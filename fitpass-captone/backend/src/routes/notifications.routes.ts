@@ -11,7 +11,7 @@ router.get('/unread/count', authMiddleware, async (req: any, res) => {
   try {
     const userId = req.user?.id;
     const count = await prisma.notification.count({ where: { userId, isRead: false } });
-    res.json({ count });
+    res.json({ unreadCount: count });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching notification count' });
   }

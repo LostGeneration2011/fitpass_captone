@@ -16,6 +16,7 @@ import StudentContactStack from './contact-stack';
 import StudentForumScreen from './forum';
 import { useTheme } from '../../lib/theme';
 import { notificationAPI } from '../../lib/api';
+import { getSocket } from '../../lib/socketio';
 
 const Tab = createBottomTabNavigator();
 
@@ -44,10 +45,12 @@ export default function StudentTabNavigator() {
     try {
       const response = await notificationAPI.getUnreadCount();
       const unreadCount =
-        typeof response?.data?.unreadCount === 'number'
-          ? response.data.unreadCount
-          : typeof response?.unreadCount === 'number'
+        typeof response?.unreadCount === 'number'
           ? response.unreadCount
+          : typeof response?.data?.unreadCount === 'number'
+          ? response.data.unreadCount
+          : typeof response?.count === 'number'
+          ? response.count
           : 0;
 
       setUnreadNotifications(unreadCount);
@@ -59,7 +62,18 @@ export default function StudentTabNavigator() {
   useEffect(() => {
     loadUnreadCount();
     const interval = setInterval(loadUnreadCount, 30000);
-    return () => clearInterval(interval);
+
+    // Real-time badge via Socket.IO
+    const socket = getSocket();
+    const handleNotification = () => {
+      setUnreadNotifications((prev) => prev + 1);
+    };
+    if (socket) socket.on('notification', handleNotification);
+
+    return () => {
+      clearInterval(interval);
+      if (socket) socket.off('notification', handleNotification);
+    };
   }, [loadUnreadCount]);
 
   useFocusEffect(
@@ -67,8 +81,6 @@ export default function StudentTabNavigator() {
       loadUnreadCount();
     }, [loadUnreadCount])
   );
-
-
 
   const getTabLabel = (routeName: string) => {
     const fullLabels: Record<string, string> = {

@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { notificationAPI } from '../lib/api';
 import { useTheme } from '../lib/theme';
 
@@ -36,10 +37,12 @@ const NOTIFICATION_TYPE_CONFIG: Record<string, { color: string; icon: string; la
   REFUND_PROCESSED: { color: '#10b981', icon: '↩️', label: 'Hoàn tiền' },
   ADMIN_ALERT: { color: '#ef4444', icon: '⚠️', label: 'Cảnh báo' },
   GENERAL_NOTICE: { color: '#6b7280', icon: '📢', label: 'Thông báo chung' },
+  CHAT: { color: '#3b82f6', icon: '💬', label: 'Tin nhắn mới' },
 };
 
 export default function NotificationsScreen() {
   const { colors, isDark } = useTheme();
+  const navigation = useNavigation<any>();
   const backgroundColor = colors.bg.primary;
   const primaryColor = colors.button.primary;
   const primaryTextColor = colors.text.primary;
@@ -60,7 +63,13 @@ export default function NotificationsScreen() {
 
       const normalizedNotifs = Array.isArray(notifs) ? notifs : notifs.data || [];
       setNotifications(normalizedNotifs);
-      setUnreadCount(unreadData?.data?.unreadCount || 0);
+      setUnreadCount(
+        typeof unreadData?.unreadCount === 'number'
+          ? unreadData.unreadCount
+          : typeof unreadData?.data?.unreadCount === 'number'
+          ? unreadData.data.unreadCount
+          : 0
+      );
     } catch (error) {
       console.error('Failed to load notifications:', error);
     } finally {
@@ -137,12 +146,22 @@ export default function NotificationsScreen() {
     });
   };
 
+  const handleNotificationPress = (item: Notification) => {
+    if (!item.isRead) handleMarkAsRead(item.id);
+    if (item.type === 'CHAT' && item.data?.threadId) {
+      navigation.navigate('Contact', {
+        screen: 'ChatThread',
+        params: { threadId: item.data.threadId, title: item.data.threadTitle || 'Chat' },
+      });
+    }
+  };
+
   const renderNotification = ({ item }: { item: Notification }) => {
     const config = NOTIFICATION_TYPE_CONFIG[item.type] || NOTIFICATION_TYPE_CONFIG.GENERAL_NOTICE;
 
     return (
       <TouchableOpacity
-        onPress={() => !item.isRead && handleMarkAsRead(item.id)}
+        onPress={() => handleNotificationPress(item)}
         style={[
           styles.notificationItem,
           {

@@ -34,6 +34,7 @@ const NOTIFICATION_TYPES = {
   REFUND_PROCESSED: { label: 'Hoàn tiền', color: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' },
   ADMIN_ALERT: { label: 'Cảnh báo', color: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200' },
   GENERAL_NOTICE: { label: 'Thông báo chung', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' },
+  CHAT: { label: 'Tin nhắn mới', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' },
 };
 
 export default function NotificationsPage() {

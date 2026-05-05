@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { ClassService } from "../services/class.service";
+import { PrismaClient } from "@prisma/client";
 
 const classService = new ClassService();
+const prisma = new PrismaClient();
 
 export const createClass = async (req: Request, res: Response) => {
   try {
@@ -77,6 +79,21 @@ export const approveClass = async (req: Request, res: Response) => {
     }
     
     const approved = await classService.approveClass(id);
+
+    // Notify teacher
+    if (approved.teacherId) {
+      await prisma.notification.create({
+        data: {
+          userId: approved.teacherId,
+          title: 'Lớp học được phê duyệt',
+          body: `Lớp "${approved.name}" đã được admin phê duyệt.`,
+          type: 'CLASS_APPROVED',
+        },
+      });
+      const io = (global as any).io;
+      if (io) io.to(`user_${approved.teacherId}`).emit('notification', { type: 'CLASS_APPROVED' });
+    }
+
     return res.json({ message: "Class approved successfully", class: approved });
   } catch (err: any) {
     return res.status(400).json({ error: err.message });
@@ -94,6 +111,21 @@ export const rejectClass = async (req: Request, res: Response) => {
     }
     
     const rejected = await classService.rejectClass(id, rejectionReason);
+
+    // Notify teacher
+    if (rejected.teacherId) {
+      await prisma.notification.create({
+        data: {
+          userId: rejected.teacherId,
+          title: 'Lớp học bị từ chối',
+          body: `Lớp "${rejected.name}" đã bị từ chối${rejectionReason ? ': ' + rejectionReason : '.'} `,
+          type: 'CLASS_REJECTED',
+        },
+      });
+      const io = (global as any).io;
+      if (io) io.to(`user_${rejected.teacherId}`).emit('notification', { type: 'CLASS_REJECTED' });
+    }
+
     return res.json({ message: "Class rejected", class: rejected });
   } catch (err: any) {
     return res.status(400).json({ error: err.message });
