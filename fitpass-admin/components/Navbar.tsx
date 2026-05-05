@@ -24,6 +24,7 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
   const [profileError, setProfileError] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadChat, setUnreadChat] = useState(0);
   const hasShownUnreadNetworkWarning = useRef(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -70,16 +71,23 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
     window.addEventListener('notifications:unread-changed', handleUnreadChanged as EventListener);
     window.addEventListener('focus', loadUnreadCount);
 
-    // Real-time badge via Socket.IO
+    // Real-time badge via Socket.IO — connect to root namespace (not /ws)
     const adminToken = typeof window !== 'undefined' ? localStorage.getItem('fitpass_admin_token') : null;
     const wsBaseUrl = API_BASE_URL.replace(/\/api$/, '');
-    const socket = io(wsBaseUrl + '/ws', {
+    const socket = io(wsBaseUrl, {
       auth: { token: adminToken },
       transports: ['websocket'],
-      reconnectionAttempts: 3,
+      reconnectionAttempts: 5,
     });
     socket.on('notification', () => {
       setUnreadNotifications((prev) => prev + 1);
+    });
+    socket.on('chat.message', () => {
+      // Dispatch event for Sidebar badge; ignore if already on /chat
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/chat')) {
+        setUnreadChat((prev) => prev + 1);
+        window.dispatchEvent(new CustomEvent('chat:unread-changed'));
+      }
     });
 
     return () => {

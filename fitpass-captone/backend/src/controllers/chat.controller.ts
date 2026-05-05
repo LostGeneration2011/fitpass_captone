@@ -149,42 +149,6 @@ export const sendMessage = async (req: Request, res: Response) => {
       io.to('role_admin').emit('chat.message', { threadId, message });
     }
 
-    // Create in-app notification for recipients
-    try {
-      const thread = await prisma.chatThread.findUnique({ where: { id: threadId } });
-      if (thread && io) {
-        const senderName = (user as any).fullName || 'NgÆ°á»i dĂ¹ng';
-        const preview = content?.trim()
-          ? content.trim().slice(0, 80)
-          : attachments?.length
-            ? '[Tá»‡p Ä‘Ă­nh kĂ¨m]'
-            : '';
-        const notifPayload = { type: 'CHAT', title: `Tin nháº¯n tá»« ${senderName}`, body: preview, data: { threadId } };
-
-        if (user.role !== 'ADMIN') {
-          // Notify all admins
-          const admins = await prisma.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } });
-          await prisma.notification.createMany({
-            data: admins.map((a) => ({ userId: a.id, ...notifPayload, type: 'CHAT' })),
-            skipDuplicates: true,
-          });
-          io.to('role_admin').emit('notification', notifPayload);
-        } else {
-          // Admin sends â†’ notify student (and teacher if present)
-          const recipients = [thread.studentId, thread.teacherId].filter(Boolean) as string[];
-          if (recipients.length > 0) {
-            await prisma.notification.createMany({
-              data: recipients.map((uid) => ({ userId: uid, ...notifPayload, type: 'CHAT' })),
-              skipDuplicates: true,
-            });
-            recipients.forEach((uid) => io.to(`user_${uid}`).emit('notification', notifPayload));
-          }
-        }
-      }
-    } catch {
-      // Notification failure should not break message delivery
-    }
-
     return res.status(201).json(message);
   } catch (err: any) {
     const status = err.status || 400;

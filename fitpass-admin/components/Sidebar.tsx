@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { forceLogout } from '@/lib/auth';
 import {
   HomeIcon,
@@ -52,6 +53,18 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
+  const [unreadChat, setUnreadChat] = useState(0);
+
+  useEffect(() => {
+    const handleChatUnread = () => setUnreadChat((prev) => prev + 1);
+    window.addEventListener('chat:unread-changed', handleChatUnread);
+    return () => window.removeEventListener('chat:unread-changed', handleChatUnread);
+  }, []);
+
+  // Clear badge when navigating to chat
+  useEffect(() => {
+    if (pathname.startsWith('/chat')) setUnreadChat(0);
+  }, [pathname]);
 
   return (
     <>
@@ -104,7 +117,12 @@ export default function Sidebar({ isOpen = false, toggleSidebar }: SidebarProps)
                   }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
-                  <span>{item.name}</span>
+                  <span className="flex-1">{item.name}</span>
+                  {item.href === '/chat' && unreadChat > 0 && (
+                    <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
+                      {unreadChat > 99 ? '99+' : unreadChat}
+                    </span>
+                  )}
                 </Link>
               );
             })}
