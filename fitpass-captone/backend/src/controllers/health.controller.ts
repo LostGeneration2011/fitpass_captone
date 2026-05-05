@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { NetworkUtils } from '../utils/network.util';
+import { prisma } from '../config/prisma';
 
 export const healthCheck = async (req: Request, res: Response) => {
   try {
@@ -11,11 +12,10 @@ export const healthCheck = async (req: Request, res: Response) => {
     const localIP = NetworkUtils.getLocalIPAddress();
     const requestIP = NetworkUtils.getRequestIP(req);
     
-    // Database connectivity check (add your database ping here)
+    // Database connectivity check
     let databaseStatus = 'connected';
     try {
-      // TODO: Add actual database ping
-      // await prisma.$queryRaw`SELECT 1`;
+      await prisma.$queryRaw`SELECT 1`;
     } catch (error) {
       databaseStatus = 'disconnected';
     }

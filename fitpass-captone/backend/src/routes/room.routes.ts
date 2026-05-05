@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireRole } from '../middlewares/requireRole';
+import { adminOnly, teacherOrAdmin } from '../middlewares/rbac';
 import {
   createRoom,
   getRooms,
@@ -20,11 +20,11 @@ router.get('/schedule', getRoomSchedule);
 router.get('/:id', getRoomById);
 
 // Admin-only routes
-router.post('/', requireRole(['ADMIN']), createRoom);
-router.put('/:id', requireRole(['ADMIN']), updateRoom);
-router.delete('/:id', requireRole(['ADMIN']), deleteRoom);
+router.post('/', adminOnly(), createRoom);
+router.put('/:id', adminOnly(), updateRoom);
+router.delete('/:id', adminOnly(), deleteRoom);
 
 // Room availability check (useful for session scheduling)
-router.post('/check-availability', requireRole(['ADMIN', 'TEACHER']), checkRoomAvailability);
+router.post('/check-availability', teacherOrAdmin(), checkRoomAvailability);
 
 export default router;

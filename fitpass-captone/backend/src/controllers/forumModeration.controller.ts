@@ -110,3 +110,60 @@ export async function getAllPostsForAdmin(req: Request, res: Response) {
     res.status(500).json({ success: false, message: 'Lỗi server khi lấy danh sách bài viết forum' });
   }
 }
+
+// Unhide a forum post (admin only)
+export async function unhidePost(req: Request, res: Response) {
+  const { id } = req.params;
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+  await prisma.forumPost.update({ where: { id }, data: { isHidden: false } });
+  res.json({ success: true });
+}
+
+// Unhide a forum comment (admin only)
+export async function unhideComment(req: Request, res: Response) {
+  const { id } = req.params;
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+  await prisma.forumComment.update({ where: { id }, data: { isHidden: false } });
+  res.json({ success: true });
+}
+
+// Review a report (admin only) — action: 'hide' | 'unhide' | 'dismiss'
+export async function reviewReport(req: Request, res: Response) {
+  const { id } = req.params;
+  const { action, contentType, reviewNote } = req.body;
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+  try {
+    if (!action || !contentType) {
+      return res.status(400).json({ error: 'action and contentType are required' });
+    }
+
+    if (contentType === 'post') {
+      if (action === 'hide') {
+        await prisma.forumPost.update({ where: { id }, data: { isHidden: true } });
+      } else if (action === 'unhide') {
+        await prisma.forumPost.update({ where: { id }, data: { isHidden: false } });
+      } else if (action === 'dismiss') {
+        await prisma.forumPost.update({ where: { id }, data: { reports: [] } });
+      }
+    } else if (contentType === 'comment') {
+      if (action === 'hide') {
+        await prisma.forumComment.update({ where: { id }, data: { isHidden: true } });
+      } else if (action === 'unhide') {
+        await prisma.forumComment.update({ where: { id }, data: { isHidden: false } });
+      } else if (action === 'dismiss') {
+        await prisma.forumComment.update({ where: { id }, data: { reports: [] } });
+      }
+    } else {
+      return res.status(400).json({ error: 'contentType must be post or comment' });
+    }
+
+    res.json({ success: true, action, reviewNote });
+  } catch (error) {
+    console.error('Review report error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}

@@ -13,7 +13,7 @@ import Toast from 'react-native-toast-message';
 import { chatAPI } from '../../lib/api';
 import { useThemeClasses } from '../../lib/theme';
 import { useFocusEffect } from '@react-navigation/native';
-import { addWebSocketMessageListener } from '../../lib/websocket';
+
 import { getUser } from '../../lib/auth';
 
 export default function TeacherContactScreen({ navigation }: any) {
@@ -60,41 +60,9 @@ export default function TeacherContactScreen({ navigation }: any) {
     useCallback(() => {
       loadThreads();
 
-      const removeListener = addWebSocketMessageListener((data) => {
-        if (data.type !== 'chat.message' || !data.threadId) return;
-
-        setThreads((prev) => {
-          const index = prev.findIndex((thread) => thread.id === data.threadId);
-          if (index === -1) {
-            loadThreads();
-            return prev;
-          }
-
-          const nextThread = {
-            ...prev[index],
-            lastMessageAt: data.message?.createdAt || new Date().toISOString(),
-            lastMessagePreview: data.message?.content || prev[index].lastMessagePreview,
-          };
-
-          const next = [...prev];
-          next.splice(index, 1);
-          next.unshift(nextThread);
-          return next;
-        });
-
-        if (data.message?.senderId && data.message.senderId === currentUserIdRef.current) {
-          return;
-        }
-
-        setUnreadByThread((prev) => ({
-          ...prev,
-          [data.threadId]: (prev[data.threadId] || 0) + 1,
-        }));
-      });
-
-      return () => {
-        removeListener();
-      };
+      // Real-time logic migrated to socket.io-client. Xóa WebSocket thuần.
+      // Nếu cần, hãy dùng fitpass-app/lib/socketio.ts
+      return undefined;
     }, [])
   );
 

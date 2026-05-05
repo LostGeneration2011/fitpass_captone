@@ -1,14 +1,15 @@
-## Force commit for GitHub sync test - Anh Dinh
-## Test commit for Railway/Git sync
 # Build stage
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Allow NEXT_PUBLIC_API_URL to be baked in at build time (required for Next.js client bundles)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Copy package files
 COPY package*.json ./
 COPY next.config.mjs ./
-
 
 # Install deps
 RUN npm ci
@@ -38,7 +39,7 @@ RUN npm ci --only=production && npm cache clean --force
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
-## Create non-root user
+# Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
 USER nodejs

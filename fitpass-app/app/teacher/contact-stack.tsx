@@ -7,7 +7,7 @@ const Stack = createStackNavigator();
 
 export default function TeacherContactStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator id="teacher-contact-stack" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ContactList" component={TeacherContactScreen} />
       <Stack.Screen name="ChatThread" component={TeacherChatThreadScreen} />
     </Stack.Navigator>

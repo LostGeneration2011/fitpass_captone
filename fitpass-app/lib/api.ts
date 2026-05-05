@@ -410,7 +410,7 @@ export const forumAPI = {
   removeReaction: (postId: string) => apiDelete(`/forum/posts/${postId}/reactions`),
   uploadMedia: async (data: FormData) => {
     const token = await AsyncStorage.getItem('fitpass_token');
-    const res = await fetch(`${getAPIUrl()}/forum/media`, {
+    const res = await fetch(`${getAPIUrl()}/forum/media/upload`, {
       method: 'POST',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -426,9 +426,9 @@ export const forumAPI = {
     return res.json();
   },
   reportPost: (postId: string, reason: string, detail?: string) =>
-    apiPost(`/forum/posts/${postId}/reports`, { reason, detail }),
+    apiPost(`/forum/posts/${postId}/report`, { reason, detail }),
   reportComment: (commentId: string, reason: string, detail?: string) =>
-    apiPost(`/forum/comments/${commentId}/reports`, { reason, detail }),
+    apiPost(`/forum/comments/${commentId}/report`, { reason, detail }),
 };
 
 // Sessions
@@ -460,6 +460,14 @@ export const attendanceAPI = {
 export const enrollmentAPI = {
   getAll: () => {
     return apiGet("/enrollments").then(res => {
+      const items = Array.isArray(res)
+        ? res
+        : (res?.enrollments ?? res?.data ?? []);
+      return items;
+    });
+  },
+  getByClass: (classId: string) => {
+    return apiGet(`/enrollments?classId=${classId}`).then(res => {
       const items = Array.isArray(res)
         ? res
         : (res?.enrollments ?? res?.data ?? []);

@@ -38,6 +38,10 @@ model User {
   resetTokenExpiry  DateTime?
   hourlyRate        Float?         @default(250000)
   salaryOwed        Float?         @default(0)
+  // Notification preferences
+  notificationEnabled   Boolean        @default(true)
+  autoReminderEnabled   Boolean        @default(true)
+  fcmToken              String?
   // Google OAuth fields
   googleId          String?        @unique
   provider          String         @default("local") // "local" | "google" | "both"
@@ -63,6 +67,9 @@ model User {
   forumPosts      ForumPost[]      @relation("UserForumPosts")
   forumComments   ForumComment[]   @relation("UserForumComments")
   forumReactions  ForumReaction[]  @relation("UserForumReactions")
+
+  // Notification relations
+  notifications   Notification[]
 }
 
 model Class {
@@ -99,6 +106,7 @@ model ChatThread {
   createdById     String
   lastMessageAt   DateTime?
   lastMessagePreview String?
+  isLocked        Boolean      @default(false)
   deletedByStudentAt DateTime?
   deletedByStudentId String?
   createdAt       DateTime     @default(now())
@@ -465,4 +473,20 @@ enum RoomStatus {
   OCCUPIED
   MAINTENANCE
   RESERVED
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      String   @default("INFO")
+  isRead    Boolean  @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }

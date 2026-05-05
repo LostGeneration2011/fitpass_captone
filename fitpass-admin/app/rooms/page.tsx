@@ -191,7 +191,7 @@ export default function RoomsPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quan ly phong hoc</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý phòng học</h1>
           <p className="text-gray-600 dark:text-gray-400">Quản lý phòng tập và trang thiết bị.</p>
         </div>
         <div className="flex gap-2">

@@ -1,8 +1,11 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { register, login, me, logout, forgotPassword, resetPassword, validateResetToken, verifyEmail } from "../controllers/auth.controller";
+import { register, login, me, logout, forgotPassword, resetPassword, validateResetToken, verifyEmail, changePassword } from "../controllers/auth.controller";
 import { authMiddleware } from "../middlewares/auth";
 import passport, { registerSignupRole } from "../config/passport";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const router = Router();
 
@@ -23,6 +26,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/me", authMiddleware, me);
 router.post("/logout", logout);
+router.post("/change-password", authMiddleware, changePassword);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/validate-reset-token", validateResetToken);
@@ -194,5 +198,59 @@ router.get(
 
 // Export registerSignupRole for use in other files if needed
 export { registerSignupRole };
+
+// Notification preferences
+router.get("/preferences", authMiddleware, async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.id;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { notificationEnabled: true, autoReminderEnabled: true },
+  });
+  if (!user) return res.status(404).json({ message: "User not found" });
+  res.json({ data: user });
+});
+
+router.patch("/preferences", authMiddleware, async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.id;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+  const { notificationEnabled, autoReminderEnabled } = req.body;
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(notificationEnabled !== undefined && { notificationEnabled }),
+      ...(autoReminderEnabled !== undefined && { autoReminderEnabled }),
+    },
+    select: { notificationEnabled: true, autoReminderEnabled: true },
+  });
+  res.json({ data: updated });
+});
+
+// FCM push notification token
+router.post("/fcm-token", authMiddleware, async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.id;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ message: "Token is required" });
+  await prisma.user.update({ where: { id: userId }, data: { fcmToken: token } });
+  res.json({ message: "FCM token saved" });
+});
+
+// Refresh JWT access token
+router.post("/refresh-token", async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(401).json({ message: "Refresh token required" });
+  try {
+    const payload = jwt.verify(refreshToken, process.env.JWT_SECRET!) as any;
+    const newToken = jwt.sign(
+      { id: payload.id, email: payload.email, role: payload.role, fullName: payload.fullName },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    );
+    res.json({ token: newToken });
+  } catch {
+    res.status(401).json({ message: "Invalid or expired refresh token" });
+  }
+});
 
 export default router;

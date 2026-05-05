@@ -46,8 +46,11 @@ app.use(morgan('dev', {
 
 // Dynamic CORS config using ALLOWED_ORIGINS env variable
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000'];
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : [
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ];
 
 app.use(cors({
   origin: allowedOrigins,

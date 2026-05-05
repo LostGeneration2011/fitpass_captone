@@ -1,3 +1,4 @@
+// This file has been removed. Legacy WebSocketProvider using WebSocket thuần. Use socket.io-client only.
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { connectWebSocket, disconnectWebSocket, reconnectWebSocket, addWebSocketStatusListener } from './websocket';

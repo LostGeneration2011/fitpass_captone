@@ -6,14 +6,18 @@ import {
   getAttendanceByClass, 
   getAttendanceByStudent, 
   updateAttendance,
-  getAttendanceBulk
+  getAttendanceBulk,
+  getAllAttendanceForAdmin
 } from '../controllers/attendance.controller';
-import { teacherOrAdmin } from '../middlewares/rbac';
+import { teacherOrAdmin, adminOnly } from '../middlewares/rbac';
 
 const router = Router();
 
 // POST /api/attendance/bulk - Get attendance for multiple sessionIds
 router.post('/bulk', getAttendanceBulk);
+
+// GET /api/attendance/admin/all - Admin: get all attendance records
+router.get('/admin/all', adminOnly(), getAllAttendanceForAdmin);
 
 // POST /api/attendance/check-in - Check in attendance (TEACHER/ADMIN only)
 router.post('/check-in', teacherOrAdmin(), checkIn);

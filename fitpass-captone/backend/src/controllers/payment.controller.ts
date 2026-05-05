@@ -50,7 +50,17 @@ const getPayPalAccessToken = async (): Promise<string> => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ PayPal token error:', errorText);
-      console.error('❌ PayPal token response headers:', Object.fromEntries(response.headers.entries()));
+      // Fix triệt để: kiểm tra nếu headers.entries là function thì mới gọi
+      const headersAny = response.headers as any;
+      if (headersAny && typeof headersAny.entries === 'function') {
+        const entriesArr = Array.from(headersAny.entries());
+        // Đảm bảo entriesArr là mảng các [string, string]
+        const headersObj = Object.fromEntries(entriesArr as [string, string][]);
+        console.error('❌ PayPal token response headers:', headersObj);
+      } else {
+        // Nếu không, log headers dạng object
+        console.error('❌ PayPal token response headers (raw):', response.headers);
+      }
       throw new Error(`Failed to get PayPal access token: ${response.status} - ${errorText}`);
     }
 

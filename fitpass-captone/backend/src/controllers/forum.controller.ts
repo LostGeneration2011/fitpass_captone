@@ -66,6 +66,29 @@ export async function deletePost(req: Request, res: Response) {
   res.json({ success: true });
 }
 
+// Update post
+export async function updatePost(req: Request, res: Response) {
+  const { id } = req.params;
+  const { content, imageUrls } = req.body;
+  const userId = (req.user as Express.UserPayload | undefined)?.id;
+  const post = await prisma.forumPost.findUnique({ where: { id } });
+  if (!post || post.authorId !== userId) return res.status(403).json({ error: 'Forbidden' });
+  const updated = await prisma.forumPost.update({
+    where: { id },
+    data: {
+      ...(content !== undefined && { content }),
+      ...(imageUrls !== undefined && {
+        images: {
+          deleteMany: {},
+          create: imageUrls.map((url: string, i: number) => ({ url, order: i })),
+        },
+      }),
+    },
+    include: { images: true, author: true },
+  });
+  res.json(updated);
+}
+
 // Add comment
 export async function addComment(req: Request, res: Response) {
   const { id } = req.params;

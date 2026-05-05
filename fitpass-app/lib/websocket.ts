@@ -318,7 +318,7 @@ export const connectWebSocket = (token?: string): WebSocket | null => {
     ws.onerror = (error) => {
       console.error('❌ [WebSocket] Connection error:', error);
       console.error('❌ [WebSocket] Error type:', error.type);
-      console.error('❌ [WebSocket] Error message:', error.message);
+      console.error('❌ [WebSocket] Error message:', (error as any).message);
       console.error('❌ [WebSocket] Current URL:', url);
       notifyStatus('error');
       if (currentToken && AppState.currentState === 'active' && reconnectAttempts < maxReconnectAttempts) {

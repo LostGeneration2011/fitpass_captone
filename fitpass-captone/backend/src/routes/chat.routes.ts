@@ -1,4 +1,4 @@
-import { editMessage, markThreadAsRead } from '../controllers/chat.controller';
+import { editMessage, markThreadAsRead, listThreadMembers, revokeMessage, lockThread, unlockThread } from '../controllers/chat.controller';
 import { Router } from 'express';
 import {
   listThreads,
@@ -15,8 +15,9 @@ import { adminOnly, studentOnly } from '../middlewares/rbac';
 
 const router = Router();
 
-// Edit message
+// Edit message (PUT and PATCH for compatibility)
 router.put('/messages/:messageId', editMessage);
+router.patch('/messages/:messageId', editMessage);
 // Mark thread as read
 router.post('/threads/:id/read', markThreadAsRead);
 
@@ -35,8 +36,23 @@ router.delete('/threads/:id', studentOnly(), deleteThreadForStudent);
 // Thread deletion (admin hard delete)
 router.delete('/admin/threads/:id', adminOnly(), deleteThreadAsAdmin);
 
+// Admin: lock/unlock threads
+router.post('/admin/threads/:id/lock', adminOnly(), lockThread);
+router.post('/admin/threads/:id/unlock', adminOnly(), unlockThread);
+
+// Thread members
+router.get('/threads/:id/members', listThreadMembers);
+
 // Message deletion
 router.delete('/messages/:messageId', studentOnly(), deleteMessageForStudent);
 router.delete('/admin/messages/:messageId', adminOnly(), deleteMessageAsAdmin);
+
+// Revoke a message
+router.post('/messages/:id/revoke', revokeMessage);
+
+// Media upload (stub — returns 501 until storage is configured)
+router.post('/media', (req, res) => {
+  res.status(501).json({ error: 'Media upload not yet implemented' });
+});
 
 export default router;

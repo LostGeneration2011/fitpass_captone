@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fitpass_jwt_secret_key_2024';
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (() => { throw new Error('JWT_SECRET environment variable is required'); })();
 
 export function authMiddleware(
   req: Request,

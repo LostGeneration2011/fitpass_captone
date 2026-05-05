@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { notificationAPI } from '../api';
+import { notificationAPI } from '../lib/api';
 
 export interface NotificationData {
   unreadCount: number;

@@ -7,7 +7,7 @@ export const editMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Message ID and new content are required' });
     }
     const updated = await chatService.editMessage(user, messageId, content);
-    // Optionally, broadcast edit event via WebSocket
+    // Broadcast edit event via WebSocket (ws thuần)
     const wss = (global as any).wss;
     if (wss && updated) {
       const payload = JSON.stringify({
@@ -22,6 +22,12 @@ export const editMessage = async (req: Request, res: Response) => {
           }
         }
       });
+    }
+    // Broadcast edit event via Socket.IO (web/admin)
+    const io = (global as any).io;
+    if (io && updated) {
+      io.to(`thread_${updated.threadId}`).emit('chat.message.edit', { threadId: updated.threadId, message: updated });
+      io.to('role_admin').emit('chat.message.edit', { threadId: updated.threadId, message: updated });
     }
     return res.json({ message: 'Message updated', data: updated });
   } catch (err: any) {
@@ -45,8 +51,10 @@ export const markThreadAsRead = async (req: Request, res: Response) => {
 };
 import { Request, Response } from 'express';
 import { ChatService } from '../services/chat.service';
+import { PrismaClient } from '@prisma/client';
 
 const chatService = new ChatService();
+const prisma = new PrismaClient();
 
 export const listThreads = async (req: Request, res: Response) => {
   try {
@@ -118,6 +126,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     const message = await chatService.sendMessage(user, threadId, content);
 
+    // Emit real-time qua WebSocket thuần (giữ nguyên)
     const wss = (global as any).wss;
     if (wss) {
       const payload = JSON.stringify({
@@ -125,7 +134,6 @@ export const sendMessage = async (req: Request, res: Response) => {
         threadId,
         message,
       });
-
       wss.clients.forEach((client: any) => {
         if (client.readyState === 1) {
           if (client.subscribedThreads?.has(threadId) || client.user?.role === 'ADMIN') {
@@ -133,6 +141,15 @@ export const sendMessage = async (req: Request, res: Response) => {
           }
         }
       });
+    }
+
+    // Emit real-time qua Socket.IO (fix cho admin web)
+    const io = (global as any).io;
+    if (io) {
+      console.log('🔄 [SOCKET.IO] Emitting chat.message to:', `thread_${threadId}`);
+      io.to(`thread_${threadId}`).emit('chat.message', { threadId, message });
+      console.log('🔄 [SOCKET.IO] Emitting chat.message to: role_admin');
+      io.to('role_admin').emit('chat.message', { threadId, message });
     }
 
     return res.status(201).json(message);
@@ -152,6 +169,12 @@ export const deleteThreadForStudent = async (req: Request, res: Response) => {
     }
 
     const updated = await chatService.softDeleteThreadForStudent(user, threadId);
+    // Broadcast thread delete event via Socket.IO (web/admin)
+    const io = (global as any).io;
+    if (io && updated) {
+      io.to(`thread_${threadId}`).emit('chat.thread.delete', { threadId });
+      io.to('role_admin').emit('chat.thread.delete', { threadId });
+    }
     return res.json({ message: 'Thread hidden for student', data: updated });
   } catch (err: any) {
     const status = err.status || 400;
@@ -169,6 +192,12 @@ export const deleteMessageForStudent = async (req: Request, res: Response) => {
     }
 
     const updated = await chatService.softDeleteMessageForStudent(user, messageId);
+    // Broadcast delete event via Socket.IO (web/admin)
+    const io = (global as any).io;
+    if (io && updated) {
+      io.to(`thread_${updated.threadId}`).emit('chat.message.delete', { threadId: updated.threadId, messageId });
+      io.to('role_admin').emit('chat.message.delete', { threadId: updated.threadId, messageId });
+    }
     return res.json({ message: 'Message hidden for student', data: updated });
   } catch (err: any) {
     const status = err.status || 400;
@@ -185,11 +214,95 @@ export const deleteMessageAsAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Message ID is required' });
     }
 
-    await chatService.hardDeleteMessageAsAdmin(user, messageId);
+    const deleted = await chatService.hardDeleteMessageAsAdmin(user, messageId);
+    // Broadcast delete event via Socket.IO (web/admin)
+    const io = (global as any).io;
+    if (io && deleted) {
+      io.to(`thread_${deleted.threadId}`).emit('chat.message.delete', { threadId: deleted.threadId, messageId });
+      io.to('role_admin').emit('chat.message.delete', { threadId: deleted.threadId, messageId });
+    }
     return res.json({ message: 'Message deleted' });
   } catch (err: any) {
     const status = err.status || 400;
     return res.status(status).json({ error: err.message });
+  }
+};
+
+// GET /api/chat/threads/:id/members
+export const listThreadMembers = async (req: Request, res: Response) => {
+  try {
+    const threadId = req.params.id;
+    const thread = await prisma.chatThread.findUnique({
+      where: { id: threadId },
+      include: {
+        student: { select: { id: true, fullName: true, email: true, role: true, avatar: true } },
+        teacher: { select: { id: true, fullName: true, email: true, role: true, avatar: true } },
+      },
+    });
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    const members = [thread.student, thread.teacher].filter(Boolean);
+    return res.json({ members });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// POST /api/chat/messages/:id/revoke — revoke (soft-delete) a message
+export const revokeMessage = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as Express.UserPayload;
+    const messageId = req.params.id;
+    const message = await prisma.chatMessage.findUnique({ where: { id: messageId } });
+    if (!message) return res.status(404).json({ error: 'Message not found' });
+    // Allow sender or admin to revoke
+    if (message.senderId !== user.id && user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const updated = await prisma.chatMessage.update({
+      where: { id: messageId },
+      data: {
+        content: '[Tin nhắn đã bị thu hồi]',
+        deletedByAdminAt: new Date(),
+        deletedByAdminId: user.id,
+      },
+    });
+    const io = (global as any).io;
+    if (io) {
+      io.to(`thread_${updated.threadId}`).emit('chat.message.revoke', { threadId: updated.threadId, messageId });
+    }
+    return res.json({ message: 'Message revoked', data: updated });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// POST /api/chat/admin/threads/:id/lock — lock a thread (admin only)
+export const lockThread = async (req: Request, res: Response) => {
+  try {
+    const threadId = req.params.id;
+    const thread = await prisma.chatThread.findUnique({ where: { id: threadId } });
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    const updated = await prisma.chatThread.update({ where: { id: threadId }, data: { isLocked: true } });
+    const io = (global as any).io;
+    if (io) io.to(`thread_${threadId}`).emit('chat.thread.lock', { threadId, isLocked: true });
+    return res.json({ message: 'Thread locked', data: updated });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// POST /api/chat/admin/threads/:id/unlock — unlock a thread (admin only)
+export const unlockThread = async (req: Request, res: Response) => {
+  try {
+    const threadId = req.params.id;
+    const thread = await prisma.chatThread.findUnique({ where: { id: threadId } });
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    const updated = await prisma.chatThread.update({ where: { id: threadId }, data: { isLocked: false } });
+    const io = (global as any).io;
+    if (io) io.to(`thread_${threadId}`).emit('chat.thread.lock', { threadId, isLocked: false });
+    return res.json({ message: 'Thread unlocked', data: updated });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -202,7 +315,13 @@ export const deleteThreadAsAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Thread ID is required' });
     }
 
-    await chatService.hardDeleteThreadAsAdmin(user, threadId);
+    const deleted = await chatService.hardDeleteThreadAsAdmin(user, threadId);
+    // Broadcast thread delete event via Socket.IO (web/admin)
+    const io = (global as any).io;
+    if (io && deleted) {
+      io.to(`thread_${threadId}`).emit('chat.thread.delete', { threadId });
+      io.to('role_admin').emit('chat.thread.delete', { threadId });
+    }
     return res.json({ message: 'Thread deleted' });
   } catch (err: any) {
     const status = err.status || 400;

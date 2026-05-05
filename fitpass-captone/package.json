@@ -10,7 +10,6 @@
     "dev:app": "cd fitpass-app && npm start",
     "build:backend": "cd backend && npm run build",
     "build:admin": "cd fitpass-admin && npm run build",
-    "vercel-build": "cd backend && npm install && npx prisma generate",
     "install:all": "npm install && npm run install:backend && npm run install:admin && npm run install:app",
     "install:backend": "cd backend && npm install",
     "install:admin": "cd fitpass-admin && npm install",

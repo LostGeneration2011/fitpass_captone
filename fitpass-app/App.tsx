@@ -12,6 +12,7 @@ import ResetPasswordScreen from './app/reset-password';
 import ManualVerificationScreen from './app/manual-verification';
 import StudentStack from './app/student/student-stack';
 import TeacherTabNavigator from './app/teacher/_layout';
+import AdminClassApprovalScreen from './app/admin/class-approval';
 import { WebSocketProvider } from './lib/WebSocketProvider';
 import { ThemeProvider } from './lib/theme';
 import { registerFcmTokenWithBackend, subscribeFcmTokenRefresh } from './lib/pushNotifications';
@@ -50,6 +51,7 @@ export default function App() {
             <Stack.Screen name="ManualVerification" component={ManualVerificationScreen} />
             <Stack.Screen name="Student" component={StudentStack} />
             <Stack.Screen name="Teacher" component={TeacherTabNavigator} />
+            <Stack.Screen name="Admin" component={AdminClassApprovalScreen} />
           </Stack.Navigator>
           <Toast />
         </NavigationContainer>

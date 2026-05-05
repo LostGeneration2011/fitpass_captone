@@ -148,30 +148,7 @@ export default function TeacherDashboard() {
   };
 
   const handleViewStats = () => {
-    if (!stats || stats.classesCount === 0) {
-      Toast.show({
-        type: 'info',
-        text1: 'Thống kê',
-        text2: 'Bạn cần có ít nhất một lớp học để xem thống kê',
-        visibilityTime: 3000,
-      });
-      return;
-    }
-    
-    const statsText = [
-      `📚 Lớp học: ${stats.classesCount}`,
-      `👥 Tổng học viên: ${stats.totalStudents}`,
-      `📝 Tổng buổi học: ${stats.totalSessions}`,
-      `📊 Tỷ lệ điểm danh: ${stats.attendanceRate}%`,
-      `📅 Buổi học hôm nay: ${stats.todaySessions}`,
-    ].join('\n');
-    
-    Toast.show({
-      type: 'success',
-      text1: 'Thống kê hiệu suất',
-      text2: statsText,
-      visibilityTime: 5000,
-    });
+    (navigation as any).navigate('Profile', { screen: 'Reports' });
   };
 
   if (loading) {

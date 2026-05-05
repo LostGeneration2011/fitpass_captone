@@ -94,7 +94,7 @@ export class RefundService {
     const refundData = await this.calculateRefund(enrollmentId, reason);
     
     try {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: any) => {
         // Cập nhật trạng thái enrollment
         await tx.enrollment.update({
           where: { id: enrollmentId },
@@ -125,6 +125,7 @@ export class RefundService {
         }
 
         // Ghi log transaction
+        // eslint-disable-next-line no-console
         console.log(`Processed refund for enrollment ${enrollmentId}: ${refundData.refund.amount} VND, ${refundData.refund.credits} credits`);
       });
 
@@ -135,6 +136,7 @@ export class RefundService {
       };
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error processing refund:', error);
       throw new Error('Lỗi khi xử lý hoàn tiền');
     }
@@ -156,7 +158,7 @@ export class RefundService {
       }
     });
 
-    return cancelledEnrollments.map(enrollment => ({
+    return cancelledEnrollments.map((enrollment: any) => ({
       id: enrollment.id,
       studentName: enrollment.user?.fullName || 'N/A',
       studentEmail: enrollment.user?.email || 'N/A',
@@ -191,8 +193,8 @@ export class RefundService {
       }
     });
 
-    const totalRefundAmount = refunds.reduce((sum, enrollment) => sum + (enrollment.refundAmount || 0), 0);
-    const refundsByReason = refunds.reduce((acc, enrollment) => {
+    const totalRefundAmount = refunds.reduce((sum: number, enrollment: any) => sum + (enrollment.refundAmount || 0), 0);
+    const refundsByReason = refunds.reduce((acc: any, enrollment: any) => {
       // Note: Cần thêm field reason vào schema nếu muốn track chi tiết
       acc.total += 1;
       return acc;
@@ -205,7 +207,7 @@ export class RefundService {
         totalAmount: totalRefundAmount,
         averageRefund: refunds.length > 0 ? totalRefundAmount / refunds.length : 0
       },
-      details: refunds.map(enrollment => ({
+      details: refunds.map((enrollment: any) => ({
         studentName: enrollment.user?.fullName || 'N/A',
         className: enrollment.class.name,
         amount: enrollment.refundAmount,

@@ -34,7 +34,7 @@ export default function SessionDetail() {
     return (
       <View className="flex-1 items-center justify-center bg-slate-950">
         <ActivityIndicator size="large" color="#4A90E2" />
-        <Text className="text-white mt-4">Loading session details...</Text>
+        <Text className="text-white mt-4">Đang tải thông tin buổi học...</Text>
       </View>
     );
   }
@@ -42,9 +42,9 @@ export default function SessionDetail() {
   if (!session) {
     return (
       <View className="flex-1 items-center justify-center bg-slate-950">
-        <Text className="text-white text-lg">Session not found</Text>
+        <Text className="text-white text-lg">Không tìm thấy buổi học</Text>
         <Pressable onPress={() => navigation.goBack()} className="bg-blue-600 px-6 py-3 rounded-lg mt-4">
-          <Text className="text-white font-semibold">Go Back</Text>
+          <Text className="text-white font-semibold">Quay lại</Text>
         </Pressable>
       </View>
     );
@@ -56,43 +56,43 @@ export default function SessionDetail() {
         <Pressable onPress={() => navigation.goBack()} className="mr-4">
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </Pressable>
-        <Text className="text-white text-xl font-bold">Session Details</Text>
+        <Text className="text-white text-xl font-bold">Chi tiết buổi học</Text>
       </View>
 
       <View className="bg-slate-900 p-6 rounded-xl mb-4">
-        <Text className="text-white text-xl font-bold mb-2">{session.className || 'Session'}</Text>
-        <Text className="text-slate-300 mb-4">{session.description || 'No description available'}</Text>
+        <Text className="text-white text-xl font-bold mb-2">{session.class?.name || session.className || 'Buổi học'}</Text>
+        <Text className="text-slate-300 mb-4">{session.description || 'Không có mô tả'}</Text>
 
         <View className="space-y-3">
           <View className="flex-row items-center">
             <Ionicons name="calendar" size={20} color="#94a3b8" />
             <Text className="text-slate-300 ml-3">
-              {new Date(session.scheduledAt || session.startTime).toLocaleDateString()}
+              {new Date(session.startTime || session.scheduledAt).toLocaleDateString('vi-VN')}
             </Text>
           </View>
 
           <View className="flex-row items-center">
             <Ionicons name="time" size={20} color="#94a3b8" />
             <Text className="text-slate-300 ml-3">
-              {new Date(session.scheduledAt || session.startTime).toLocaleTimeString()}
+              {new Date(session.startTime || session.scheduledAt).toLocaleTimeString('vi-VN')}
             </Text>
           </View>
 
           <View className="flex-row items-center">
             <Ionicons name="flag" size={20} color="#94a3b8" />
-            <Text className="text-slate-300 ml-3">Status: {session.status}</Text>
+            <Text className="text-slate-300 ml-3">Trạng thái: {session.status}</Text>
           </View>
 
           <View className="flex-row items-center">
             <Ionicons name="people" size={20} color="#94a3b8" />
             <Text className="text-slate-300 ml-3">
-              Attendees: {session._count?.attendances || 0}
+              Điểm danh: {session._count?.attendances || 0}
             </Text>
           </View>
 
           <View className="flex-row items-center">
             <Ionicons name="id-card" size={20} color="#94a3b8" />
-            <Text className="text-slate-300 ml-3">ID: {session.id}</Text>
+            <Text className="text-slate-300 ml-3">Mã buổi học: {session.id}</Text>
           </View>
         </View>
       </View>
@@ -104,11 +104,11 @@ export default function SessionDetail() {
             (navigation as any).navigate('QR', {
               sessionId: session.id,
               className: session.class?.name || session.className || '',
-              startTime: session.scheduledAt || session.startTime,
+              startTime: session.startTime || session.scheduledAt,
             })
           }
         >
-          <Text className="text-white text-center font-bold">Generate QR Code</Text>
+          <Text className="text-white text-center font-bold">Tạo mã QR</Text>
         </Pressable>
 
         <Pressable
@@ -117,14 +117,14 @@ export default function SessionDetail() {
             (navigation as any).navigate('AttendanceView', { sessionId: session.id })
           }
         >
-          <Text className="text-white text-center font-bold">View Attendance</Text>
+          <Text className="text-white text-center font-bold">Xem điểm danh</Text>
         </Pressable>
 
         <Pressable
           className="bg-slate-700 p-4 rounded-xl border border-slate-600"
           onPress={() => navigation.goBack()}
         >
-          <Text className="text-slate-300 text-center font-bold">Back to Sessions</Text>
+          <Text className="text-slate-300 text-center font-bold">Quay lại danh sách</Text>
         </Pressable>
       </View>
     </ScrollView>

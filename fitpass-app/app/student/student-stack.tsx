@@ -13,6 +13,7 @@ const Stack = createStackNavigator();
 export default function StudentStack() {
   return (
     <Stack.Navigator
+      id="student-stack"
       screenOptions={{
         headerShown: false,
       }}

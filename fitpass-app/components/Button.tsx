@@ -72,13 +72,13 @@ export default function Button({
 
   const buttonStyle = [
     styles.base,
-    styles[size as keyof typeof styles],
+    styles[size as keyof typeof styles] as ViewStyle,
     {
       backgroundColor: disabled ? disabledStyles.bg : variantStyles.bg,
       borderColor: disabled ? disabledStyles.border : variantStyles.border,
     },
     style,
-  ];
+  ] as ViewStyle[];
 
   const textStyles = [
     styles.text,

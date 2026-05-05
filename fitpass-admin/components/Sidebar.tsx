@@ -41,6 +41,8 @@ const reportItems = [
   { name: 'Vận hành lớp học', href: '/reports/class-analytics', icon: AcademicCapIcon },
   { name: 'Thống kê giáo viên', href: '/reports/teacher-statistics', icon: ChartBarIcon },
   { name: 'Kiểm duyệt đánh giá', href: '/reports/reviews', icon: ClipboardDocumentCheckIcon },
+  { name: 'Báo cáo điểm danh', href: '/reports/attendance', icon: ClipboardDocumentCheckIcon },
+  { name: 'Phân tích học viên', href: '/reports/student-insights', icon: UserGroupIcon },
 ];
 
 interface SidebarProps {

@@ -10,11 +10,13 @@ const router = Router();
 router.get('/posts', forumController.getPosts);
 router.post('/posts', authMiddleware, forumController.createPost);
 router.get('/posts/:id', forumController.getPostDetail);
+router.patch('/posts/:id', authMiddleware, forumController.updatePost);
 router.delete('/posts/:id', authMiddleware, forumController.deletePost);
 
 // Forum comments
 router.post('/posts/:id/comments', authMiddleware, forumController.addComment);
 router.put('/comments/:id', authMiddleware, forumController.editComment);
+router.patch('/comments/:id', authMiddleware, forumController.editComment);
 router.delete('/comments/:id', authMiddleware, forumController.deleteComment);
 
 // Forum reactions
@@ -38,5 +40,16 @@ router.get('/admin/reports', authMiddleware, forumModeration.getAdminReports);
 
 // Admin: xem tất cả bài viết trên forum
 router.get('/admin/posts', authMiddleware, forumModeration.getAllPostsForAdmin);
+
+// Admin: hide/unhide posts
+router.post('/admin/posts/:id/hide', authMiddleware, forumModeration.hidePost);
+router.post('/admin/posts/:id/unhide', authMiddleware, forumModeration.unhidePost);
+
+// Admin: hide/unhide comments
+router.post('/admin/comments/:id/hide', authMiddleware, forumModeration.hideComment);
+router.post('/admin/comments/:id/unhide', authMiddleware, forumModeration.unhideComment);
+
+// Admin: review a report (action: hide | unhide | dismiss)
+router.patch('/admin/reports/:id', authMiddleware, forumModeration.reviewReport);
 
 export default router;

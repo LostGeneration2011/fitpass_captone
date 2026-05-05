@@ -7,7 +7,6 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && prisma generate",
     "start": "prisma migrate deploy && node dist/server.js",
-    "vercel-build": "npm run build",
     "db:switch": "node scripts/switch-db.js",
     "db:local": "npm run db:switch local && npm run prisma:push",
     "db:cloud": "npm run db:switch cloud && npm run prisma:push",
@@ -19,7 +18,7 @@
     "check-all": "sh ./check-all.sh"
   },
   "dependencies": {
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "^5.22.0",
     "@types/nodemailer": "^7.0.4",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
@@ -31,7 +30,6 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "expo-image-picker": "^17.0.10",
     "express": "^4.21.2",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -40,7 +38,7 @@
     "nodemailer": "^8.0.5",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "prisma": "^5.19.1",
+    "prisma": "^5.22.0",
     "socket.io": "^4.8.1",
     "ws": "^8.18.3"
   },
@@ -52,8 +50,7 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/morgan": "^1.9.7",
     "@types/multer": "^2.1.0",
-    "@types/node": "^20.11.24",
-    "@vercel/node": "^3.0.1",
+    "@types/node": "^20.19.39",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"

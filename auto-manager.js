@@ -81,7 +81,7 @@ class NgrokManager {
                 const output = data.toString();
                 console.log(output);
                 
-                if (output.includes('Server running on port 3001')) {
+                if (output.includes('Server running on port')) {
                     clearTimeout(startupTimeout);
                     this.backendProcess = backend;
                     this.log('Backend server started successfully!', 'success');
@@ -182,11 +182,13 @@ class NgrokManager {
                 envContent = fs.readFileSync(envPath, 'utf8');
             }
 
-            const lines = envContent.split('\n').filter(line => !line.startsWith('NGROK_URL='));
+            const lines = envContent.split('\n')
+                .filter(line => !line.startsWith('NGROK_URL=') && !line.startsWith('GOOGLE_CALLBACK_URL='));
             lines.push(`NGROK_URL=${ngrokUrl}`);
+            lines.push(`GOOGLE_CALLBACK_URL=${ngrokUrl}/api/auth/google/callback`);
             
             fs.writeFileSync(envPath, lines.join('\n'));
-            this.log('Backend .env updated with ngrok URL', 'success');
+            this.log(`Backend .env updated: NGROK_URL + GOOGLE_CALLBACK_URL`, 'success');
         } catch (error) {
             this.log(`Failed to update backend .env: ${error.message}`, 'error');
         }

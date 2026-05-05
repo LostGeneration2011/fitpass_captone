@@ -308,6 +308,18 @@ export default function EditClass() {
             </View>
           )}
 
+          {/* Create New Class Button for REJECTED status */}
+          {formData.status === 'REJECTED' && (
+            <TouchableOpacity
+              style={{ backgroundColor: '#16a34a' }}
+              onPress={() => (navigation as any).navigate('CreateClass')}
+              className="py-4 rounded-lg flex-row items-center justify-center mb-4"
+            >
+              <Ionicons name="add-circle-outline" size={20} color="#fff" />
+              <Text className="text-white font-bold ml-2">Tạo lớp học mới</Text>
+            </TouchableOpacity>
+          )}
+
           {/* Save Button */}
           <TouchableOpacity
             style={{

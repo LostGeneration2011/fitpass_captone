@@ -115,7 +115,7 @@ export default function BookSessionsScreen() {
     // Listen for class enrollment and session booking updates
     const unsubscribe = refreshEmitter.onRefresh((screenName) => {
       console.log('🔄 BookSessions screen received refresh event for:', screenName);
-      if (screenName === 'classEnrollment' || screenName === 'sessionBooking' || 'packagePurchase' || !screenName) {
+      if (screenName === 'classEnrollment' || screenName === 'sessionBooking' || screenName === 'packagePurchase' || !screenName) {
         console.log('🔄 BookSessions screen refreshing data due to:', screenName || 'global refresh');
         // Only load data, don't trigger any new refresh events
         loadData();

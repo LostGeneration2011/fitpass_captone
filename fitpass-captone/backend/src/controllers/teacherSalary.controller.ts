@@ -423,10 +423,25 @@ export const updateTeacherSalaryOwed = async (req: Request, res: Response): Prom
   }
 };
 
+export const getTeacherPaymentHistory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { teacherId } = req.params;
+    const records = await prisma.salaryRecord.findMany({
+      where: { teacherId },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ data: records });
+  } catch (error) {
+    console.error('Error fetching teacher payment history:', error);
+    res.status(500).json({ message: 'Error fetching payment history' });
+  }
+};
+
 export default {
   getTeachersSalaryOverview,
   getMonthlyPayroll,
   payTeacherSalary,
   updateTeacherHourlyRate,
-  updateTeacherSalaryOwed
+  updateTeacherSalaryOwed,
+  getTeacherPaymentHistory,
 };

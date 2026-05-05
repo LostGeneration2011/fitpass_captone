@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { getUser } from '../../lib/auth';
 import { classAPI, sessionsAPI, enrollmentAPI } from '../../lib/api';
 import Toast from 'react-native-toast-message';
@@ -58,6 +58,7 @@ export default function TeacherReportsScreen() {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
 
   const loadReportData = async () => {
     try {
@@ -184,7 +185,7 @@ export default function TeacherReportsScreen() {
       <View className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 border-b" style={{ borderColor: isDark ? '#1e293b' : '#e2e8f0' }}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color={isDark ? '#ffffff' : '#000000'} />
           </TouchableOpacity>
           <Text className={`${textPrimary} text-xl font-bold`}>Báo cáo hoạt động</Text>

@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { EmailService } from "../services/email.service";
+import bcrypt from "bcryptjs";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -56,13 +60,15 @@ export const login = async (req: Request, res: Response) => {
     const { user, token } = await authService.login(email, password);
     console.log('Login successful for:', email);
     // Set JWT as httpOnly cookie, expires in 7 days
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('fitpass_token', token, {
       httpOnly: true,
-      secure: true, // Always secure for cross-domain
-      sameSite: 'none', // Required for cross-site cookie
+      secure: isProduction,            // false on localhost HTTP, true on HTTPS
+      sameSite: isProduction ? 'none' : 'lax', // 'none' requires secure=true
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
-    return res.json({ message: "Login successful", user });
+    // Trả về cả user và token cho mobile app
+    return res.json({ message: "Login successful", user, token });
   } catch (err: any) {
     console.error('Login error:', err.message);
     return res.status(400).json({ error: err.message });
@@ -79,7 +85,50 @@ export const me = async (req: any, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.clearCookie('fitpass_token', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  });
   res.json({ message: "Logout success" });
+};
+
+export const changePassword = async (req: any, res: Response) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.user?.id;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ error: "All password fields are required" });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: "New password and confirmation do not match" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.password) {
+      return res.status(400).json({ error: "Account has no password set (OAuth account)" });
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
+      return res.status(400).json({ error: "Current password is incorrect" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+
+    return res.json({ message: "Password changed successfully" });
+  } catch (err: any) {
+    console.error('Change password error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
 };
 
 export const forgotPassword = async (req: Request, res: Response) => {

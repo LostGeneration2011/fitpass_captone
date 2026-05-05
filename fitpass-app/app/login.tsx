@@ -70,6 +70,8 @@ export default function LoginScreen() {
               navigation.navigate('Teacher' as never);
             } else if (user.role === 'STUDENT') {
               navigation.navigate('Student' as never);
+            } else if (user.role === 'ADMIN') {
+              navigation.navigate('Admin' as never);
             }
             
             Toast.show({
@@ -190,6 +192,8 @@ export default function LoginScreen() {
                 navigation.navigate('Teacher' as never);
               } else if (user.role === 'STUDENT') {
                 navigation.navigate('Student' as never);
+              } else if (user.role === 'ADMIN') {
+                navigation.navigate('Admin' as never);
               }
               
               Toast.show({
@@ -248,31 +252,32 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-
       const response = await authAPI.login(email, password);
       console.log('Login response:', response); // Debug log
 
-      // Extract user from response (no token expected)
-      const { user } = response;
-      if (!user) {
+      // Extract user & token from response
+      const { user, token, refreshToken } = response;
+      if (!user || !token) {
         throw new Error('Invalid response format');
       }
 
-      // Save user to storage
-      console.log('Saving user to storage...');
+      // Save token & user to storage
+      await saveToken(token);
+      if (refreshToken) await saveRefreshToken(refreshToken);
       await saveUser(user);
       await registerFcmTokenWithBackend();
-      console.log('User saved successfully');
+      console.log('User & token saved successfully');
 
-      // Nếu websocket cần token, cần refactor lại logic, còn không thì bỏ reconnect();
+      // Nếu websocket cần token, reconnect để khởi tạo lại socket
+      if (typeof reconnect === 'function') reconnect();
 
       // Validate user role and navigate accordingly
       if (user.role === 'TEACHER') {
-        // Navigate to teacher dashboard
         navigation.navigate('Teacher' as never);
       } else if (user.role === 'STUDENT') {
-        // Navigate to student dashboard
         navigation.navigate('Student' as never);
+      } else if (user.role === 'ADMIN') {
+        navigation.navigate('Admin' as never);
       } else {
         Toast.show({
           type: 'error',

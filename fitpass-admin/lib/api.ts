@@ -66,8 +66,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.warn('🔑 Unauthorized request, redirecting to login...');
-      window.location.href = '/login';
+      console.warn('🔑 Unauthorized request, clearing session and redirecting to login...');
+      if (typeof window !== 'undefined') {
+        // Clear stale user data to break any potential redirect loop
+        localStorage.removeItem('fitpass_admin_user');
+        // Only redirect if not already on the login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
     }
     return Promise.reject(error);
   }
@@ -320,7 +327,10 @@ export const salaryAPI = {
 };
 
 export const attendanceAPI = {
-  getAll: () => apiGet('/attendance'),
+  getAll: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiGet(`/attendance/admin/all${query}`);
+  },
   getById: (id: string) => apiGet(`/attendance/${id}`),
   getBySession: (sessionId: string) => apiGet(`/attendance/session/${sessionId}`),
   getBySessionIds: async (sessionIds: string[]) => {

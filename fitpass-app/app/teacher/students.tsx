@@ -59,19 +59,18 @@ export default function TeacherStudentsScreen() {
         return;
       }
 
-      const [teacherClassesResponse, enrollmentsResponse] = await Promise.all([
-        classAPI.getAll(currentUser.id),
-        enrollmentAPI.getAll(),
-      ]);
+      const teacherClassesResponse = await classAPI.getAll(currentUser.id);
 
       const teacherClasses = Array.isArray(teacherClassesResponse)
         ? teacherClassesResponse
         : teacherClassesResponse?.classes || [];
       const teacherClassIds = new Set(teacherClasses.map((classItem: any) => classItem.id));
 
-      const enrollments: Student[] = Array.isArray(enrollmentsResponse) 
-        ? enrollmentsResponse 
-        : enrollmentsResponse.enrollments || [];
+      // Fetch enrollments per class using classId filter (teacher-accessible)
+      const enrollmentResults = await Promise.all(
+        teacherClasses.map((cls: any) => enrollmentAPI.getByClass(cls.id))
+      );
+      const enrollments: Student[] = enrollmentResults.flat();
 
       const filteredEnrollments = enrollments.filter((enrollment: any) => {
         return teacherClassIds.has(enrollment.classId || enrollment.class?.id);

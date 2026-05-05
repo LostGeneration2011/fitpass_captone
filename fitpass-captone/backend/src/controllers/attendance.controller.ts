@@ -219,6 +219,41 @@ export const getAttendanceByStudent = async (req: Request, res: Response) => {
   }
 };
 
+// GET /api/attendance/admin/all — admin only, returns all attendance records
+export const getAllAttendanceForAdmin = async (req: Request, res: Response) => {
+  try {
+    const { sessionId, classId, studentId, page, limit } = req.query;
+    const take = limit ? parseInt(limit as string, 10) : 100;
+    const skip = page ? (parseInt(page as string, 10) - 1) * take : 0;
+
+    const where: any = {};
+    if (sessionId) where.sessionId = sessionId;
+    if (classId) where.session = { classId };
+    if (studentId) where.studentId = studentId;
+
+    const attendances = await prisma.attendance.findMany({
+      where,
+      include: {
+        student: { select: { id: true, fullName: true, email: true } },
+        session: {
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            class: { select: { id: true, name: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take,
+      skip,
+    });
+    return res.json({ attendances });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 export const updateAttendance = async (req: Request, res: Response) => {
   try {
     // Support both route formats: /attendance/:id and /attendance with body params

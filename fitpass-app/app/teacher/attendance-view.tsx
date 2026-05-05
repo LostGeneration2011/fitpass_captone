@@ -10,17 +10,19 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sessionsAPI, classAPI, attendanceAPI } from '../../lib/api';
-import { getUser } from '../../lib/auth';
+import { getUser, getToken } from '../../lib/auth';
 import { useWebSocket } from '../../lib/WebSocketProvider';
+import { connectSocket, getSocket, disconnectSocket } from '../../lib/socketio';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useThemeClasses, useTheme } from '../../lib/theme';
-import { addWebSocketMessageListener } from '../../lib/websocket';
+
 
 interface AttendanceRecord {
   id: string;
   studentId: string;
+  sessionId?: string;
   student?: { fullName: string; email: string };
   status: string;
   checkedInAt: string;
@@ -132,36 +134,48 @@ export default function TeacherAttendanceScreen() {
   }, [selectedSession]);
 
   useEffect(() => {
-    if (!isConnected || !selectedSession) return;
+    if (!selectedSession) return;
 
-    const unsubscribe = addWebSocketMessageListener((message: any) => {
-      const payload = message?.payload || message?.data || message;
-      const messageSessionId = payload?.sessionId || payload?.session?.id;
+    let mounted = true;
 
-      const isAttendanceMessage =
-        message?.type === 'attendance_update' ||
-        message?.event === 'attendance.update';
+    const initSocket = async () => {
+      const token = await getToken();
+      if (!token) return;
 
-      if (!isAttendanceMessage || messageSessionId !== selectedSession.id) {
-        return;
-      }
+      const socket = connectSocket(token);
 
-      loadAttendance();
+      // Join the session room to receive real-time attendance events
+      socket.emit('session:join', { sessionId: selectedSession.id });
 
-      if (payload?.studentName) {
-        Toast.show({
-          type: 'success',
-          text1: `✓ ${payload.studentName}`,
-          text2: 'Đã điểm danh',
-          visibilityTime: 2000,
+      // New student checked in
+      socket.on('attendance:new', (record: AttendanceRecord) => {
+        if (!mounted || record.sessionId !== selectedSession.id) return;
+        setAttendance(prev => {
+          // Avoid duplicate entries
+          if (prev.some(a => a.id === record.id)) return prev;
+          return [...prev, record];
         });
-      }
-    });
+      });
+
+      // Attendance updated (e.g. status change)
+      socket.on('attendance:updated', (record: AttendanceRecord) => {
+        if (!mounted || record.sessionId !== selectedSession.id) return;
+        setAttendance(prev => prev.map(a => a.id === record.id ? record : a));
+      });
+    };
+
+    initSocket();
 
     return () => {
-      unsubscribe();
+      mounted = false;
+      const socket = getSocket();
+      if (socket) {
+        socket.emit('session:leave', { sessionId: selectedSession.id });
+        socket.off('attendance:new');
+        socket.off('attendance:updated');
+      }
     };
-  }, [isConnected, selectedSession, loadAttendance]);
+  }, [selectedSession]);
 
   useEffect(() => {
     loadSessions();

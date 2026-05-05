@@ -9,25 +9,27 @@ import setupWebSocket from './ws';
 // Load environment variables
 dotenv.config();
 
-// Local development only
-if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 3001;
-  
-  // Create HTTP server for WebSocket integration
-  const server = createServer(app);
-  
-  // Setup Socket.IO WebSocket
-  setupWebSocket(server);
-  
-  // Setup simple WebSocket server on /ws path
-  const wss = new WebSocketServer({ 
-    server,
-    path: '/ws'
-  });
+const PORT = process.env.PORT || 3001;
 
-  (global as any).wss = wss;
+// Create HTTP server for WebSocket integration (required for both dev and production)
+const server = createServer(app);
 
-  const JWT_SECRET = process.env.JWT_SECRET || 'fitpass_jwt_secret_key_2024';
+// Setup Socket.IO WebSocket
+setupWebSocket(server);
+
+// Setup simple WebSocket server on /ws path
+const wss = new WebSocketServer({ 
+  server,
+  path: '/ws'
+});
+
+(global as any).wss = wss;
+
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (() => { throw new Error('JWT_SECRET environment variable is required'); })();
+
+{
 
   wss.on('connection', (ws: any) => {
     console.log('🔌 Simple WebSocket client connected');
@@ -212,12 +214,6 @@ if (process.env.NODE_ENV !== "production") {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Socket.IO WebSocket ready`);
     console.log(`🔗 Simple WebSocket ready at /ws`);
-  });
-} else {
-  // For production deployment without WebSocket (if needed)
-  const PORT = process.env.PORT || 3001;
-  app.listen(PORT, () => {
-    console.log(`Production server running on port ${PORT}`);
   });
 }
 

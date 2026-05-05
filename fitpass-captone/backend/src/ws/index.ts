@@ -1,9 +1,20 @@
+
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { UserRole } from '@prisma/client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fitpass_jwt_secret_key_2024';
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (() => { throw new Error('JWT_SECRET environment variable is required'); })();
+
+// Helper to get allowed origins from env
+function getAllowedOrigins() {
+  if (process.env.ALLOWED_ORIGINS) {
+    return process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+  }
+  return ['http://localhost:3000'];
+}
 
 interface AuthenticatedSocket extends Socket {
   user: {
@@ -17,8 +28,9 @@ interface AuthenticatedSocket extends Socket {
 export default function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
     cors: {
-      origin: "*", // Configure for production
-      methods: ["GET", "POST"]
+      origin: getAllowedOrigins(),
+      methods: ["GET", "POST"],
+      credentials: true
     }
   });
 
@@ -68,6 +80,8 @@ export default function setupWebSocket(server: HTTPServer) {
       socket.join(`thread_${threadId}`);
       socket.emit('joined_thread', { threadId });
       console.log(`💬 ${user.fullName} joined chat thread: thread_${threadId}`);
+      // Emit to admin socket itself for confirmation
+      socket.emit('info', { message: `[BACKEND] Joined thread_${threadId}` });
     });
 
     // Leave chat thread room
@@ -76,9 +90,24 @@ export default function setupWebSocket(server: HTTPServer) {
       socket.leave(`thread_${threadId}`);
       socket.emit('left_thread', { threadId });
       console.log(`💬 ${user.fullName} left chat thread: thread_${threadId}`);
+      socket.emit('info', { message: `[BACKEND] Left thread_${threadId}` });
+    });
+
+    // Handle typing indicator
+    socket.on('chat.typing', (data: { threadId: string, isTyping: boolean }) => {
+      const { threadId, isTyping } = data;
+      if (!threadId) return;
+      // Broadcast to all other users in the thread except sender
+      socket.to(`thread_${threadId}`).emit('chat.typing', {
+        userId: user.id,
+        fullName: user.fullName,
+        isTyping,
+        threadId
+      });
     });
 
     // Handle receiving chat message from client (optional, if you want to support sending via socket.io)
+    // (giữ nguyên logic cũ)
     socket.on('chat_message', async (data: { threadId: string, content: string }) => {
       const { threadId, content } = data;
       if (!threadId || !content?.trim()) {

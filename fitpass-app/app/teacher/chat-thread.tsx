@@ -21,7 +21,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import Constants from 'expo-constants';
 import { chatAPI } from '../../lib/api';
-import { addWebSocketMessageListener, addWebSocketStatusListener, sendWebSocketMessage, disconnectWebSocket } from '../../lib/websocket';
+import { connectSocket, getSocket, disconnectSocket } from '../../lib/socketio';
 import { useThemeClasses } from '../../lib/theme';
 import { getUser } from '../../lib/auth';
 
@@ -122,25 +122,14 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
   // Helper: Convert relative URL to full URL
   const getFullUrl = (url: string): string => {
     if (!url) return '';
-    let fullUrl = '';
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      fullUrl = url;
-    } else {
-      // Relative URL - add API base
-      const apiUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL || 
-                     Constants.expoConfig?.extra?.EXPO_PUBLIC_API ||
-                     'http://localhost:3001/api';
-      const baseUrl = apiUrl.replace(/\/api$/, '');
-      fullUrl = `${baseUrl}${url}`;
+      return url;
     }
-    
-    // Add ngrok bypass for image loading (required for ngrok URLs)
-    if (fullUrl.includes('ngrok')) {
-      fullUrl += (fullUrl.includes('?') ? '&' : '?') + 'ngrok-skip-browser-warning=true';
-    }
-    
-    return fullUrl;
-  };
+    // Relative URL - derive base from the same logic used by lib/api.ts
+    const { API_URL } = require('../../lib/api');
+    const baseUrl = (API_URL as string).replace(/\/api$/, '');
+    return `${baseUrl}${url}`;
+  }; 
 
   // Helper: Download file to device
   const handleDownloadFile = async (url: string, fileName: string) => {
@@ -232,7 +221,7 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
     if (!threadId) return;
     shouldAutoScrollRef.current = true;
     initialAutoScrollDoneRef.current = false;
-    
+
     // Load current user ID
     getUser().then((user) => {
       if (user?.id) {
@@ -240,7 +229,7 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
         currentUserIdRef.current = user.id;
       }
     });
-    
+
     loadMessages();
     if (threadType === 'CLASS_GROUP') {
       chatAPI.listMembers(threadId)
@@ -250,99 +239,91 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
       setThreadMembers([]);
     }
 
-    // Nếu dùng socket.io:
+    // --- SOCKET.IO CLIENT REALTIME ---
     let socket: any = null;
-    if (typeof window !== 'undefined' && (window as any).io) {
-      socket = (window as any).io(
-        Constants.expoConfig?.extra?.EXPO_PUBLIC_WS_URL || 'ws://localhost:3001',
-        { auth: { token: null } }
-      );
+    let token: string | null = null;
+    let removeListeners: (() => void)[] = [];
+    let refreshInterval: NodeJS.Timeout | null = null;
+
+    // Get token from user (async)
+    (async () => {
+      const token = await (await import('../../lib/auth')).getToken();
+      if (!token) return;
+      socket = connectSocket(token);
+      if (!socket) return;
       socket.emit('join_thread', { threadId });
+      setIsJoined(true);
+      isJoinedRef.current = true;
+
+      // Listen for chat events
       socket.on('chat.message', (data: any) => {
         if (data.threadId === threadId) {
           setMessages((prev) => {
             if (prev.some((msg) => msg.id === data.message.id)) return prev;
             return [...prev, data.message];
           });
+          chatAPI.markRead(threadId).catch(() => undefined);
         }
       });
-    } else {
-      const joinThread = () => sendWebSocketMessage({ type: 'chat.join', threadId });
-      joinThread();
-      const joinTimeout = setTimeout(joinThread, 400);
-    }
-    const removeStatusListener = addWebSocketStatusListener((status) => {
-      // if (status === 'open') {
-      //   joinThread();
-      // }
-      if (status === 'close') {
-        setIsJoined(false);
-        isJoinedRef.current = false;
-      }
-    });
-    const removeListener = addWebSocketMessageListener((data) => {
-      if (data.type === 'auth_success') {
-        // joinThread();
-        return;
-      }
-      if (data.type === 'chat.joined' && data.threadId === threadId) {
-        setIsJoined(true);
-        isJoinedRef.current = true;
-        return;
-      }
-      if (data.type === 'chat.message' && data.threadId === threadId) {
-        setMessages((prev) => {
-          if (prev.some((msg) => msg.id === data.message.id)) return prev;
-          return [...prev, data.message];
-        });
-        chatAPI.markRead(threadId).catch(() => undefined);
-      }
-      if (data.type === 'chat.message_edited' && data.threadId === threadId) {
-        setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
-      }
-      if (data.type === 'chat.message_revoked' && data.threadId === threadId) {
-        setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
-      }
-      if (data.type === 'chat.typing' && data.threadId === threadId) {
-        const senderId = data.userId || data.senderId || data.user?.id;
-        const isSelf = !!senderId && !!currentUserIdRef.current && senderId === currentUserIdRef.current;
-        if (!isSelf) {
-          if (!!data.isTyping) {
-            setTypingActive(true);
-            if (partnerTypingTimeoutRef.current) {
-              clearTimeout(partnerTypingTimeoutRef.current);
-            }
-            partnerTypingTimeoutRef.current = setTimeout(() => {
+      socket.on('chat.message_edited', (data: any) => {
+        if (data.threadId === threadId) {
+          setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
+        }
+      });
+      socket.on('chat.message_revoked', (data: any) => {
+        if (data.threadId === threadId) {
+          setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
+        }
+      });
+      socket.on('chat.typing', (data: any) => {
+        if (data.threadId === threadId) {
+          const senderId = data.userId || data.senderId || data.user?.id;
+          const isSelf = !!senderId && !!currentUserIdRef.current && senderId === currentUserIdRef.current;
+          if (!isSelf) {
+            if (!!data.isTyping) {
+              setTypingActive(true);
+              if (partnerTypingTimeoutRef.current) {
+                clearTimeout(partnerTypingTimeoutRef.current);
+              }
+              partnerTypingTimeoutRef.current = setTimeout(() => {
+                setTypingActive(false);
+                partnerTypingTimeoutRef.current = null;
+              }, 2500);
+            } else {
               setTypingActive(false);
-              partnerTypingTimeoutRef.current = null;
-            }, 2500);
-          } else {
-            setTypingActive(false);
-            if (partnerTypingTimeoutRef.current) {
-              clearTimeout(partnerTypingTimeoutRef.current);
-              partnerTypingTimeoutRef.current = null;
+              if (partnerTypingTimeoutRef.current) {
+                clearTimeout(partnerTypingTimeoutRef.current);
+                partnerTypingTimeoutRef.current = null;
+              }
             }
           }
         }
-      }
-      if (data.type === 'chat.read' && data.threadId === threadId) {
-        setReadMap((prev) => ({
-          ...prev,
-          [data.userId]: data.lastReadAt,
-        }));
-      }
-    });
+      });
+      socket.on('chat.read', (data: any) => {
+        if (data.threadId === threadId) {
+          setReadMap((prev) => ({
+            ...prev,
+            [data.userId]: data.lastReadAt,
+          }));
+        }
+      });
+      // Clean up listeners
+      removeListeners = [
+        () => socket.off('chat.message'),
+        () => socket.off('chat.message_edited'),
+        () => socket.off('chat.message_revoked'),
+        () => socket.off('chat.typing'),
+        () => socket.off('chat.read'),
+      ];
+    })();
 
-    const refreshInterval = setInterval(() => {
-      // if (!isJoinedRef.current) {
-      //   joinThread();
-      // }
+    // Refresh messages every 5s (optional, for fallback)
+    refreshInterval = setInterval(() => {
       loadMessages(true);
     }, 5000);
 
     return () => {
-      // clearTimeout(joinTimeout);
-      clearInterval(refreshInterval);
+      if (refreshInterval) clearInterval(refreshInterval);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -352,12 +333,13 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
         partnerTypingTimeoutRef.current = null;
       }
       setTypingActive(false);
-      sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: false });
-      removeStatusListener();
-      sendWebSocketMessage({ type: 'chat.leave', threadId });
-      removeListener();
-      // Đảm bảo giải phóng tài nguyên WebSocket khi rời màn hình
-      disconnectWebSocket(true); // preserveToken=true để không logout toàn app
+      // Notify server user left thread
+      if (socket) {
+        socket.emit('chat.typing', { threadId, isTyping: false });
+        socket.emit('leave_thread', { threadId });
+        removeListeners.forEach((fn) => fn());
+      }
+      disconnectSocket();
     };
   }, [threadId]);
 
@@ -368,7 +350,11 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
-    sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: false });
+    // Notify server user stopped typing
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat.typing', { threadId, isTyping: false });
+    }
 
     try {
       setSending(true);
@@ -391,6 +377,10 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
         setPendingAttachments([]);
         setMentionUserIds([]);
         setReplyTo(null);
+        // Emit real-time event to other clients (MUST use backend event name)
+        if (socket) {
+          socket.emit('chat_message', { threadId, content: message.content });
+        }
       }
       chatAPI.markRead(threadId).catch(() => undefined);
       scrollRef.current?.scrollToEnd({ animated: true });
@@ -535,14 +525,17 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
 
   const handleTyping = () => {
     if (!threadId) return;
-    sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: true });
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('chat.typing', { threadId, isTyping: true });
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit('chat.typing', { threadId, isTyping: false });
+        typingTimeoutRef.current = null;
+      }, 2000);
     }
-    typingTimeoutRef.current = setTimeout(() => {
-      sendWebSocketMessage({ type: 'chat.typing', threadId, isTyping: false });
-      typingTimeoutRef.current = null;
-    }, 2000);
   };
 
   const handleInsertEmoji = (emoji: string) => {

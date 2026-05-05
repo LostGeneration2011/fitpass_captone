@@ -16,6 +16,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === '/login';
   const isClearSessionPage = pathname === '/clear-session';
   const isForgotPasswordPage = pathname === '/forgot-password';
+  const isResetPasswordPage = pathname === '/reset-password';
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -41,7 +42,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <DevLoadingHelper />
       <ToastProvider>
         <AuthProvider>
-          {isLoginPage || isClearSessionPage || isForgotPasswordPage ? (
+          {isLoginPage || isClearSessionPage || isForgotPasswordPage || isResetPasswordPage ? (
             <div className="relative">
               {children}
             </div>

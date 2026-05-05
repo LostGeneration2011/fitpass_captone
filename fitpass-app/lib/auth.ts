@@ -1,10 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-declare global {
-  var window: any;
-}
-
 const TOKEN_KEY = 'fitpass_token';
 const REFRESH_TOKEN_KEY = 'fitpass_refresh_token';
 const USER_KEY = 'fitpass_user';
