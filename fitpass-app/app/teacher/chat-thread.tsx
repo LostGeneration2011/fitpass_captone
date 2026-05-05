@@ -12,6 +12,7 @@ import {
   Alert,
   Image,
   Linking,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -111,6 +112,7 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
   const [mentionUserIds, setMentionUserIds] = useState<string[]>([]);
   const [replyTo, setReplyTo] = useState<any | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedMsg, setSelectedMsg] = useState<any | null>(null);
   const isJoinedRef = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -624,7 +626,7 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
               <TouchableOpacity
                 key={msg.id}
                 className={`mb-3 ${msg.senderRole === 'TEACHER' ? 'items-end' : 'items-start'}`}
-                onLongPress={() => setReplyTo(msg)}
+                onLongPress={() => setSelectedMsg(msg)}
                 activeOpacity={0.8}
               >
                 <View
@@ -724,26 +726,13 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
                     <Text className="text-[10px] text-blue-200 mt-1">(đã chỉnh sửa)</Text>
                   ) : null}
                 </View>
-                <View className="flex-row items-center justify-between mt-1">
+                <View className="flex-row items-center mt-1">
                   <Text className={`${textSecondary} text-xs`}>
                     {msg.sender?.fullName || msg.senderRole}
                   </Text>
-                  {msg.senderRole === 'TEACHER' ? (
-                    <View className="flex-row items-center">
-                      <TouchableOpacity onPress={() => handleEditMessage(msg.id, msg.content || '')} className="ml-2">
-                        <Ionicons name="pencil" size={12} color="#64748b" />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleRevokeMessage(msg.id)} className="ml-2">
-                        <Ionicons name="arrow-undo" size={12} color="#64748b" />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDeleteMessage(msg.id)} className="ml-2">
-                        <Ionicons name="trash" size={12} color="#64748b" />
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
                 </View>
                 {msg.senderRole === 'TEACHER' && Object.keys(readMap).length > 0 ? (
-                  <Text className="text-[10px] text-blue-400 mt-1">✓✓ Seen</Text>
+                  <Text className="text-[10px] text-blue-400 mt-1">✓✓ Đã xem</Text>
                 ) : null}
               </TouchableOpacity>
             ))
@@ -755,18 +744,50 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
           style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff' }}
         >
           {replyTo ? (
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-xs text-blue-400">Trả lời: {replyTo.content || 'Tin nhắn'}</Text>
-              <TouchableOpacity onPress={() => setReplyTo(null)}>
-                <Text className="text-xs text-slate-400">Hủy</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 12,
+                borderLeftWidth: 4,
+                borderLeftColor: '#3b82f6',
+                backgroundColor: isDark ? '#1e293b' : '#eff6ff',
+              }}
+            >
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontSize: 10, color: '#3b82f6', fontWeight: '600', marginBottom: 2 }}>Trả lời</Text>
+                <Text className={`text-xs ${textSecondary}`} numberOfLines={1}>
+                  {replyTo.sender?.fullName ? `${replyTo.sender.fullName}: ` : ''}{replyTo.content || 'Tệp đính kèm'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setReplyTo(null)} style={{ padding: 4 }}>
+                <Ionicons name="close-circle" size={18} color="#64748b" />
               </TouchableOpacity>
             </View>
           ) : null}
           {editingMessageId ? (
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-xs text-blue-400">Đang chỉnh sửa tin nhắn...</Text>
-              <TouchableOpacity onPress={() => { setEditingMessageId(null); setContent(''); }}>
-                <Text className="text-xs text-slate-400">Hủy</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 12,
+                borderLeftWidth: 4,
+                borderLeftColor: '#f59e0b',
+                backgroundColor: isDark ? '#1e293b' : '#fffbeb',
+              }}
+            >
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: '600', marginBottom: 2 }}>Đang chỉnh sửa</Text>
+                <Text className={`text-xs ${textSecondary}`} numberOfLines={1}>{content || '...'}</Text>
+              </View>
+              <TouchableOpacity onPress={() => { setEditingMessageId(null); setContent(''); }} style={{ padding: 4 }}>
+                <Ionicons name="close-circle" size={18} color="#64748b" />
               </TouchableOpacity>
             </View>
           ) : null}
@@ -783,8 +804,24 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
             </View>
           ) : null}
           {typingActive ? (
-            <View className="mb-2">
-              <Text className={`${textSecondary} text-xs`}>Người kia đang soạn tin...</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 3,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  backgroundColor: isDark ? '#334155' : '#e2e8f0',
+                  marginRight: 8,
+                }}
+              >
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#94a3b8' }} />
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#94a3b8', opacity: 0.7 }} />
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#94a3b8', opacity: 0.4 }} />
+              </View>
+              <Text className={`${textSecondary} text-xs`}>đang soạn...</Text>
             </View>
           ) : null}
           {showEmojiPicker ? (
@@ -837,6 +874,73 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
           ) : null}
         </View>
       </KeyboardAvoidingView>
+
+      {/* Context menu modal */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={!!selectedMsg}
+        onRequestClose={() => setSelectedMsg(null)}
+      >
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+          activeOpacity={1}
+          onPress={() => setSelectedMsg(null)}
+        >
+          <TouchableOpacity activeOpacity={1}>
+            <View style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 36 }}>
+              {/* Drag handle */}
+              <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
+                <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: isDark ? '#475569' : '#cbd5e1' }} />
+              </View>
+              {/* Message preview */}
+              <View style={{ margin: 16, marginBottom: 8, backgroundColor: isDark ? '#334155' : '#f1f5f9', borderRadius: 12, padding: 12 }}>
+                <Text style={{ color: isDark ? '#94a3b8' : '#64748b', fontSize: 13 }} numberOfLines={2}>
+                  {selectedMsg?.revokedAt ? 'Tin nhắn đã thu hồi' : selectedMsg?.content || 'Tệp đính kèm'}
+                </Text>
+              </View>
+              {/* Reply */}
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: isDark ? '#334155' : '#f1f5f9' }}
+                onPress={() => { setReplyTo(selectedMsg); setSelectedMsg(null); }}
+              >
+                <Ionicons name="return-down-back-outline" size={20} color="#60A5FA" style={{ marginRight: 14 }} />
+                <Text style={{ fontSize: 16, color: isDark ? '#f1f5f9' : '#0f172a' }}>Trả lời</Text>
+              </TouchableOpacity>
+              {/* Edit */}
+              {selectedMsg?.senderRole === 'TEACHER' && !selectedMsg?.revokedAt ? (
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: isDark ? '#334155' : '#f1f5f9' }}
+                  onPress={() => { handleEditMessage(selectedMsg.id, selectedMsg.content || ''); setSelectedMsg(null); }}
+                >
+                  <Ionicons name="pencil-outline" size={20} color={isDark ? '#94a3b8' : '#64748b'} style={{ marginRight: 14 }} />
+                  <Text style={{ fontSize: 16, color: isDark ? '#f1f5f9' : '#0f172a' }}>Chỉnh sửa</Text>
+                </TouchableOpacity>
+              ) : null}
+              {/* Revoke */}
+              {selectedMsg?.senderRole === 'TEACHER' && !selectedMsg?.revokedAt ? (
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: isDark ? '#334155' : '#f1f5f9' }}
+                  onPress={() => { handleRevokeMessage(selectedMsg.id); setSelectedMsg(null); }}
+                >
+                  <Ionicons name="arrow-undo-outline" size={20} color="#f87171" style={{ marginRight: 14 }} />
+                  <Text style={{ fontSize: 16, color: '#f87171' }}>Thu hồi</Text>
+                </TouchableOpacity>
+              ) : null}
+              {/* Delete */}
+              {selectedMsg?.senderRole === 'TEACHER' ? (
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14 }}
+                  onPress={() => { handleDeleteMessage(selectedMsg.id); setSelectedMsg(null); }}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#f87171" style={{ marginRight: 14 }} />
+                  <Text style={{ fontSize: 16, color: '#f87171' }}>Xóa</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }

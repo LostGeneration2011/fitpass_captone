@@ -2,20 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { chatAPI } from "@/lib/api";
+import { chatAPI, API_BASE_URL } from "@/lib/api";
+import { Reply, Pencil, RotateCcw, Trash2, Paperclip, Smile, Send, Download } from "lucide-react";
 
 const QUICK_EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '👏', '🔥', '✅', '💪', '🙏', '🎉', '❤️', '👍', '👀', '😢'];
 
 const getWsUrl = () => {
   if (typeof window === 'undefined') return '';
-  const cachedApiUrl = localStorage.getItem('fitpass_api_url');
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ||
-    cachedApiUrl ||
-    (window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api'
-      : `${window.location.origin}/api`);
-
-  const baseUrl = apiUrl.replace(/\/api$/, '');
+  // Derive WS URL from the same backend base URL used by the axios API client
+  const baseUrl = API_BASE_URL.replace(/\/api$/, '');
   const protocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
   const host = new URL(baseUrl).host;
   return `${protocol}://${host}/ws`;
@@ -23,13 +18,7 @@ const getWsUrl = () => {
 
 const getApiBaseUrl = () => {
   if (typeof window === 'undefined') return '';
-  const cachedApiUrl = localStorage.getItem('fitpass_api_url');
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ||
-    cachedApiUrl ||
-    (window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api'
-      : `${window.location.origin}/api`);
-  return apiUrl.replace(/\/?api$/, '');
+  return API_BASE_URL.replace(/\/api$/, '');
 };
 
 export default function AdminChatPage() {
@@ -131,8 +120,10 @@ export default function AdminChatPage() {
       if ((window as any).__fitpass_admin_socket) {
         (window as any).__fitpass_admin_socket.emit('leave_thread', { threadId: previousThread });
         (window as any).__fitpass_admin_socket.off('chat.message');
+        (window as any).__fitpass_admin_socket.off('chat.typing');
+        (window as any).__fitpass_admin_socket.disconnect();
       }
-      socket = io(getWsUrl(), {
+      socket = io(getApiBaseUrl(), {
         auth: { token: localStorage.getItem('fitpass_admin_token') || '' }
       });
       (window as any).__fitpass_admin_socket = socket;
@@ -142,6 +133,21 @@ export default function AdminChatPage() {
           setMessages((prev) => {
             if (prev.some((msg) => msg.id === data.message.id)) return prev;
             return [...prev, data.message];
+          });
+        }
+      });
+      socket.on('chat.typing', (data: any) => {
+        if (data.threadId === activeThread.id) {
+          const selfUserId = wsUserIdRef.current || currentUserId;
+          if (selfUserId && data.userId === selfUserId) return;
+          setTypingUsers((prev) => {
+            const updated = { ...prev };
+            if (data.isTyping) {
+              updated[data.userId] = Date.now();
+            } else {
+              delete updated[data.userId];
+            }
+            return updated;
           });
         }
       });
@@ -327,14 +333,23 @@ export default function AdminChatPage() {
   };
 
   const handleTyping = () => {
-    if (!activeThread?.id || wsRef.current?.readyState !== 1) return;
-    console.log('⌨️ [Admin] Sending typing event for thread:', activeThread.id);
-    wsRef.current.send(JSON.stringify({ type: 'chat.typing', threadId: activeThread.id, isTyping: true }));
+    if (!activeThread?.id) return;
+    // Send typing via Socket.IO so mobile clients receive it
+    const sioSocket = (window as any).__fitpass_admin_socket;
+    if (sioSocket?.connected) {
+      sioSocket.emit('chat.typing', { threadId: activeThread.id, isTyping: true });
+    }
+    // Also send via raw WS as fallback for other admin clients
+    if (wsRef.current?.readyState === 1) {
+      wsRef.current.send(JSON.stringify({ type: 'chat.typing', threadId: activeThread.id, isTyping: true }));
+    }
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     typingTimeoutRef.current = setTimeout(() => {
-      console.log('⌨️ [Admin] Sending typing stop event');
+      if (sioSocket?.connected) {
+        sioSocket.emit('chat.typing', { threadId: activeThread.id, isTyping: false });
+      }
       wsRef.current?.send(JSON.stringify({ type: 'chat.typing', threadId: activeThread.id, isTyping: false }));
     }, 1500);
   };
@@ -722,10 +737,10 @@ export default function AdminChatPage() {
                                   </div>
                                   <a
                                     href={`/api/download-file?url=${encodeURIComponent(downloadUrl)}&name=${encodeURIComponent(file.fileName || 'download')}`}
-                                    className="p-1 hover:bg-white/20 rounded transition text-sm"
+                                    className="p-1.5 hover:bg-white/20 rounded-lg transition flex items-center"
                                     title="Tải xuống"
                                   >
-                                    📥
+                                    <Download size={14} />
                                   </a>
                                 </div>
                               </div>
@@ -737,37 +752,37 @@ export default function AdminChatPage() {
                         <div className="text-[10px] mt-1 opacity-70">(đã chỉnh sửa)</div>
                       ) : null}
                     </div>
-                    <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"
-                        title="Reply"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"
+                        title="Trả lời"
                         onClick={() => setReplyTo(msg)}
                       >
-                        ↩️
+                        <Reply size={13} />
                       </button>
                       <button
-                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"
-                        title="Edit"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 disabled:opacity-30"
+                        title="Chỉnh sửa"
                         onClick={() => handleEditMessage(msg.id, msg.content || '')}
                         disabled={msg.senderRole !== 'ADMIN'}
                       >
-                        ✏️
+                        <Pencil size={13} />
                       </button>
                       <button
-                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 disabled:opacity-30"
                         title="Thu hồi"
                         onClick={() => handleRevokeMessage(msg.id)}
                         disabled={msg.senderRole !== 'ADMIN'}
                       >
-                        🔁
+                        <RotateCcw size={13} />
                       </button>
                       <button
-                        className="p-1 rounded hover:bg-red-50 text-red-500"
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 disabled:opacity-30"
                         title="Xóa"
                         onClick={() => handleDeleteMessage(msg.id)}
                         disabled={deletingMessageId === msg.id}
                       >
-                        🗑️
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </div>
@@ -790,31 +805,35 @@ export default function AdminChatPage() {
               </div>
             ) : null}
             {activeThread && typingActive ? (
-              <div className="mb-2 inline-flex items-center gap-2 text-xs text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 px-3 py-1.5 rounded-full">
-                <span className="inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                Người kia đang soạn tin...
+              <div className="mb-2 inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span className="inline-flex items-end gap-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-2xl">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0ms]" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:150ms]" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:300ms]" />
+                </span>
+                đang soạn...
               </div>
             ) : null}
             <div className="flex items-center gap-2">
               <button
-                className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
-                title="Đính kèm (sắp có)"
+                className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40"
+                title="Đính kèm tệp"
                 disabled={!activeThread?.id || uploading || activeThread?.isLocked}
                 onClick={() => {
                   const input = document.getElementById('chat-upload-input');
                   input?.click();
                 }}
               >
-                📎
+                <Paperclip size={18} />
               </button>
               <button
-                className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700"
+                className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40"
                 title="Emoji"
                 type="button"
                 onClick={() => setShowEmojiPicker((prev) => !prev)}
                 disabled={!activeThread?.id || activeThread?.isLocked}
               >
-                😊
+                <Smile size={18} />
               </button>
               <input
                 value={content}
@@ -827,9 +846,10 @@ export default function AdminChatPage() {
               <button
                 onClick={handleSend}
                 disabled={!activeThread?.id || uploading || activeThread?.isLocked}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 flex items-center gap-1.5"
               >
-                Gửi
+                <Send size={15} />
+                <span>Gửi</span>
               </button>
             </div>
             {showEmojiPicker ? (

@@ -241,9 +241,9 @@ export class ChatService {
     return messages.reverse();
   }
 
-  async sendMessage(user: { id: string; role: UserRole }, threadId: string, content: string) {
-    if (!content?.trim()) {
-      throw new Error('Message content is required');
+  async sendMessage(user: { id: string; role: UserRole }, threadId: string, content: string, attachments?: any[]) {
+    if (!content?.trim() && (!attachments || attachments.length === 0)) {
+      throw new Error('Message content or attachments are required');
     }
 
     await this.ensureThreadAccessible(threadId, user);
@@ -253,18 +253,25 @@ export class ChatService {
         threadId,
         senderId: user.id,
         senderRole: user.role,
-        content: content.trim(),
+        content: content?.trim() || '',
+        ...(attachments && attachments.length > 0 ? { attachments } : {}),
       },
       include: {
         sender: { select: { id: true, fullName: true, role: true } },
       },
     });
 
+    const preview = content?.trim()
+      ? content.trim().slice(0, 120)
+      : attachments && attachments.length > 0
+        ? `[${attachments[0].type === 'IMAGE' ? 'Hình ảnh' : 'Tệp đính kèm'}]`
+        : '';
+
     await prisma.chatThread.update({
       where: { id: threadId },
       data: {
         lastMessageAt: new Date(),
-        lastMessagePreview: content.trim().slice(0, 120),
+        lastMessagePreview: preview,
       },
     });
 

@@ -1,4 +1,5 @@
 import { editMessage, markThreadAsRead, listThreadMembers, revokeMessage, lockThread, unlockThread } from '../controllers/chat.controller';
+import { chatMediaUpload, uploadChatMedia } from '../controllers/chatMedia.controller';
 import { Router } from 'express';
 import {
   listThreads,
@@ -50,9 +51,7 @@ router.delete('/admin/messages/:messageId', adminOnly(), deleteMessageAsAdmin);
 // Revoke a message
 router.post('/messages/:id/revoke', revokeMessage);
 
-// Media upload (stub — returns 501 until storage is configured)
-router.post('/media', (req, res) => {
-  res.status(501).json({ error: 'Media upload not yet implemented' });
-});
+// Media upload
+router.post('/media', chatMediaUpload.single('file'), uploadChatMedia);
 
 export default router;

@@ -33,6 +33,9 @@ const API_BASE_URL = (() => {
   return DEFAULT_REMOTE_API_BASE_URL;
 })();
 
+// Export for WS URL derivation in other modules
+export { API_BASE_URL };
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,

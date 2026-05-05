@@ -118,13 +118,13 @@ export const sendMessage = async (req: Request, res: Response) => {
   try {
     const user = req.user as Express.UserPayload;
     const threadId = req.params.id;
-    const { content } = req.body;
+    const { content, attachments } = req.body;
 
     if (!threadId) {
       return res.status(400).json({ error: 'Thread ID is required' });
     }
 
-    const message = await chatService.sendMessage(user, threadId, content);
+    const message = await chatService.sendMessage(user, threadId, content, attachments);
 
     // Emit real-time qua WebSocket thuần (giữ nguyên)
     const wss = (global as any).wss;
@@ -146,10 +146,44 @@ export const sendMessage = async (req: Request, res: Response) => {
     // Emit real-time qua Socket.IO (fix cho admin web)
     const io = (global as any).io;
     if (io) {
-      console.log('🔄 [SOCKET.IO] Emitting chat.message to:', `thread_${threadId}`);
       io.to(`thread_${threadId}`).emit('chat.message', { threadId, message });
-      console.log('🔄 [SOCKET.IO] Emitting chat.message to: role_admin');
       io.to('role_admin').emit('chat.message', { threadId, message });
+    }
+
+    // Create in-app notification for recipients
+    try {
+      const thread = await prisma.chatThread.findUnique({ where: { id: threadId } });
+      if (thread && io) {
+        const senderName = (user as any).fullName || 'Người dùng';
+        const preview = content?.trim()
+          ? content.trim().slice(0, 80)
+          : attachments?.length
+            ? '[Tệp đính kèm]'
+            : '';
+        const notifPayload = { type: 'CHAT', title: `Tin nhắn từ ${senderName}`, body: preview, data: { threadId } };
+
+        if (user.role !== 'ADMIN') {
+          // Notify all admins
+          const admins = await prisma.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } });
+          await prisma.notification.createMany({
+            data: admins.map((a) => ({ userId: a.id, ...notifPayload, type: 'CHAT' })),
+            skipDuplicates: true,
+          });
+          io.to('role_admin').emit('notification', notifPayload);
+        } else {
+          // Admin sends → notify student (and teacher if present)
+          const recipients = [thread.studentId, thread.teacherId].filter(Boolean) as string[];
+          if (recipients.length > 0) {
+            await prisma.notification.createMany({
+              data: recipients.map((uid) => ({ userId: uid, ...notifPayload, type: 'CHAT' })),
+              skipDuplicates: true,
+            });
+            recipients.forEach((uid) => io.to(`user_${uid}`).emit('notification', notifPayload));
+          }
+        }
+      }
+    } catch {
+      // Notification failure should not break message delivery
     }
 
     return res.status(201).json(message);

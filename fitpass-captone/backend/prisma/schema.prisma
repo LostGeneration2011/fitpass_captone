@@ -129,6 +129,7 @@ model ChatMessage {
   senderId   String
   senderRole UserRole
   content    String
+  attachments Json?
   deletedByStudentAt DateTime?
   deletedByStudentId String?
   deletedByAdminAt   DateTime?

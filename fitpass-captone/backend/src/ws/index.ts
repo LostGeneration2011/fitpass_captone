@@ -65,8 +65,9 @@ export default function setupWebSocket(server: HTTPServer) {
     const user = (socket as AuthenticatedSocket).user;
     console.log(`🔌 User ${user.fullName} (${user.role}) connected to WebSocket`);
 
-    // Join user to their role-based room
+    // Join user to their role-based room and personal room
     socket.join(`role_${user.role.toLowerCase()}`);
+    socket.join(`user_${user.id}`);
 
 
     // --- CHAT REAL-TIME LOGIC ---
