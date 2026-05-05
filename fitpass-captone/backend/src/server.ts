@@ -125,6 +125,7 @@ const JWT_SECRET =
                   threadId,
                   userId: ws.user.id,
                   fullName: ws.user.fullName,
+                  isTyping: data.isTyping ?? true,
                 })
               );
             }

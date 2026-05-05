@@ -49,6 +49,30 @@ export const markThreadAsRead = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Thread ID is required' });
     }
     const result = await chatService.markThreadAsRead(user, threadId);
+
+    // Broadcast chat.read so clients can update seen status in real-time
+    const readPayload = {
+      threadId,
+      userId: user.id,
+      fullName: user.fullName,
+      lastReadAt: result.lastReadAt,
+    };
+
+    const io = (global as any).io;
+    if (io) {
+      io.to(`thread_${threadId}`).emit('chat.read', readPayload);
+    }
+
+    const wss = (global as any).wss;
+    if (wss) {
+      const wsMsg = JSON.stringify({ type: 'chat.read', ...readPayload });
+      wss.clients.forEach((client: any) => {
+        if (client.readyState === 1 && client.subscribedThreads?.has(threadId)) {
+          client.send(wsMsg);
+        }
+      });
+    }
+
     return res.json({ message: 'Thread marked as read', data: result });
   } catch (err: any) {
     const status = err.status || 400;

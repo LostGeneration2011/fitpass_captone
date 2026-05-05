@@ -18,9 +18,11 @@ export function connectSocket(token: string) {
   if (socket) return socket;
   const url = getSocketIoUrl();
   socket = io(url, {
-    transports: ['websocket'],
+    transports: ['polling', 'websocket'],
     auth: { token },
     path: '/socket.io',
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000,
   });
   return socket;
 }

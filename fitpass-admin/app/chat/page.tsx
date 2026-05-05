@@ -43,7 +43,9 @@ export default function AdminChatPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const sioRef = useRef<Socket | null>(null);
   const activeThreadRef = useRef<string | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wsUserIdRef = useRef<string | null>(null);
   const messageListRef = useRef<HTMLDivElement | null>(null);
@@ -78,6 +80,7 @@ export default function AdminChatPage() {
         const user = JSON.parse(userStr);
         if (user?.id) {
           setCurrentUserId(user.id);
+          currentUserIdRef.current = user.id;
         }
       }
     } catch (error) {
@@ -108,54 +111,16 @@ export default function AdminChatPage() {
 
     const previousThread = activeThreadRef.current;
     activeThreadRef.current = activeThread.id;
+    setTypingUsers({});
 
     if (previousThread && previousThread !== activeThread.id) {
-      console.log('💬 [Admin] Leaving previous thread:', previousThread);
       wsRef.current?.send(JSON.stringify({ type: 'chat.leave', threadId: previousThread }));
+      sioRef.current?.emit('leave_thread', { threadId: previousThread });
     }
 
-    // Nếu dùng socket.io:
-    let socket: Socket | null = null;
-    if (typeof window !== 'undefined') {
-      if ((window as any).__fitpass_admin_socket) {
-        (window as any).__fitpass_admin_socket.emit('leave_thread', { threadId: previousThread });
-        (window as any).__fitpass_admin_socket.off('chat.message');
-        (window as any).__fitpass_admin_socket.off('chat.typing');
-        (window as any).__fitpass_admin_socket.disconnect();
-      }
-      socket = io(getApiBaseUrl(), {
-        auth: { token: localStorage.getItem('fitpass_admin_token') || '' }
-      });
-      (window as any).__fitpass_admin_socket = socket;
-      socket.emit('join_thread', { threadId: activeThread.id });
-      socket.on('chat.message', (data: any) => {
-        if (data.threadId === activeThread.id) {
-          setMessages((prev) => {
-            if (prev.some((msg) => msg.id === data.message.id)) return prev;
-            return [...prev, data.message];
-          });
-        }
-      });
-      socket.on('chat.typing', (data: any) => {
-        if (data.threadId === activeThread.id) {
-          const selfUserId = wsUserIdRef.current || currentUserId;
-          if (selfUserId && data.userId === selfUserId) return;
-          setTypingUsers((prev) => {
-            const updated = { ...prev };
-            if (data.isTyping) {
-              updated[data.userId] = Date.now();
-            } else {
-              delete updated[data.userId];
-            }
-            return updated;
-          });
-        }
-      });
-    } else if (wsRef.current?.readyState === 1) {
-      // fallback cho ws cũ
-      console.log('💬 [Admin] Joining thread:', activeThread.id);
-      wsRef.current.send(JSON.stringify({ type: 'chat.join', threadId: activeThread.id }));
-    }
+    // Join new thread on both connections
+    wsRef.current?.send(JSON.stringify({ type: 'chat.join', threadId: activeThread.id }));
+    sioRef.current?.emit('join_thread', { threadId: activeThread.id });
   }, [activeThread?.id]);
 
   useEffect(() => {
@@ -177,6 +142,7 @@ export default function AdminChatPage() {
     const token = localStorage.getItem('fitpass_admin_token');
     if (!token) return;
 
+    // --- Persistent raw WebSocket (reconnects once, stays alive) ---
     const ws = new WebSocket(getWsUrl());
     wsRef.current = ws;
 
@@ -184,7 +150,6 @@ export default function AdminChatPage() {
       console.log('🔗 [Admin] WebSocket connected');
       ws.send(JSON.stringify({ type: 'auth', token }));
       if (activeThreadRef.current) {
-        console.log('💬 [Admin] Auto-joining thread:', activeThreadRef.current);
         ws.send(JSON.stringify({ type: 'chat.join', threadId: activeThreadRef.current }));
       }
     };
@@ -192,7 +157,6 @@ export default function AdminChatPage() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // ...existing code...
         if (data.type === 'chat.message') {
           setThreads((prev) => {
             const index = prev.findIndex((item) => item.id === data.threadId);
@@ -208,37 +172,24 @@ export default function AdminChatPage() {
             next.unshift(nextThread);
             return next;
           });
-          if (activeThread?.id && data.threadId === activeThread.id) {
+          if (activeThreadRef.current && data.threadId === activeThreadRef.current) {
             setMessages((prev) => {
-              if (prev.some((msg) => msg.id === data.message.id)) return prev;
+              if (prev.some((msg: any) => msg.id === data.message.id)) return prev;
               return [...prev, data.message];
             });
           }
         }
-        if (data.type === 'chat.error') {
-          console.warn('⚠️ [Admin] chat.error:', data.message);
-        }
         if (data.type === 'chat.message_edited') {
-          setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
+          setMessages((prev) => prev.map((msg: any) => (msg.id === data.message.id ? data.message : msg)));
         }
         if (data.type === 'chat.message_revoked') {
-          setMessages((prev) => prev.map((msg) => (msg.id === data.message.id ? data.message : msg)));
+          setMessages((prev) => prev.map((msg: any) => (msg.id === data.message.id ? data.message : msg)));
         }
         if (data.type === 'chat.typing') {
-          console.log('💬 [Admin] Received typing event:', data);
-          console.log('💬 [Admin] Current user ID:', currentUserId);
-          console.log('💬 [Admin] Sender user ID:', data.userId);
-          console.log('💬 [Admin] WS user ID:', wsUserIdRef.current);
-          
           if (!data.threadId || !data.userId) return;
-          // Don't show typing indicator for current user
-          const selfUserId = wsUserIdRef.current || currentUserId;
-          if (selfUserId && data.userId === selfUserId) {
-            console.log('❌ [Admin] Ignoring typing from self');
-            return;
-          }
-          
-          console.log('✅ [Admin] Showing typing indicator');
+          if (data.threadId !== activeThreadRef.current) return;
+          const selfId = wsUserIdRef.current || currentUserIdRef.current;
+          if (selfId && data.userId === selfId) return;
           setTypingUsers((prev) => {
             const updated = { ...prev };
             if (data.isTyping) {
@@ -246,7 +197,6 @@ export default function AdminChatPage() {
             } else {
               delete updated[data.userId];
             }
-            console.log('💬 [Admin] Updated typingUsers:', updated);
             return updated;
           });
         }
@@ -254,10 +204,7 @@ export default function AdminChatPage() {
           if (!data.threadId || !data.userId) return;
           setReadMap((prev) => ({
             ...prev,
-            [data.threadId]: {
-              ...(prev[data.threadId] || {}),
-              [data.userId]: data.lastReadAt,
-            },
+            [data.threadId]: { ...(prev[data.threadId] || {}), [data.userId]: data.lastReadAt },
           }));
         }
       } catch {
@@ -265,10 +212,82 @@ export default function AdminChatPage() {
       }
     };
 
+    // --- Persistent Socket.IO connection ---
+    const socket = io(getApiBaseUrl(), {
+      auth: { token },
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+    sioRef.current = socket;
+    (window as any).__fitpass_admin_socket = socket;
+
+    // Re-join active thread on reconnect (Railway may drop connections)
+    socket.on('connect', () => {
+      if (activeThreadRef.current) {
+        socket.emit('join_thread', { threadId: activeThreadRef.current });
+      }
+    });
+
+    socket.on('chat.message', (data: any) => {
+      setThreads((prev) => {
+        const index = prev.findIndex((item: any) => item.id === data.threadId);
+        if (index === -1) return prev;
+        const current = prev[index];
+        const next = [...prev];
+        next.splice(index, 1);
+        next.unshift({ ...current, lastMessageAt: data.message?.createdAt || new Date().toISOString(), lastMessagePreview: data.message?.content || current.lastMessagePreview });
+        return next;
+      });
+      if (activeThreadRef.current && data.threadId === activeThreadRef.current) {
+        setMessages((prev) => {
+          if (prev.some((msg: any) => msg.id === data.message?.id)) return prev;
+          return [...prev, data.message];
+        });
+      } else {
+        setUnreadByThread((prev) => ({ ...prev, [data.threadId]: (prev[data.threadId] || 0) + 1 }));
+      }
+    });
+
+    socket.on('chat.typing', (data: any) => {
+      if (!data.threadId || !data.userId) return;
+      if (data.threadId !== activeThreadRef.current) return;
+      const selfId = wsUserIdRef.current || currentUserIdRef.current;
+      if (selfId && data.userId === selfId) return;
+      setTypingUsers((prev) => {
+        const updated = { ...prev };
+        if (data.isTyping) {
+          updated[data.userId] = Date.now();
+        } else {
+          delete updated[data.userId];
+        }
+        return updated;
+      });
+    });
+
+    socket.on('chat.read', (data: any) => {
+      if (!data.threadId || !data.userId) return;
+      setReadMap((prev) => ({
+        ...prev,
+        [data.threadId]: { ...(prev[data.threadId] || {}), [data.userId]: data.lastReadAt },
+      }));
+    });
+
+    socket.on('chat.message.edit', (data: any) => {
+      setMessages((prev) => prev.map((msg: any) => (msg.id === data.message?.id ? data.message : msg)));
+    });
+
+    socket.on('chat.message_revoked', (data: any) => {
+      setMessages((prev) => prev.map((msg: any) => (msg.id === data.message?.id ? data.message : msg)));
+    });
+
     return () => {
       ws.close();
+      socket.disconnect();
+      sioRef.current = null;
+      (window as any).__fitpass_admin_socket = null;
     };
-  }, [activeThread?.id]);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

@@ -76,8 +76,9 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
     const wsBaseUrl = API_BASE_URL.replace(/\/api$/, '');
     const socket = io(wsBaseUrl, {
       auth: { token: adminToken },
-      transports: ['websocket'],
-      reconnectionAttempts: 5,
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
     });
     socket.on('notification', () => {
       setUnreadNotifications((prev) => prev + 1);

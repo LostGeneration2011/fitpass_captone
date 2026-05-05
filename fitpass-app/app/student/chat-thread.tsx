@@ -257,6 +257,10 @@ export default function StudentChatThreadScreen({ route, navigation }: any) {
         setIsJoined(true);
         isJoinedRef.current = true;
 
+        // Re-join thread on reconnect (Railway drops connections)
+        const handleConnect = () => socket && socket.emit('join_thread', { threadId });
+        socket.on('connect', handleConnect);
+
         // Listen for chat events
         socket.on('chat.message', (data: any) => {
           if (data.threadId === threadId) {
@@ -311,6 +315,7 @@ export default function StudentChatThreadScreen({ route, navigation }: any) {
         });
         // Clean up listeners
         removeListeners = [
+          () => socket.off('connect', handleConnect),
           () => socket.off('chat.message'),
           () => socket.off('chat.message_edited'),
           () => socket.off('chat.message_revoked'),
