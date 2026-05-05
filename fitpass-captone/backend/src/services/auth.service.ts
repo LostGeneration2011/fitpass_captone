@@ -5,7 +5,9 @@ import { prisma } from "../config/prisma";
 import { UserRole } from "@prisma/client";
 import { EmailService } from "./email.service";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fitpass_jwt_secret_key_2024";
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (() => { throw new Error('JWT_SECRET environment variable is required'); })();
 
 export class AuthService {
   private emailService = new EmailService();

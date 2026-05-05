@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 // Report a forum post
 export async function reportPost(req: Request, res: Response) {

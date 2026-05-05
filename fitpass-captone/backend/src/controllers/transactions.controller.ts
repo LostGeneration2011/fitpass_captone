@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 // GET /api/transactions - Get all transactions with filters
 export const getAllTransactions = async (req: Request, res: Response): Promise<void> => {

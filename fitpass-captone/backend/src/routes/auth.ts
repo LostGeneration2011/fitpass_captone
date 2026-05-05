@@ -3,9 +3,7 @@ import { register, login, me, logout, forgotPassword, resetPassword, validateRes
 import { authMiddleware } from "../middlewares/auth";
 import passport, { registerSignupRole } from "../config/passport";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 const router = Router();
 

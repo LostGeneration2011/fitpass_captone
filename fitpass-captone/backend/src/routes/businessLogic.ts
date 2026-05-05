@@ -1,7 +1,7 @@
 // Business Logic Implementation for FitPass Economic Model
 
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/prisma';
 import { ClassViabilityService } from '../services/ClassViabilityService';
 import { RefundService } from '../services/RefundService';
 import { EnrollmentService } from '../services/enrollment.service';
@@ -16,7 +16,6 @@ import {
   businessLogicRateLimit
 } from '../middlewares/businessLogicMiddleware';
 
-const prisma = new PrismaClient();
 const router = express.Router();
 const enrollmentService = new EnrollmentService();
 

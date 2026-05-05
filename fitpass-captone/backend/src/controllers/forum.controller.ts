@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient, ReactionType } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { ReactionType } from '@prisma/client';
+import { prisma } from '../config/prisma';
 
 // Get forum posts (feed)
 export async function getPosts(req: Request, res: Response) {

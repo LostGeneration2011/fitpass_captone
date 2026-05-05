@@ -1,8 +1,10 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
+import helmet from 'helmet';
+import compression from 'compression';
 import passport from './config/passport';
 import authRouter from './routes/auth';
 import userRouter from './routes/user.routes';
@@ -29,8 +31,39 @@ import { errorHandler } from './middlewares/errorHandler';
 import { healthCheck } from './controllers/health.controller';
 
 const app = express();
+
+// Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow images served from backend
+  contentSecurityPolicy: false // disabled: API only, no HTML except OAuth pages
+}));
+
+// Gzip compression
+app.use(compression());
+
 // Cookie parser for httpOnly cookies
 app.use(cookieParser());
+
+// Auth rate limiter: 20 requests per 15 minutes per IP
+const authRateLimit = (() => {
+  const store = new Map<string, { count: number; resetTime: number }>();
+  const WINDOW_MS = 15 * 60 * 1000;
+  const MAX = 20;
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = (req.ip ?? req.socket.remoteAddress) || 'unknown';
+    const now = Date.now();
+    const entry = store.get(ip);
+    if (!entry || now > entry.resetTime) {
+      store.set(ip, { count: 1, resetTime: now + WINDOW_MS });
+      return next();
+    }
+    if (entry.count >= MAX) {
+      return res.status(429).json({ message: 'Too many requests, please try again later.' });
+    }
+    entry.count++;
+    return next();
+  };
+})();
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -66,23 +99,15 @@ app.use(cors({
   ]
 }));
 
-// Middleware to handle ngrok requests  
+// Middleware to handle ngrok/proxy headers
 app.use((req, res, next) => {
-  // Only log non-OPTIONS requests for debugging
-  if (req.method !== 'OPTIONS') {
-    console.log('🌐 Incoming request:', {
-      method: req.method,
-      url: req.url,
-      origin: req.get('Origin'),
-      userAgent: req.get('User-Agent'),
-      hasAuth: !!req.get('Authorization')
-    });
+  if (false) { // disabled verbose logging in all environments
   }
   next();
 });
 
-app.use(express.json({ limit: '7mb' }));
-app.use(express.urlencoded({ extended: true, limit: '7mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 // Morgan already configured above - remove duplicate
 
 // Serve static files from public directory
@@ -110,8 +135,8 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Auth routes (no middleware needed)
-app.use('/api/auth', authRouter);
+// Auth routes — rate-limited
+app.use('/api/auth', authRateLimit, authRouter);
 
 // Package routes (public access for viewing packages)
 app.use('/api/packages', packageRouter);

@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/prisma';
 import { authMiddleware } from '../middlewares/auth';
 import { adminOnly } from '../middlewares/rbac';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // GET /api/notifications/unread/count
 router.get('/unread/count', authMiddleware, async (req: any, res) => {

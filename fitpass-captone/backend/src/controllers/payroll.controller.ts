@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 // GET /api/payroll - Get all salary records
 export const getAllPayrolls = async (req: Request, res: Response): Promise<void> => {

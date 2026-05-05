@@ -1,3 +1,9 @@
+﻿import { Request, Response } from 'express';
+import { ChatService } from '../services/chat.service';
+import { prisma } from '../config/prisma';
+
+const chatService = new ChatService();
+
 export const editMessage = async (req: Request, res: Response) => {
   try {
     const user = req.user as Express.UserPayload;
@@ -7,7 +13,7 @@ export const editMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Message ID and new content are required' });
     }
     const updated = await chatService.editMessage(user, messageId, content);
-    // Broadcast edit event via WebSocket (ws thuần)
+    // Broadcast edit event via WebSocket (ws thuáº§n)
     const wss = (global as any).wss;
     if (wss && updated) {
       const payload = JSON.stringify({
@@ -49,13 +55,6 @@ export const markThreadAsRead = async (req: Request, res: Response) => {
     return res.status(status).json({ error: err.message });
   }
 };
-import { Request, Response } from 'express';
-import { ChatService } from '../services/chat.service';
-import { PrismaClient } from '@prisma/client';
-
-const chatService = new ChatService();
-const prisma = new PrismaClient();
-
 export const listThreads = async (req: Request, res: Response) => {
   try {
     const user = req.user as Express.UserPayload;
@@ -126,7 +125,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     const message = await chatService.sendMessage(user, threadId, content, attachments);
 
-    // Emit real-time qua WebSocket thuần (giữ nguyên)
+    // Emit real-time qua WebSocket thuáº§n (giá»¯ nguyĂªn)
     const wss = (global as any).wss;
     if (wss) {
       const payload = JSON.stringify({
@@ -154,13 +153,13 @@ export const sendMessage = async (req: Request, res: Response) => {
     try {
       const thread = await prisma.chatThread.findUnique({ where: { id: threadId } });
       if (thread && io) {
-        const senderName = (user as any).fullName || 'Người dùng';
+        const senderName = (user as any).fullName || 'NgÆ°á»i dĂ¹ng';
         const preview = content?.trim()
           ? content.trim().slice(0, 80)
           : attachments?.length
-            ? '[Tệp đính kèm]'
+            ? '[Tá»‡p Ä‘Ă­nh kĂ¨m]'
             : '';
-        const notifPayload = { type: 'CHAT', title: `Tin nhắn từ ${senderName}`, body: preview, data: { threadId } };
+        const notifPayload = { type: 'CHAT', title: `Tin nháº¯n tá»« ${senderName}`, body: preview, data: { threadId } };
 
         if (user.role !== 'ADMIN') {
           // Notify all admins
@@ -171,7 +170,7 @@ export const sendMessage = async (req: Request, res: Response) => {
           });
           io.to('role_admin').emit('notification', notifPayload);
         } else {
-          // Admin sends → notify student (and teacher if present)
+          // Admin sends â†’ notify student (and teacher if present)
           const recipients = [thread.studentId, thread.teacherId].filter(Boolean) as string[];
           if (recipients.length > 0) {
             await prisma.notification.createMany({
@@ -281,7 +280,7 @@ export const listThreadMembers = async (req: Request, res: Response) => {
   }
 };
 
-// POST /api/chat/messages/:id/revoke — revoke (soft-delete) a message
+// POST /api/chat/messages/:id/revoke â€” revoke (soft-delete) a message
 export const revokeMessage = async (req: Request, res: Response) => {
   try {
     const user = req.user as Express.UserPayload;
@@ -295,7 +294,7 @@ export const revokeMessage = async (req: Request, res: Response) => {
     const updated = await prisma.chatMessage.update({
       where: { id: messageId },
       data: {
-        content: '[Tin nhắn đã bị thu hồi]',
+        content: '[Tin nháº¯n Ä‘Ă£ bá»‹ thu há»“i]',
         deletedByAdminAt: new Date(),
         deletedByAdminId: user.id,
       },
@@ -310,7 +309,7 @@ export const revokeMessage = async (req: Request, res: Response) => {
   }
 };
 
-// POST /api/chat/admin/threads/:id/lock — lock a thread (admin only)
+// POST /api/chat/admin/threads/:id/lock â€” lock a thread (admin only)
 export const lockThread = async (req: Request, res: Response) => {
   try {
     const threadId = req.params.id;
@@ -325,7 +324,7 @@ export const lockThread = async (req: Request, res: Response) => {
   }
 };
 
-// POST /api/chat/admin/threads/:id/unlock — unlock a thread (admin only)
+// POST /api/chat/admin/threads/:id/unlock â€” unlock a thread (admin only)
 export const unlockThread = async (req: Request, res: Response) => {
   try {
     const threadId = req.params.id;

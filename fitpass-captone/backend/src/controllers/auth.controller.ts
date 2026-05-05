@@ -2,9 +2,7 @@ import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { EmailService } from "../services/email.service";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 const authService = new AuthService();
 const emailService = new EmailService();

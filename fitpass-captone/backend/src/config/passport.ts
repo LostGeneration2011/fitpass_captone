@@ -1,9 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma';
 import { EmailService } from '../services/email.service';
-
-const prisma = new PrismaClient();
 const emailService = new EmailService();
 
 // Store to temporarily hold signup role during OAuth flow (timestamp -> role mapping)

@@ -13,8 +13,8 @@ export class EmailService {
       port: 587,
       secure: false,
       auth: {
-        user: '47f04291ebf76a',
-        pass: '27affaced956c4'
+        user: process.env.MAILTRAP_USER || '',
+        pass: process.env.MAILTRAP_PASS || ''
       }
     });
 
@@ -22,8 +22,8 @@ export class EmailService {
     this.gmailTransporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER || 'anhdinh0408@gmail.com',
-        pass: process.env.GMAIL_PASS || 'xxrz mxvx cjjn jfhg'
+        user: process.env.GMAIL_USER || '',
+        pass: process.env.GMAIL_PASS || ''
       }
     });
   }

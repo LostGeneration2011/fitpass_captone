@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import { ClassService } from "../services/class.service";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from '../config/prisma';
 
 const classService = new ClassService();
-const prisma = new PrismaClient();
 
 export const createClass = async (req: Request, res: Response) => {
   try {

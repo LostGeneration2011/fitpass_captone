@@ -1,15 +1,14 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { NetworkUtils } from '../utils/network.util';
 import { EmailService } from '../services/email.service';
+import { prisma } from '../config/prisma';
 
-const prisma = new PrismaClient();
 const emailService = new EmailService();
 
-// PayPal configuration - Default Application  
-const PAYPAL_CLIENT_ID = 'Abr6zm4v7lKtOodWsBeUGSQ2SW1Jmz-8zhSILIAYPj7U62zQxRM7zJS-fyIwqLIrYCNFIJ8hlbqrf_O2';
-const PAYPAL_CLIENT_SECRET = 'EGg3qT1IhzB_EPQfE012rsvyG0614PYeLNLvvL5AXboHihDmcPLVXoxwaOmQC_Skj6n56q-IUuDLbVzS';
-const PAYPAL_BASE_URL = 'https://api.sandbox.paypal.com';
+// PayPal configuration — loaded from environment variables
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
+const PAYPAL_BASE_URL = process.env.PAYPAL_BASE_URL || 'https://api.sandbox.paypal.com';
 
 interface PayPalTokenResponse {
   access_token: string;

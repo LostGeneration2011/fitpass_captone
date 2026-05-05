@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient, UserRole } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { UserRole } from '@prisma/client';
+import { prisma } from '../config/prisma';
 
 // GET /api/teachers/salary-overview - Simple salary overview based on completed sessions
 export const getTeachersSalaryOverview = async (req: Request, res: Response): Promise<void> => {

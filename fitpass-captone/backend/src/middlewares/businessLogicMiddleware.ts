@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma';
 
 /**
  * Middleware để kiểm tra quyền admin cho business logic endpoints
