@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { NetworkUtils } from '../utils/network.util';
+import { EmailService } from '../services/email.service';
 
 const prisma = new PrismaClient();
+const emailService = new EmailService();
 
 // PayPal configuration - Default Application  
 const PAYPAL_CLIENT_ID = 'Abr6zm4v7lKtOodWsBeUGSQ2SW1Jmz-8zhSILIAYPj7U62zQxRM7zJS-fyIwqLIrYCNFIJ8hlbqrf_O2';
@@ -296,6 +298,27 @@ export const capturePayPalPayment = async (req: Request, res: Response) => {
               }
             });
             console.log('💳 [CAPTURE] User package activated with', userPackageWithPackage.package.credits, 'credits');
+
+            // Send payment receipt email
+            try {
+              const user = await prisma.user.findUnique({
+                where: { id: transaction.userId },
+                select: { email: true, fullName: true, googleId: true }
+              });
+              if (user) {
+                await emailService.sendPaymentReceiptEmail(
+                  user.email,
+                  user.fullName,
+                  userPackageWithPackage.package.name,
+                  userPackageWithPackage.package.price,
+                  userPackageWithPackage.package.credits,
+                  transaction.id,
+                  !!user.googleId
+                );
+              }
+            } catch (emailErr) {
+              console.error('💳 [CAPTURE] Failed to send receipt email:', emailErr);
+            }
           }
         }
 

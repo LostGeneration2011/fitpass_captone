@@ -116,9 +116,9 @@ export class EmailService {
     }
   }
 
-  async sendWelcomeEmail(to: string, fullName: string, role: string): Promise<void> {
+  async sendWelcomeEmail(to: string, fullName: string, role: string, isGoogleUser: boolean = true): Promise<void> {
     try {
-      console.log(`📧 Preparing welcome email for: ${to} (${role})`);
+      console.log(`📧 Preparing welcome email for: ${to} (${role}, isGoogleUser=${isGoogleUser})`);
       
       const mailOptions = {
         from: '"FitPass Team" <noreply@fitpass.com>',
@@ -181,8 +181,10 @@ export class EmailService {
         `
       };
 
-      const info = await this.gmailTransporter.sendMail(mailOptions);
-      console.log(`✅ Welcome email sent via Gmail to ${to}`);
+      const transporter = isGoogleUser ? this.gmailTransporter : this.mailtrapTransporter;
+      const via = isGoogleUser ? 'Gmail' : 'Mailtrap';
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ Welcome email sent via ${via} to ${to}`);
       console.log(`   📨 Message ID: ${info.messageId}`);
       console.log(`   📨 Response: ${info.response}`);
     } catch (error) {
@@ -363,6 +365,101 @@ export class EmailService {
     } catch (error) {
       console.error('❌ Class reminder email sending failed:', error);
       // Don't throw error - class operations should continue even if email fails
+    }
+  }
+
+  async sendPaymentReceiptEmail(
+    to: string,
+    fullName: string,
+    packageName: string,
+    amountVND: number,
+    credits: number,
+    transactionId: string,
+    isGoogleUser: boolean
+  ): Promise<void> {
+    const formattedAmount = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amountVND);
+    const amountUSD = (amountVND / 24000).toFixed(2);
+    const paidAt = new Date().toLocaleString('vi-VN', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+    });
+
+    const mailOptions = {
+      from: '"FitPass Payments" <payments@fitpass.com>',
+      to,
+      subject: `🧾 Xác nhận thanh toán FitPass – ${packageName}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8fafc;">
+          <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1f2937; font-size: 28px; margin-bottom: 6px;">🏋️ FitPass</h1>
+              <p style="color: #6b7280; margin: 0; font-size: 16px;">Biên lai thanh toán</p>
+            </div>
+
+            <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 28px;">
+              <div style="font-size: 40px; margin-bottom: 8px;">✅</div>
+              <h2 style="color: #166534; margin: 0 0 6px 0; font-size: 22px;">Thanh toán thành công!</h2>
+              <p style="color: #15803d; margin: 0; font-size: 15px;">Gói tập của bạn đã được kích hoạt ngay lập tức.</p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px;">
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Khách hàng</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${fullName}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Gói tập</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${packageName}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Số buổi</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${credits} buổi</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Số tiền (VND)</td>
+                <td style="padding: 12px 0; color: #111827; font-weight: 600; text-align: right;">${formattedAmount}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Tương đương USD</td>
+                <td style="padding: 12px 0; color: #6b7280; text-align: right;">≈ $${amountUSD}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Phương thức</td>
+                <td style="padding: 12px 0; color: #111827; text-align: right;">💳 PayPal</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Thời gian</td>
+                <td style="padding: 12px 0; color: #111827; text-align: right;">${paidAt}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Mã giao dịch</td>
+                <td style="padding: 12px 0; color: #6b7280; font-size: 12px; text-align: right; word-break: break-all;">${transactionId}</td>
+              </tr>
+            </table>
+
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+              <p style="color: #1d4ed8; margin: 0; font-size: 14px; line-height: 1.6;">
+                💡 <strong>Lưu ý:</strong> Số buổi đã được cộng vào tài khoản. Mở app FitPass để đăng ký lớp học ngay.
+              </p>
+            </div>
+
+            <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 6px 0;">Cần hỗ trợ? Liên hệ <a href="mailto:support@fitpass.com" style="color: #4f46e5;">support@fitpass.com</a></p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">© 2025 FitPass. Bảo lưu mọi quyền.</p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+
+    try {
+      const transporter = isGoogleUser ? this.gmailTransporter : this.mailtrapTransporter;
+      const via = isGoogleUser ? 'Gmail' : 'Mailtrap';
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Payment receipt email sent via ${via} to ${to}`);
+    } catch (error) {
+      console.error('❌ Payment receipt email sending failed:', error);
+      // Don't throw - payment is already complete
     }
   }
 }
