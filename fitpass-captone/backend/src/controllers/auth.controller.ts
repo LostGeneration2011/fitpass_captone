@@ -115,6 +115,8 @@ export const changePassword = async (req: any, res: Response) => {
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
 
+    console.log(`🔐 [ChangePassword] Password updated for userId=${userId}, email=${user.email}. Triggering confirmation email...`);
+
     const emailResult = await Promise.race<boolean | null>([
       emailService.sendPasswordChangedConfirmationEmail(
         user.email,
@@ -123,6 +125,8 @@ export const changePassword = async (req: any, res: Response) => {
       ),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
     ]);
+
+    console.log(`📧 [ChangePassword] Email result for userId=${userId}:`, emailResult);
 
     if (emailResult === true) {
       return res.json({
