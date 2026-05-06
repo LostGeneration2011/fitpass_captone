@@ -300,7 +300,17 @@ export const chatAPI = {
 
 export const forumModerationAPI = {
   listPosts: (params?: { limit?: number; cursor?: string; status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'all' }) => {
-    const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const searchParams = new URLSearchParams();
+    if (typeof params?.limit === 'number') {
+      searchParams.set('limit', String(params.limit));
+    }
+    if (params?.cursor) {
+      searchParams.set('cursor', params.cursor);
+    }
+    if (params?.status) {
+      searchParams.set('status', params.status);
+    }
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return apiGet(`/forum/admin/posts${qs}`);
   },
   getPostDetail: (postId: string) => apiGet(`/forum/admin/posts/${postId}`),
@@ -314,7 +324,17 @@ export const forumModerationAPI = {
   unhideComment: (commentId: string) =>
     apiPost(`/forum/admin/comments/${commentId}/unhide`, {}),
   listReports: (params?: { status?: string; cursor?: string; limit?: number }) => {
-    const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const searchParams = new URLSearchParams();
+    if (typeof params?.limit === 'number') {
+      searchParams.set('limit', String(params.limit));
+    }
+    if (params?.cursor) {
+      searchParams.set('cursor', params.cursor);
+    }
+    if (params?.status) {
+      searchParams.set('status', params.status);
+    }
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return apiGet(`/forum/admin/reports${qs}`);
   },
   reviewReport: (reportId: string, data: { action: string; hideContent?: boolean; reviewNote?: string }) =>

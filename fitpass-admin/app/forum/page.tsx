@@ -133,7 +133,14 @@ export default function ForumModerationPage() {
         cursor: opts?.cursor || undefined,
         status: moderationFilter,
       });
-      const nextPosts = Array.isArray(res?.data) ? res.data : [];
+      const payload = res?.data && !Array.isArray(res?.data) ? res.data : res;
+      const nextPosts = Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res)
+        ? res
+        : [];
 
       setPosts((prev) => {
         if (!append) return nextPosts;
@@ -142,15 +149,16 @@ export default function ForumModerationPage() {
         return Array.from(dedup.values());
       });
 
-      setNextCursor(res?.paging?.nextCursor || null);
-      setHasNextPage(Boolean(res?.paging?.hasNextPage));
+      const paging = payload?.paging || res?.paging;
+      setNextCursor(paging?.nextCursor || null);
+      setHasNextPage(Boolean(paging?.hasNextPage));
 
       if (!append && selectedPostId && !nextPosts.some((post: ForumPost) => post.id === selectedPostId)) {
         setSelectedPostId(null);
         setComments([]);
       }
     } catch (e: any) {
-      setError(e?.response?.data?.message || "Không tải được forum");
+      setError(e?.response?.data?.message || e?.response?.data?.error || "Không tải được forum");
     } finally {
       if (append) {
         setLoadingMore(false);
