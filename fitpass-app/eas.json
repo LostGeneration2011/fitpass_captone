@@ -9,8 +9,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API": "https://fitpass-backend.onrender.com/api",
-        "EXPO_PUBLIC_WS": "wss://fitpass-backend.onrender.com/ws",
+        "EXPO_PUBLIC_API": "https://fortunate-wholeness-production.up.railway.app/api",
+        "EXPO_PUBLIC_WS": "wss://fortunate-wholeness-production.up.railway.app/ws",
         "IS_PRODUCTION": "true"
       }
     },
@@ -19,15 +19,15 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API": "https://fitpass-backend.onrender.com/api",
-        "EXPO_PUBLIC_WS": "wss://fitpass-backend.onrender.com/ws",
+        "EXPO_PUBLIC_API": "https://fortunate-wholeness-production.up.railway.app/api",
+        "EXPO_PUBLIC_WS": "wss://fortunate-wholeness-production.up.railway.app/ws",
         "IS_PRODUCTION": "true"
       }
     },
     "production-ios": {
       "env": {
-        "EXPO_PUBLIC_API": "https://fitpass-backend.onrender.com/api",
-        "EXPO_PUBLIC_WS": "wss://fitpass-backend.onrender.com/ws",
+        "EXPO_PUBLIC_API": "https://fortunate-wholeness-production.up.railway.app/api",
+        "EXPO_PUBLIC_WS": "wss://fortunate-wholeness-production.up.railway.app/ws",
         "IS_PRODUCTION": "true"
       }
     }
