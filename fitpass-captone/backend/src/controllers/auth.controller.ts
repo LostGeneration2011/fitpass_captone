@@ -115,13 +115,33 @@ export const changePassword = async (req: any, res: Response) => {
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
 
-    void emailService.sendPasswordChangedConfirmationEmail(
-      user.email,
-      user.fullName,
-      !!user.googleId
-    );
+    const emailResult = await Promise.race<boolean | null>([
+      emailService.sendPasswordChangedConfirmationEmail(
+        user.email,
+        user.fullName,
+        !!user.googleId
+      ),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+    ]);
 
-    return res.json({ message: "Password changed successfully" });
+    if (emailResult === true) {
+      return res.json({
+        message: "Password changed successfully",
+        warning: "Email xác nhận đã được gửi."
+      });
+    }
+
+    if (emailResult === false) {
+      return res.json({
+        message: "Password changed successfully",
+        warning: "Đổi mật khẩu thành công nhưng chưa gửi được email xác nhận."
+      });
+    }
+
+    return res.json({
+      message: "Password changed successfully",
+      warning: "Đổi mật khẩu thành công. Email xác nhận đang được xử lý, vui lòng kiểm tra lại sau ít phút."
+    });
   } catch (err: any) {
     console.error('Change password error:', err);
     return res.status(500).json({ error: err.message || 'Internal server error' });

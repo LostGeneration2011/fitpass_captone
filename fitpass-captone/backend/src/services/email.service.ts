@@ -394,7 +394,7 @@ export class EmailService {
     to: string,
     fullName: string,
     isGoogleUser: boolean = false
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
       const changedAt = new Date().toLocaleString('vi-VN', {
         year: 'numeric',
@@ -433,10 +433,11 @@ export class EmailService {
         'Password change confirmation email'
       );
       this.logEmailStatus('SUCCESS', 'Password change confirmation email', `Final provider: ${via}; recipient: ${to}`);
+      return true;
     } catch (error) {
       this.logEmailStatus('FAILED', 'Password change confirmation email', `Unable to deliver to ${to}`);
       console.error('❌ Password change confirmation email failed:', error);
-      // Do not throw: password has already been changed successfully.
+      return false;
     }
   }
 
