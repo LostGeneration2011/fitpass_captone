@@ -326,6 +326,51 @@ export class EmailService {
     }
   }
 
+  async sendPasswordChangedConfirmationEmail(
+    to: string,
+    fullName: string,
+    isGoogleUser: boolean = false
+  ): Promise<void> {
+    try {
+      const changedAt = new Date().toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const mailOptions = {
+        from: '"FitPass Security" <security@fitpass.com>',
+        to,
+        subject: '✅ Mật khẩu FitPass đã được thay đổi',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8fafc;">
+            <div style="background: white; padding: 28px; border-radius: 10px; border: 1px solid #e5e7eb;">
+              <h2 style="color: #111827; margin-top: 0;">Xin chào ${fullName},</h2>
+              <p style="color: #374151; line-height: 1.6;">
+                Mật khẩu tài khoản FitPass của bạn đã được thay đổi thành công lúc <strong>${changedAt}</strong>.
+              </p>
+              <p style="color: #374151; line-height: 1.6;">
+                Nếu bạn không thực hiện thao tác này, vui lòng đặt lại mật khẩu ngay và liên hệ <a href="mailto:support@fitpass.com">support@fitpass.com</a>.
+              </p>
+              <div style="margin-top: 20px; padding: 12px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; color: #92400e; font-size: 14px;">
+                Lưu ý bảo mật: Không chia sẻ mật khẩu hoặc mã xác thực cho bất kỳ ai.
+              </div>
+            </div>
+          </div>
+        `
+      };
+
+      const { transporter, via } = this.getPasswordResetTransporter(to, isGoogleUser);
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Password change confirmation email sent via ${via} to ${to}`);
+    } catch (error) {
+      console.error('❌ Password change confirmation email failed:', error);
+      // Do not throw: password has already been changed successfully.
+    }
+  }
+
   async sendClassReminderEmail(to: string, fullName: string, className: string, startTime: Date): Promise<void> {
     try {
       const timeString = startTime.toLocaleString('en-US', {

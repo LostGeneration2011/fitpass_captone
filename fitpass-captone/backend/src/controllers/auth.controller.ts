@@ -115,6 +115,12 @@ export const changePassword = async (req: any, res: Response) => {
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
 
+    await emailService.sendPasswordChangedConfirmationEmail(
+      user.email,
+      user.fullName,
+      !!user.googleId
+    );
+
     return res.json({ message: "Password changed successfully" });
   } catch (err: any) {
     console.error('Change password error:', err);
