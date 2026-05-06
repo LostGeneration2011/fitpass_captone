@@ -297,15 +297,15 @@ export class EmailService {
         `
       };
 
-      const transporter = isGoogleUser ? this.gmailTransporter : this.mailtrapTransporter;
-      const via = isGoogleUser ? 'Gmail' : 'Mailtrap';
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`✅ Welcome email sent via ${via} to ${to}`);
-      console.log(`   📨 Message ID: ${info.messageId}`);
-      console.log(`   📨 Response: ${info.response}`);
+      if (isGoogleUser) {
+        await this.gmailTransporter.sendMail(mailOptions);
+        console.log(`✅ Welcome email sent via Gmail to ${to}`);
+      } else {
+        await this.sendViaMailtrapApi(mailOptions);
+        console.log(`✅ Welcome email sent via Mailtrap API to ${to}`);
+      }
     } catch (error) {
       console.error(`❌ Email sending failed for ${to}:`, error);
-      console.error(`   Error message: ${error instanceof Error ? error.message : 'Unknown error'}`);
       // Don't throw error - registration should succeed even if email fails
     }
   }
@@ -542,7 +542,7 @@ export class EmailService {
         `
       };
 
-      await this.mailtrapTransporter.sendMail(mailOptions);
+      await this.sendViaMailtrapApi(mailOptions);
       console.log(`✅ Class reminder email sent to ${to} for ${className}`);
     } catch (error) {
       console.error('❌ Class reminder email sending failed:', error);
@@ -635,10 +635,13 @@ export class EmailService {
     };
 
     try {
-      const transporter = isGoogleUser ? this.gmailTransporter : this.mailtrapTransporter;
-      const via = isGoogleUser ? 'Gmail' : 'Mailtrap';
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Payment receipt email sent via ${via} to ${to}`);
+      if (isGoogleUser) {
+        await this.gmailTransporter.sendMail(mailOptions);
+        console.log(`✅ Payment receipt email sent via Gmail to ${to}`);
+      } else {
+        await this.sendViaMailtrapApi(mailOptions);
+        console.log(`✅ Payment receipt email sent via Mailtrap API to ${to}`);
+      }
     } catch (error) {
       console.error('❌ Payment receipt email sending failed:', error);
       // Don't throw - payment is already complete
