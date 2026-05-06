@@ -1,4 +1,11 @@
-import { PrismaClient, UserRole, ReactionType, ForumModerationStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  UserRole,
+  ReactionType,
+  ForumModerationStatus,
+  PaymentMethod,
+  TransactionStatus,
+} from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -142,35 +149,47 @@ async function main() {
 
   console.log(`📚 Created ${classes.length} classes`);
 
-  // Create Sessions until end of June 2026 (starting from tomorrow to ensure future dates)
+  // Create sessions from recent past to next 3 months (balanced volume for demos)
   const sessions: any[] = [];
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() + 1); // Start from tomorrow
-  startDate.setHours(0, 0, 0, 0); // Reset to midnight
-  const endDate = new Date(2026, 5, 30); // June 30, 2026
-  endDate.setHours(23, 59, 59, 999);
+  const now = new Date();
   const msPerDay = 24 * 60 * 60 * 1000;
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / msPerDay) + 1;
-  
-  for (let day = 0; day < totalDays; day++) {
-    for (let classIndex = 0; classIndex < classes.length; classIndex++) {
-      if (classes[classIndex] && rooms[classIndex % rooms.length]) {
-        const sessionDate = new Date(startDate);
-        sessionDate.setDate(startDate.getDate() + day);
-        
-        const startHour = 7 + (classIndex % 4) * 2; // 7AM, 9AM, 11AM, 1PM
+  const windowStart = new Date(now.getTime() - 14 * msPerDay); // include some completed sessions
+  const windowEnd = new Date(now);
+  windowEnd.setMonth(windowEnd.getMonth() + 3); // exactly 3 months ahead
+
+  for (let classIndex = 0; classIndex < classes.length; classIndex++) {
+    const classItem = classes[classIndex];
+    const room = rooms[classIndex % rooms.length];
+    if (!classItem || !room) continue;
+
+    // 2 sessions per week for each class across the whole window
+    for (let week = 0; week < 15; week++) {
+      for (const dayOffset of [1, 4]) {
+        const sessionDate = new Date(windowStart);
+        sessionDate.setDate(windowStart.getDate() + week * 7 + dayOffset);
+
+        if (sessionDate > windowEnd) continue;
+
+        const startHour = 7 + (classIndex % 5) * 2; // 7,9,11,13,15
         sessionDate.setHours(startHour, 0, 0, 0);
-        
+
         const endTime = new Date(sessionDate);
-        endTime.setMinutes(sessionDate.getMinutes() + classes[classIndex].duration);
-        
+        endTime.setMinutes(sessionDate.getMinutes() + classItem.duration);
+
+        let status: 'DONE' | 'ACTIVE' | 'UPCOMING' = 'UPCOMING';
+        if (endTime < now) {
+          status = 'DONE';
+        } else if (sessionDate <= now && endTime >= now) {
+          status = 'ACTIVE';
+        }
+
         const session = await prisma.session.create({
           data: {
-            classId: classes[classIndex].id,
+            classId: classItem.id,
             startTime: sessionDate,
-            endTime: endTime,
-            status: day === 0 ? 'ACTIVE' : 'UPCOMING',
-            roomId: rooms[classIndex % rooms.length].id,
+            endTime,
+            status,
+            roomId: room.id,
           },
         });
         sessions.push(session);
@@ -291,9 +310,9 @@ async function main() {
 
   console.log(`✅ Created ${testClasses.length} premium test classes for ${teacher1.fullName}`);
 
-  // Create rich session data until end of June 2026 (multiple time slots per day)
+  // Create richer session data for key demo classes (kept moderate)
   const testSessions: any[] = [];
-  const today = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   
   for (let classIdx = 0; classIdx < testClasses.length; classIdx++) {
@@ -301,12 +320,11 @@ async function main() {
     const config = testClassConfigs[classIdx]!;
     const room = rooms[config.roomIndex];
     
-    // Create sessions until end of June 2026 at different times
-    const totalTestDays = Math.ceil((endDate.getTime() - today.getTime()) / msPerDay) + 1;
-    for (let day = 0; day < totalTestDays; day++) {
+    // 3 sessions/week per class for next 12 weeks
+    for (let week = 0; week < 12; week++) {
       for (let timeSlot = 0; timeSlot < 3; timeSlot++) {
         const sessionDate = new Date(today);
-        sessionDate.setDate(today.getDate() + day);
+        sessionDate.setDate(today.getDate() + week * 7 + timeSlot * 2);
         
         // Time slots: 7:00 AM, 10:00 AM, 5:00 PM
         const startHours = [7, 10, 17];
@@ -320,9 +338,7 @@ async function main() {
             classId: testClass.id,
             startTime: sessionDate,
             endTime: endTime,
-            status: day === 0 && timeSlot === 0 ? 'ACTIVE' : 
-                    day === 0 ? 'UPCOMING' :
-                    day <= 1 ? 'UPCOMING' : 'UPCOMING',
+            status: sessionDate < now ? 'DONE' : 'UPCOMING',
             roomId: room.id,
           },
         });
@@ -408,7 +424,7 @@ async function main() {
   console.log(`   Email: giaovien1@fitpass.com`);
   console.log(`   Password: FitPass@2024!`);
   console.log(`   Classes: ${testClasses.length} (Yoga Căng Cơ, HIIT Training, Pilates Core)`);
-  console.log(`   Sessions: ${testSessions.length} (7 days × 3 times per day)`);
+  console.log(`   Sessions: ${testSessions.length} (12 weeks × 3 sessions/week)`);
   console.log(`   Students enrolled: ${testEnrollments.length / testClasses.length} students per class`);
   console.log(`   Test bookings: ${testBookingCount}`);
   console.log(`\n💡 FEATURES TO TEST FOR STUDENT:`);
@@ -450,6 +466,106 @@ async function main() {
         });
       }
     }
+  }
+
+  // Create transactions for purchased user packages (admin finance demo)
+  const userPackages = await prisma.userPackage.findMany({
+    include: {
+      package: true,
+      user: true,
+    },
+  });
+
+  for (const up of userPackages) {
+    await prisma.transaction.create({
+      data: {
+        userPackageId: up.id,
+        userId: up.userId,
+        amount: up.package.price,
+        paymentMethod: PaymentMethod.MOMO,
+        paymentId: `DEMO-PAY-${up.id.slice(0, 8).toUpperCase()}`,
+        status: TransactionStatus.COMPLETED,
+      },
+    });
+  }
+
+  // Create class reviews and reactions for analytics/moderation demo
+  const reviewTexts = [
+    'Lop rat chat luong, giao vien nhiet tinh.',
+    'Lich hoc hop ly, bai tap de theo doi.',
+    'Phong hoc sach se, khong khi rat tot.',
+    'Noi dung huu ich, em cam thay tien bo ro.',
+    'Muon co them tai lieu bo tro sau buoi hoc.',
+  ];
+
+  for (let i = 0; i < Math.min(24, enrollments.length); i++) {
+    const enrollment = enrollments[i];
+    await prisma.classReview.create({
+      data: {
+        classId: enrollment.classId,
+        studentId: enrollment.studentId,
+        rating: 4 + (i % 2),
+        comment: reviewTexts[i % reviewTexts.length],
+      },
+    });
+
+    await prisma.classReaction.create({
+      data: {
+        classId: enrollment.classId,
+        studentId: enrollment.studentId,
+        type: i % 5 === 0 ? ReactionType.DISLIKE : ReactionType.LIKE,
+      },
+    });
+  }
+
+  // Create salary records for 3 recent months for each teacher
+  const currentMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  for (const teacher of teachers) {
+    for (let m = 0; m < 3; m++) {
+      const d = new Date(currentMonthDate);
+      d.setMonth(currentMonthDate.getMonth() - m);
+      const totalHours = 18 + ((teacher.id.length + m) % 10);
+      const totalAmount = totalHours * (teacher.hourlyRate || 250000);
+
+      await prisma.salaryRecord.create({
+        data: {
+          teacherId: teacher.id,
+          month: d.getMonth() + 1,
+          year: d.getFullYear(),
+          totalHours,
+          hourlyRate: teacher.hourlyRate || 250000,
+          totalAmount,
+          status: m === 0 ? 'PENDING' : 'PAID',
+          paidDate: m === 0 ? null : new Date(d.getFullYear(), d.getMonth(), 28),
+          paidBy: m === 0 ? null : admin.id,
+          paymentMethod: m === 0 ? null : 'BANK_TRANSFER',
+          note: 'Demo payroll data for presentation',
+        },
+      });
+    }
+  }
+
+  // Create notifications for all roles
+  const notificationTargets = [admin, ...teachers.slice(0, 3), ...students.slice(0, 6)];
+  for (const user of notificationTargets) {
+    await prisma.notification.createMany({
+      data: [
+        {
+          userId: user.id,
+          title: 'Thong bao he thong',
+          body: 'Du lieu demo da duoc khoi tao day du cho buoi thuyet trinh.',
+          type: 'INFO',
+          isRead: false,
+        },
+        {
+          userId: user.id,
+          title: 'Nhac lich hoc',
+          body: 'Ban co buoi hoc sap toi trong lich 3 thang ke tiep.',
+          type: 'REMINDER',
+          isRead: true,
+        },
+      ],
+    });
   }
 
   // Seed Forum data for end-to-end moderation testing
