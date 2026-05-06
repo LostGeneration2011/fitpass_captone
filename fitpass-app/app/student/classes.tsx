@@ -51,7 +51,7 @@ export default function StudentClassesScreen() {
               const enrollmentStudentId = e?.studentId || e?.userId || e?.student?.id || e?.user?.id;
               const sameStudent = !enrollmentStudentId || enrollmentStudentId === user.id;
               const classStatus = String(e?.class?.status || '').toUpperCase();
-              const validStatus = !classStatus || classStatus === 'APPROVED' || classStatus === 'PENDING' || classStatus === 'ACTIVE';
+              const validStatus = !classStatus || classStatus === 'APPROVED' || classStatus === 'ACTIVE';
 
               console.log('📅 Classes - Checking enrollment:', e.id, 'studentId:', enrollmentStudentId, 'sameStudent:', sameStudent);
               console.log('🏫 Class status:', classStatus || '(missing)', 'Class name:', e.class?.name);

@@ -4,7 +4,7 @@ export class ClassService {
   async createClass(data: any) {
     console.log('ClassService: Creating class with data:', data);
     
-    const allowed = ["name", "description", "capacity", "duration", "teacherId"];
+    const allowed = ["name", "description", "capacity", "duration", "teacherId", "type", "level"];
 
     const filtered: any = {};
     for (const key of allowed) {
@@ -200,7 +200,7 @@ export class ClassService {
   }
 
   async updateClass(id: string, data: any) {
-    const allowed = ["name", "description", "capacity", "duration", "teacherId"];
+    const allowed = ["name", "description", "capacity", "duration", "teacherId", "type", "level"];
 
     const filtered: any = {};
     for (const key of allowed) {

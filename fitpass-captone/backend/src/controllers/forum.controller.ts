@@ -14,6 +14,7 @@ function canParticipateInCommunity(role?: string) {
 export async function getPosts(req: Request, res: Response) {
   const limit = Number(req.query.limit) || 10;
   const cursor = req.query.cursor as string | undefined;
+  const currentUserId = (req.user as Express.UserPayload | undefined)?.id;
   const posts = await prisma.forumPost.findMany({
     where: {
       moderationStatus: 'APPROVED',
@@ -29,7 +30,25 @@ export async function getPosts(req: Request, res: Response) {
       reactions: true,
     },
   });
-  res.json(posts);
+
+  const normalizedPosts = posts.map((post) => {
+    const summary = post.reactions.reduce((acc, reaction) => {
+      acc[reaction.type] = (acc[reaction.type] || 0) + 1;
+      return acc;
+    }, {} as Record<ReactionType, number>);
+
+    const myReaction = currentUserId
+      ? post.reactions.find((reaction) => reaction.userId === currentUserId)?.type || null
+      : null;
+
+    return {
+      ...post,
+      reactionSummary: summary,
+      myReaction,
+    };
+  });
+
+  res.json(normalizedPosts);
 }
 
 // Create a new forum post
@@ -158,10 +177,19 @@ export async function addReaction(req: Request, res: Response) {
     return res.status(403).json({ error: 'Only students and teachers can react in forum' });
   }
   if (!userId || !type || !id) return res.status(400).json({ error: 'Missing data' });
+  if (!['LIKE', 'LOVE', 'WOW'].includes(String(type))) {
+    return res.status(400).json({ error: 'Invalid reaction type' });
+  }
   const post = await prisma.forumPost.findUnique({ where: { id } });
   if (!post || post.isHidden || post.moderationStatus !== 'APPROVED') {
     return res.status(404).json({ error: 'Forum post is not available for reactions' });
   }
+
+  // Keep one active reaction per user on each post.
+  await prisma.forumReaction.deleteMany({
+    where: { userId, postId: id, type: { not: type } },
+  });
+
   const reaction = await prisma.forumReaction.upsert({
     where: { userId_postId_type: { userId, postId: id, type } },
     update: {},
@@ -179,12 +207,19 @@ export async function removeReaction(req: Request, res: Response) {
   if (!canParticipateInCommunity(user?.role)) {
     return res.status(403).json({ error: 'Only students and teachers can react in forum' });
   }
-  if (!userId || !type || !id) return res.status(400).json({ error: 'Missing data' });
+  if (!userId || !id) return res.status(400).json({ error: 'Missing data' });
   const post = await prisma.forumPost.findUnique({ where: { id } });
   if (!post || post.isHidden || post.moderationStatus !== 'APPROVED') {
     return res.status(404).json({ error: 'Forum post is not available for reactions' });
   }
-  await prisma.forumReaction.delete({ where: { userId_postId_type: { userId, postId: id, type } } });
+
+  if (type) {
+    await prisma.forumReaction.deleteMany({ where: { userId, postId: id, type } });
+  } else {
+    // Backward-compatible behavior for clients that remove without specifying type.
+    await prisma.forumReaction.deleteMany({ where: { userId, postId: id } });
+  }
+
   res.json({ success: true });
 }
 

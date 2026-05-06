@@ -16,22 +16,30 @@ export const createClass = async (req: Request, res: Response) => {
       });
     }
 
-    // Validate type and level (required for filtering)
+    // Validate type and level when provided, otherwise set safe defaults.
     const validTypes = ['YOGA', 'CARDIO', 'STRENGTH', 'DANCE', 'PILATES', 'OTHER'];
     const validLevels = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL_LEVELS'];
-    
-    if (!req.body.type || !validTypes.includes(req.body.type)) {
+
+    if (req.body.type && !validTypes.includes(req.body.type)) {
       return res.status(400).json({ 
-        error: "Invalid or missing type", 
+        error: "Invalid type", 
         validTypes 
       });
     }
 
-    if (!req.body.level || !validLevels.includes(req.body.level)) {
+    if (req.body.level && !validLevels.includes(req.body.level)) {
       return res.status(400).json({ 
-        error: "Invalid or missing level", 
+        error: "Invalid level", 
         validLevels 
       });
+    }
+
+    if (!req.body.type) {
+      req.body.type = 'OTHER';
+    }
+
+    if (!req.body.level) {
+      req.body.level = 'ALL_LEVELS';
     }
 
     const created = await classService.createClass(req.body);

@@ -216,23 +216,27 @@ export class EmailService {
 
   async sendPasswordResetEmail(to: string, fullName: string, resetToken: string): Promise<void> {
     try {
-      // Multi-tier URL detection for maximum reliability
-      let webResetUrl = `http://localhost:3001/reset-password?token=${resetToken}`;
-      let urlSource = 'localhost (fallback)';
-      
-      // Priority 1: Live ngrok API (most current)
-      const liveNgrokUrl = await this.getCurrentNgrokUrl();
-      if (liveNgrokUrl) {
-        webResetUrl = `${liveNgrokUrl}/reset-password?token=${resetToken}`;
-        urlSource = 'live ngrok API';
-      } else {
-        // Priority 2: Environment variable (cached)
-        const envNgrokUrl = process.env.NGROK_URL;
-        if (envNgrokUrl && !envNgrokUrl.includes('your-ngrok-url')) {
-          webResetUrl = `${envNgrokUrl}/reset-password?token=${resetToken}`;
-          urlSource = 'environment cache';
+      // Reset password must point to a frontend page, never backend host.
+      const normalizedFrontend = (process.env.FRONTEND_URL || '').trim().replace(/\/+$/, '');
+      const normalizedAdmin = (process.env.ADMIN_URL || '').trim().replace(/\/+$/, '');
+
+      let baseWebUrl = normalizedFrontend || normalizedAdmin || '';
+      let urlSource = normalizedFrontend ? 'FRONTEND_URL' : normalizedAdmin ? 'ADMIN_URL' : 'fallback';
+
+      if (!baseWebUrl) {
+        const liveNgrokUrl = await this.getCurrentNgrokUrl();
+        if (liveNgrokUrl) {
+          baseWebUrl = liveNgrokUrl;
+          urlSource = 'live ngrok API';
+        } else if (process.env.NGROK_URL && !process.env.NGROK_URL.includes('your-ngrok-url')) {
+          baseWebUrl = process.env.NGROK_URL.replace(/\/+$/, '');
+          urlSource = 'NGROK_URL';
+        } else {
+          baseWebUrl = 'http://localhost:3000';
         }
       }
+
+      const webResetUrl = `${baseWebUrl}/reset-password?token=${resetToken}`;
       
       console.log(`🌐 Using ${urlSource}: ${webResetUrl}`);
       

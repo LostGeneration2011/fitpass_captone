@@ -89,9 +89,15 @@ export const getEnrollmentsByClass = async (req: Request, res: Response) => {
 export const getEnrollmentsByStudent = async (req: Request, res: Response) => {
   try {
     const { studentId } = req.query;
+    const user = (req as any).user;
 
     if (!studentId) {
       return res.status(400).json({ error: "studentId is required" });
+    }
+
+    // Prevent data exposure: only ADMIN can query arbitrary studentId.
+    if (user?.role !== 'ADMIN' && String(studentId) !== user?.id) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
 
     const enrollments = await enrollmentService.getEnrollmentsByStudent(studentId as string);

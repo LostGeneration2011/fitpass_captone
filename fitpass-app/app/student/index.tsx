@@ -97,7 +97,7 @@ export default function StudentHomeScreen() {
 
             const classStatus = String(e?.class?.status || '').toUpperCase();
             if (!classStatus) return true;
-            return classStatus === 'APPROVED' || classStatus === 'PENDING' || classStatus === 'ACTIVE';
+            return classStatus === 'APPROVED' || classStatus === 'ACTIVE';
           });
           console.log('📅 Dashboard - Filtered enrollments:', filtered.length);
           setEnrollments(filtered);

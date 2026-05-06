@@ -57,16 +57,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isLoading) {
       const isLoginPage = pathname === '/login';
       const isForgotPasswordPage = pathname === '/forgot-password';
+      const isResetPasswordPage = pathname === '/reset-password';
       const authenticated = !!user && user.role === 'ADMIN';
 
-      // Allow public access to /login and /forgot-password
-      if (!authenticated && !isLoginPage && !isForgotPasswordPage) {
+      // Allow public access to login + password recovery pages
+      if (!authenticated && !isLoginPage && !isForgotPasswordPage && !isResetPasswordPage) {
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
           router.replace('/login');
         }
       } else if (authenticated && isLoginPage) {
         router.replace('/dashboard');
-      } else if (user && user.role !== 'ADMIN' && !isLoginPage && !isForgotPasswordPage) {
+      } else if (user && user.role !== 'ADMIN' && !isLoginPage && !isForgotPasswordPage && !isResetPasswordPage) {
         logout();
       }
     }

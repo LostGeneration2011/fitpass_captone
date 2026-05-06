@@ -57,6 +57,9 @@ export async function getAdminReports(req: Request, res: Response) {
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
+  const statusFilter = typeof req.query.status === 'string' ? req.query.status.toUpperCase() : 'ALL';
+  const limit = Number(req.query.limit) || 50;
+
   // Lấy tất cả post có report (filter bằng JS do Prisma không hỗ trợ not: [] cho Json[])
   const posts = (await prisma.forumPost.findMany({
     select: {
@@ -84,7 +87,56 @@ export async function getAdminReports(req: Request, res: Response) {
     orderBy: { createdAt: 'desc' },
   })).filter(comment => Array.isArray(comment.reports) && comment.reports.length > 0);
 
-  res.json({ posts, comments });
+  const normalizeStatus = (report: any) => {
+    const raw = String(report?.status || 'PENDING').toUpperCase();
+    if (raw === 'REVIEWED' || raw === 'DISMISSED' || raw === 'PENDING') return raw;
+    return 'PENDING';
+  };
+
+  const postReports = posts.flatMap((post) =>
+    (post.reports as any[]).map((report, index) => ({
+      id: `post:${post.id}:${index}`,
+      reason: report?.reason || 'OTHER',
+      detail: report?.detail || null,
+      status: normalizeStatus(report),
+      createdAt: report?.createdAt || post.createdAt,
+      reviewedAt: report?.reviewedAt || null,
+      reviewNote: report?.reviewNote || null,
+      targetType: 'post',
+      post: {
+        id: post.id,
+        content: post.content,
+      },
+    }))
+  );
+
+  const commentReports = comments.flatMap((comment) =>
+    (comment.reports as any[]).map((report, index) => ({
+      id: `comment:${comment.id}:${index}`,
+      reason: report?.reason || 'OTHER',
+      detail: report?.detail || null,
+      status: normalizeStatus(report),
+      createdAt: report?.createdAt || comment.createdAt,
+      reviewedAt: report?.reviewedAt || null,
+      reviewNote: report?.reviewNote || null,
+      targetType: 'comment',
+      comment: {
+        id: comment.id,
+        content: comment.content,
+      },
+    }))
+  );
+
+  const mergedReports = [...postReports, ...commentReports]
+    .filter((item) => statusFilter === 'ALL' || item.status === statusFilter)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, limit);
+
+  res.json({
+    data: mergedReports,
+    posts,
+    comments,
+  });
 }
 
 // Lấy tất cả bài viết trên forum cho admin (kể cả bài ẩn)
@@ -200,36 +252,52 @@ export async function unhideComment(req: Request, res: Response) {
 // Review a report (admin only) — action: 'hide' | 'unhide' | 'dismiss'
 export async function reviewReport(req: Request, res: Response) {
   const { id } = req.params;
-  const { action, contentType, reviewNote } = req.body;
+  const { action, contentType, reviewNote, hideContent } = req.body;
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
   try {
-    if (!action || !contentType) {
-      return res.status(400).json({ error: 'action and contentType are required' });
+    if (!action) {
+      return res.status(400).json({ error: 'action is required' });
     }
 
-    if (contentType === 'post') {
-      if (action === 'hide') {
-        await prisma.forumPost.update({ where: { id }, data: { isHidden: true } });
-      } else if (action === 'unhide') {
-        await prisma.forumPost.update({ where: { id }, data: { isHidden: false } });
-      } else if (action === 'dismiss') {
-        await prisma.forumPost.update({ where: { id }, data: { reports: [] } });
-      }
-    } else if (contentType === 'comment') {
-      if (action === 'hide') {
-        await prisma.forumComment.update({ where: { id }, data: { isHidden: true } });
-      } else if (action === 'unhide') {
-        await prisma.forumComment.update({ where: { id }, data: { isHidden: false } });
-      } else if (action === 'dismiss') {
-        await prisma.forumComment.update({ where: { id }, data: { reports: [] } });
-      }
-    } else {
+    // Accept both legacy route params and new synthetic ids: post:<id>:<index>, comment:<id>:<index>
+    const parsed = String(id).split(':');
+    const parsedType = parsed.length >= 2 && (parsed[0] === 'post' || parsed[0] === 'comment') ? parsed[0] : null;
+    const parsedTargetId = parsedType ? parsed[1] : id;
+    const targetType = contentType || parsedType;
+
+    let normalizedAction = String(action).toLowerCase();
+    if (action === 'REVIEWED') {
+      normalizedAction = hideContent ? 'hide' : 'dismiss';
+    }
+    if (action === 'DISMISSED') {
+      normalizedAction = 'dismiss';
+    }
+
+    if (!targetType || !['post', 'comment'].includes(targetType)) {
       return res.status(400).json({ error: 'contentType must be post or comment' });
     }
 
-    res.json({ success: true, action, reviewNote });
+    if (targetType === 'post') {
+      if (normalizedAction === 'hide') {
+        await prisma.forumPost.update({ where: { id: parsedTargetId }, data: { isHidden: true } });
+      } else if (normalizedAction === 'unhide') {
+        await prisma.forumPost.update({ where: { id: parsedTargetId }, data: { isHidden: false } });
+      } else if (normalizedAction === 'dismiss') {
+        await prisma.forumPost.update({ where: { id: parsedTargetId }, data: { reports: [] } });
+      }
+    } else if (targetType === 'comment') {
+      if (normalizedAction === 'hide') {
+        await prisma.forumComment.update({ where: { id: parsedTargetId }, data: { isHidden: true } });
+      } else if (normalizedAction === 'unhide') {
+        await prisma.forumComment.update({ where: { id: parsedTargetId }, data: { isHidden: false } });
+      } else if (normalizedAction === 'dismiss') {
+        await prisma.forumComment.update({ where: { id: parsedTargetId }, data: { reports: [] } });
+      }
+    }
+
+    res.json({ success: true, action: normalizedAction, reviewNote });
   } catch (error) {
     console.error('Review report error:', error);
     res.status(500).json({ error: 'Internal server error' });

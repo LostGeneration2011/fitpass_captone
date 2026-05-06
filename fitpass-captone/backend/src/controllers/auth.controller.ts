@@ -20,11 +20,6 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Role must be either STUDENT or TEACHER" });
     }
 
-    // Password validation
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters long" });
-    }
-
     console.log('Registering user:', { fullName, email, role });
     
     const user = await authService.register(fullName, email, password, role);
@@ -105,9 +100,7 @@ export const changePassword = async (req: any, res: Response) => {
       return res.status(400).json({ error: "New password and confirmation do not match" });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters long" });
-    }
+    authService.ensureStrongPassword(newPassword);
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.password) {
@@ -154,10 +147,6 @@ export const resetPassword = async (req: Request, res: Response) => {
     
     if (!token || !newPassword) {
       return res.status(400).json({ error: "Token and new password are required" });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters long" });
     }
 
     await authService.resetPassword(token, newPassword);

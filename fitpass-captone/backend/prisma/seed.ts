@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient, UserRole, ReactionType, ForumModerationStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,13 @@ async function main() {
   console.log('🌱 Starting comprehensive seed...');
 
   // Clean existing data
+  await prisma.forumReaction.deleteMany();
+  await prisma.forumComment.deleteMany();
+  await prisma.forumMedia.deleteMany();
+  await prisma.forumPost.deleteMany();
+  await prisma.chatThreadRead.deleteMany();
+  await prisma.chatMessage.deleteMany();
+  await prisma.chatThread.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.transaction.deleteMany();
   await prisma.userPackage.deleteMany();
@@ -445,6 +452,131 @@ async function main() {
     }
   }
 
+  // Seed Forum data for end-to-end moderation testing
+  console.log('\n🗣️ Seeding forum test data...');
+
+  const forumAuthors = {
+    teacher: teachers[0],
+    studentA: students[0],
+    studentB: students[1],
+    studentC: students[2],
+    admin,
+  };
+
+  const approvedPost1 = await prisma.forumPost.create({
+    data: {
+      authorId: forumAuthors.studentA.id,
+      content: 'Hôm nay em tập Yoga Căng Cơ buổi sáng thấy cải thiện phần lưng rất rõ. Mọi người có tips thở nào hay không ạ?',
+      moderationStatus: ForumModerationStatus.APPROVED,
+      images: {
+        create: [
+          { url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80', order: 0 },
+        ],
+      },
+    },
+  });
+
+  const approvedPost2 = await prisma.forumPost.create({
+    data: {
+      authorId: forumAuthors.teacher.id,
+      content: 'Lịch HIIT tuần này đã mở thêm slot 17:00. Các bạn nhớ khởi động kỹ trước khi vào bài nhé!',
+      moderationStatus: ForumModerationStatus.APPROVED,
+      images: {
+        create: [
+          { url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80', order: 0 },
+        ],
+      },
+    },
+  });
+
+  const pendingPost = await prisma.forumPost.create({
+    data: {
+      authorId: forumAuthors.studentB.id,
+      content: 'Em mới bắt đầu tập nên hơi ngại, mong mọi người góp ý giúp em về lịch tập phù hợp ạ.',
+      moderationStatus: ForumModerationStatus.PENDING,
+      images: {
+        create: [
+          { url: 'https://images.unsplash.com/photo-1540206395-68808572332f?auto=format&fit=crop&w=1200&q=80', order: 0 },
+        ],
+      },
+    },
+  });
+
+  const rejectedPost = await prisma.forumPost.create({
+    data: {
+      authorId: forumAuthors.studentC.id,
+      content: 'Bài viết test moderation: nội dung sẽ được từ chối để kiểm tra queue admin.',
+      moderationStatus: ForumModerationStatus.REJECTED,
+      moderationNote: 'Seed sample rejected post',
+      moderatedAt: new Date(),
+      isHidden: true,
+      images: {
+        create: [
+          { url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80', order: 0 },
+        ],
+      },
+    },
+  });
+
+  await prisma.forumComment.createMany({
+    data: [
+      {
+        postId: approvedPost1.id,
+        authorId: forumAuthors.teacher.id,
+        content: 'Em thử nhịp thở 4-4-6 trong lúc giữ tư thế, hiệu quả khá tốt.',
+      },
+      {
+        postId: approvedPost1.id,
+        authorId: forumAuthors.studentB.id,
+        content: 'Mình cũng gặp vấn đề tương tự, đang áp dụng và thấy đỡ đau lưng hơn.',
+      },
+      {
+        postId: approvedPost2.id,
+        authorId: forumAuthors.studentA.id,
+        content: 'Thầy ơi em đăng ký slot 17:00 rồi ạ, cảm ơn thầy!',
+      },
+    ],
+  });
+
+  await prisma.forumReaction.createMany({
+    data: [
+      { postId: approvedPost1.id, userId: forumAuthors.studentB.id, type: ReactionType.LIKE },
+      { postId: approvedPost1.id, userId: forumAuthors.teacher.id, type: ReactionType.LOVE },
+      { postId: approvedPost2.id, userId: forumAuthors.studentA.id, type: ReactionType.WOW },
+      { postId: approvedPost2.id, userId: forumAuthors.studentC.id, type: ReactionType.LIKE },
+    ],
+  });
+
+  await prisma.forumPost.update({
+    where: { id: approvedPost2.id },
+    data: {
+      reports: {
+        push: {
+          userId: forumAuthors.studentC.id,
+          reason: 'SPAM',
+          detail: 'Seed data: report sample for admin moderation tab',
+          createdAt: new Date().toISOString(),
+        },
+      },
+    },
+  });
+
+  await prisma.forumPost.update({
+    where: { id: pendingPost.id },
+    data: {
+      reports: {
+        push: {
+          userId: forumAuthors.studentA.id,
+          reason: 'OTHER',
+          detail: 'Seed data: pending post report sample',
+          createdAt: new Date().toISOString(),
+        },
+      },
+    },
+  });
+
+  console.log('✅ Forum seed done: 2 APPROVED, 1 PENDING, 1 REJECTED, comments/reactions/reports ready');
+
   console.log('🎉 Seed completed successfully!');
   console.log('\n📋 LOGIN CREDENTIALS:');
   console.log('👨‍💼 ADMIN:');
@@ -468,6 +600,7 @@ async function main() {
   console.log(`  - ${sessions.length} Sessions`);
   console.log(`  - ${packages.length} Packages`);
   console.log(`  - ${enrollments.length} Enrollments`);
+  console.log(`  - 4 Forum posts (moderation mix)`);
 }
 
 main()

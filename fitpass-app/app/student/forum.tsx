@@ -33,6 +33,7 @@ type ForumAuthor = {
 
 type ForumComment = {
   id: string;
+  authorId?: string;
   content: string;
   createdAt: string;
   updatedAt?: string;
@@ -41,6 +42,7 @@ type ForumComment = {
 
 type ForumPost = {
   id: string;
+  authorId?: string;
   content: string;
   createdAt: string;
   author?: ForumAuthor;
@@ -172,16 +174,17 @@ export default function StudentForumScreen({ navigation }: any) {
   );
 
   const openAuthorProfile = useCallback(
-    (author?: ForumAuthor) => {
-      if (!author?.id) return;
+    (author?: ForumAuthor, fallbackUserId?: string) => {
+      const targetUserId = author?.id || fallbackUserId;
+      if (!targetUserId) return;
 
       const navigateToProfile = () => {
         if (typeof navigation?.push === 'function') {
-          navigation.push('ForumProfile', { userId: author.id });
+          navigation.push('ForumProfile', { userId: targetUserId });
           return;
         }
 
-        navigation?.navigate?.('ForumProfile', { userId: author.id });
+        navigation?.navigate?.('ForumProfile', { userId: targetUserId });
       };
 
       if (detailVisible) {
@@ -195,14 +198,15 @@ export default function StudentForumScreen({ navigation }: any) {
     [detailVisible, navigation]
   );
 
-  const renderAuthorMeta = (author?: ForumAuthor, createdAt?: string, compact = false) => {
+  const renderAuthorMeta = (author?: ForumAuthor, createdAt?: string, compact = false, fallbackUserId?: string) => {
     const avatarSize = compact ? 32 : 38;
+    const canOpenProfile = Boolean(author?.id || fallbackUserId);
 
     return (
       <TouchableOpacity
-        disabled={!author?.id}
-        onPress={() => openAuthorProfile(author)}
-        activeOpacity={author?.id ? 0.85 : 1}
+        disabled={!canOpenProfile}
+        onPress={() => openAuthorProfile(author, fallbackUserId)}
+        activeOpacity={canOpenProfile ? 0.85 : 1}
         style={[styles.row, { flex: compact ? 0 : 1, alignItems: 'center' }]}
       >
         {author?.avatar ? (
@@ -1138,7 +1142,7 @@ export default function StudentForumScreen({ navigation }: any) {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={[styles.row, { alignItems: 'flex-start', justifyContent: 'space-between' }]}>
-              {renderAuthorMeta(item.author, item.createdAt)}
+              {renderAuthorMeta(item.author, item.createdAt, false, item.authorId)}
               <View style={styles.helperTag}>
                 <Text style={styles.helperTagText}>💬 {item._count?.comments || 0}</Text>
               </View>
@@ -1247,7 +1251,7 @@ export default function StudentForumScreen({ navigation }: any) {
           ) : detailPost ? (
             <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
               <View style={styles.card}>
-                {renderAuthorMeta(detailPost.author, detailPost.createdAt)}
+                {renderAuthorMeta(detailPost.author, detailPost.createdAt, false, detailPost.authorId)}
                 <View style={{ height: 8 }} />
                 {isEditingDetailPost ? (
                   <>
@@ -1373,7 +1377,7 @@ export default function StudentForumScreen({ navigation }: any) {
                   detailPost.comments.map((comment) => (
                     <View key={comment.id} style={[styles.commentCard, { marginBottom: 10 }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        {renderAuthorMeta(comment.author, undefined, true)}
+                        {renderAuthorMeta(comment.author, undefined, true, comment.authorId)}
                         {comment.author?.id === currentUserId && (
                           <View style={styles.row}>
                             <TouchableOpacity onPress={() => beginEditComment(comment)}>

@@ -166,6 +166,8 @@ export default function ClassesPage() {
       description: form.description,
       capacity: Number(form.capacity),
       duration: Number(form.duration),
+      type: 'OTHER',
+      level: 'ALL_LEVELS',
     };
     try {
       if (isEditing && form.id) {

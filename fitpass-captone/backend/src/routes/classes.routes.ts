@@ -24,7 +24,7 @@ import { adminOnly, studentOnly, teacherOrAdmin } from '../middlewares/rbac';
 const router = Router();
 
 // POST /api/classes - Create class (will be PENDING status)
-router.post('/', createClass);
+router.post('/', teacherOrAdmin(), createClass);
 
 // GET /api/classes - Get all classes (with optional filters)
 // Query params: ?status=PENDING|APPROVED|REJECTED&approved=true
@@ -51,10 +51,10 @@ router.delete('/:id/reactions', studentOnly(), removeClassReaction);
 router.get('/:id', getClassById);
 
 // PATCH /api/classes/:id - Update class
-router.patch('/:id', updateClass);
+router.patch('/:id', teacherOrAdmin(), updateClass);
 
 // PUT /api/classes/:id - Update class (alternative)
-router.put('/:id', updateClass);
+router.put('/:id', teacherOrAdmin(), updateClass);
 
 // DELETE /api/classes/:id - Delete class (ADMIN only)
 router.delete('/:id', adminOnly(), deleteClass);

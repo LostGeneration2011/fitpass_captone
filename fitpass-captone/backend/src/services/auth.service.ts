@@ -12,6 +12,13 @@ const JWT_SECRET =
 export class AuthService {
   private emailService = new EmailService();
 
+  public ensureStrongPassword(password: string) {
+    const result = this.validatePasswordStrength(password);
+    if (!result.valid) {
+      throw new Error(result.message || 'Mật khẩu không hợp lệ');
+    }
+  }
+
   // Validate password strength
   private validatePasswordStrength(password: string): { valid: boolean; message?: string } {
     if (password.length < 8) {
@@ -42,10 +49,7 @@ export class AuthService {
     if (existing) throw new Error("Email already exists");
 
     // Validate password strength
-    const passwordValidation = this.validatePasswordStrength(password);
-    if (!passwordValidation.valid) {
-      throw new Error(passwordValidation.message);
-    }
+    this.ensureStrongPassword(password);
 
     const hashed = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -167,6 +171,9 @@ export class AuthService {
     if (!user) {
       throw new Error("Invalid or expired reset token");
     }
+
+    // Keep password policy consistent across register/change/reset flows
+    this.ensureStrongPassword(newPassword);
 
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
