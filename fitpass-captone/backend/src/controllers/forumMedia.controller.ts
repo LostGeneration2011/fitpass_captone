@@ -1,28 +1,12 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { uploadImageWithNormalization } from '../utils/cloudinaryMedia';
 
-// Set up multer storage for forum media
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, '../../public/forum-uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext);
-    const unique = `${base}-${Date.now()}${ext}`;
-    cb(null, unique);
-  }
-});
+const storage = multer.memoryStorage();
 
 export const forumMediaUpload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 12 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
       return cb(new Error('Only image files are allowed!'));
@@ -34,7 +18,18 @@ export const forumMediaUpload = multer({
 // Controller for upload
 export async function uploadMedia(req: Request, res: Response) {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  // Return public URL for the uploaded file
-  const url = `/forum-uploads/${req.file.filename}`;
-  res.json({ url });
+  try {
+    const uploaded = await uploadImageWithNormalization(req.file, 'fitpass/forum');
+    res.json({
+      url: uploaded.url,
+      warning: uploaded.warning,
+      publicId: uploaded.publicId,
+      width: uploaded.width,
+      height: uploaded.height,
+      size: uploaded.bytes,
+    });
+  } catch (error) {
+    console.error('Forum media upload failed:', error);
+    res.status(500).json({ error: 'Failed to upload forum image' });
+  }
 }

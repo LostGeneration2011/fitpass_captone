@@ -299,11 +299,13 @@ export const chatAPI = {
 };
 
 export const forumModerationAPI = {
-  listPosts: (params?: { limit?: number; cursor?: string }) => {
+  listPosts: (params?: { limit?: number; cursor?: string; status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'all' }) => {
     const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
-    return apiGet(`/forum/posts${qs}`);
+    return apiGet(`/forum/admin/posts${qs}`);
   },
-  getPostDetail: (postId: string) => apiGet(`/forum/posts/${postId}`),
+  getPostDetail: (postId: string) => apiGet(`/forum/admin/posts/${postId}`),
+  reviewPost: (postId: string, action: 'approve' | 'reject', reason?: string) =>
+    apiPatch(`/forum/admin/posts/${postId}/review`, { action, reason }),
   hidePost: (postId: string, reason?: string) =>
     apiPost(`/forum/admin/posts/${postId}/hide`, { reason }),
   unhidePost: (postId: string) => apiPost(`/forum/admin/posts/${postId}/unhide`, {}),

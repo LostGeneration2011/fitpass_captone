@@ -107,6 +107,13 @@ const mergeUnique = (items: string[]) => {
   return Array.from(new Set(items.filter(Boolean)));
 };
 
+const unwrapPayload = <T,>(response: any): T | null => {
+  if (response && typeof response === 'object' && 'data' in response) {
+    return response.data as T;
+  }
+  return (response as T) ?? null;
+};
+
 export default function StudentForumScreen({ navigation }: any) {
   const { colors } = useTheme();
   const [currentUserId, setCurrentUserId] = useState<string>('');
@@ -407,14 +414,20 @@ export default function StudentForumScreen({ navigation }: any) {
     const append = options?.append || false;
     try {
       const response = await forumAPI.getFeed({ limit: 10, cursor: options?.cursor });
-      const nextPosts = Array.isArray(response?.data) ? response.data : [];
+      const payload = unwrapPayload<any>(response);
+      const nextPosts = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.posts)
+        ? payload.posts
+        : [];
       if (append) {
         setPosts((prev) => [...prev, ...nextPosts]);
       } else {
         setPosts(nextPosts);
       }
-      setNextCursor(response?.paging?.nextCursor || null);
-      setHasNextPage(Boolean(response?.paging?.hasNextPage));
+      const paging = payload?.paging || response?.paging;
+      setNextCursor(paging?.nextCursor || null);
+      setHasNextPage(Boolean(paging?.hasNextPage));
 
       const user = await getUser();
       setCurrentUserId(user?.id || '');
@@ -470,7 +483,11 @@ export default function StudentForumScreen({ navigation }: any) {
       setNewPostText('');
       setSelectedImages([]);
       await loadFeed({ append: false });
-      Toast.show({ type: 'success', text1: 'Đăng bài thành công' });
+      Toast.show({
+        type: 'success',
+        text1: 'Đăng bài thành công',
+        text2: 'Bài viết đang chờ admin duyệt trước khi hiển thị công khai',
+      });
     } catch (error: any) {
       Toast.show({
         type: 'error',
@@ -505,7 +522,7 @@ export default function StudentForumScreen({ navigation }: any) {
       setDetailVisible(true);
       setDetailLoading(true);
       const response = await forumAPI.getPostDetail(postId);
-      const nextDetail = response?.data || null;
+      const nextDetail = unwrapPayload<ForumPost>(response);
       const imageUrls = Array.isArray(nextDetail?.images)
         ? nextDetail.images.map((image: { url: string }) => image.url)
         : [];
@@ -605,7 +622,7 @@ export default function StudentForumScreen({ navigation }: any) {
       );
 
       const response = await forumAPI.addComment(postId, content);
-      const createdComment = response?.data;
+      const createdComment = unwrapPayload<ForumComment>(response);
       if (createdComment?.id) {
         setDetailPost((prev) => {
           if (!prev || prev.id !== postId) return prev;
@@ -908,7 +925,7 @@ export default function StudentForumScreen({ navigation }: any) {
 
       setUpdatingCommentId(commentId);
       const response = await forumAPI.updateComment(commentId, content);
-      const updatedComment = response?.data;
+      const updatedComment = unwrapPayload<ForumComment>(response);
 
       setDetailPost((prev) => {
         if (!prev || !Array.isArray(prev.comments)) return prev;

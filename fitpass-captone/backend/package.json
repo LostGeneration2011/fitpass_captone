@@ -4,9 +4,11 @@
   "main": "dist/server.js",
   "type": "commonjs",
   "scripts": {
+    "predev": "prisma db push && prisma generate",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && prisma generate",
-    "start": "prisma migrate deploy && node dist/server.js",
+    "prestart": "prisma db push && prisma generate",
+    "start": "node dist/server.js",
     "db:switch": "node scripts/switch-db.js",
     "db:local": "npm run db:switch local && npm run prisma:push",
     "db:cloud": "npm run db:switch cloud && npm run prisma:push",
@@ -33,6 +35,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.21.2",
+    "heic-convert": "^2.1.0",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
@@ -41,6 +44,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "prisma": "^5.22.0",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.1",
     "ws": "^8.18.3"
   },

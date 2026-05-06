@@ -408,6 +408,12 @@ enum TransactionStatus {
   FAILED
 }
 
+enum ForumModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ================= FORUM FEATURE MODELS =================
 model ForumPost {
   id         String        @id @default(cuid())
@@ -420,6 +426,9 @@ model ForumPost {
   comments   ForumComment[]
   reactions  ForumReaction[]
   isHidden   Boolean       @default(false)
+  moderationStatus ForumModerationStatus @default(APPROVED)
+  moderationNote   String?
+  moderatedAt      DateTime?
   reports    Json[]
 }
 

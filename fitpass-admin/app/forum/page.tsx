@@ -32,6 +32,9 @@ type ForumImage = {
 type ForumPost = {
   id: string;
   content: string;
+  moderationStatus?: "PENDING" | "APPROVED" | "REJECTED";
+  moderationNote?: string | null;
+  moderatedAt?: string | null;
   isHidden: boolean;
   hiddenReason?: string | null;
   createdAt: string;
@@ -101,6 +104,7 @@ export default function ForumModerationPage() {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [comments, setComments] = useState<ForumComment[]>([]);
   const [postVisibilityFilter, setPostVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
+  const [moderationFilter, setModerationFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | "all">("PENDING");
   const [showHiddenOnlyComments, setShowHiddenOnlyComments] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -127,6 +131,7 @@ export default function ForumModerationPage() {
       const res = await forumModerationAPI.listPosts({
         limit: 30,
         cursor: opts?.cursor || undefined,
+        status: moderationFilter,
       });
       const nextPosts = Array.isArray(res?.data) ? res.data : [];
 
@@ -210,7 +215,7 @@ export default function ForumModerationPage() {
     if (activeTab === "posts") {
       loadPosts();
     }
-  }, [activeTab]);
+  }, [activeTab, moderationFilter]);
 
   useEffect(() => {
     loadReports();
@@ -304,6 +309,26 @@ export default function ForumModerationPage() {
     }
   };
 
+  const reviewPost = async (post: ForumPost, action: "approve" | "reject") => {
+    setError("");
+    setActionLoadingKey(`review:${post.id}`);
+    try {
+      let reason: string | undefined;
+      if (action === "reject") {
+        const reasonInput = window.prompt("Lý do từ chối bài viết (tuỳ chọn):");
+        if (reasonInput === null) return;
+        reason = reasonInput.trim() || undefined;
+      }
+
+      await forumModerationAPI.reviewPost(post.id, action, reason);
+      await refreshPostsAndDetail();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || "Không duyệt được bài viết");
+    } finally {
+      setActionLoadingKey(null);
+    }
+  };
+
   const toggleCommentVisibility = async (comment: ForumComment) => {
     setError("");
     setActionLoadingKey(`comment:${comment.id}`);
@@ -388,6 +413,17 @@ export default function ForumModerationPage() {
             <option value="hidden">Chỉ bài đang ẩn</option>
           </select>
 
+          <select
+            value={moderationFilter}
+            onChange={(e) => setModerationFilter(e.target.value as "PENDING" | "APPROVED" | "REJECTED" | "all")}
+            className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="PENDING">Chờ duyệt</option>
+            <option value="APPROVED">Đã duyệt</option>
+            <option value="REJECTED">Đã từ chối</option>
+            <option value="all">Tất cả trạng thái</option>
+          </select>
+
           <div className="text-sm text-gray-600 flex items-center md:justify-end">
             Hiển thị {filteredPosts.length}/{posts.length} bài
           </div>
@@ -416,6 +452,19 @@ export default function ForumModerationPage() {
                     <span className={`inline-flex px-2 py-1 text-xs rounded-full ${post.isHidden ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"}`}>
                       {post.isHidden ? "Đang ẩn" : "Hiển thị"}
                     </span>
+                    <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                      post.moderationStatus === "PENDING"
+                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+                        : post.moderationStatus === "REJECTED"
+                        ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                        : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                    }`}>
+                      {post.moderationStatus === "PENDING"
+                        ? "Chờ duyệt"
+                        : post.moderationStatus === "REJECTED"
+                        ? "Đã từ chối"
+                        : "Đã duyệt"}
+                    </span>
                     <button
                       className={`px-3 py-1 rounded ${selectedPostId === post.id ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"}`}
                       onClick={() => loadPostDetail(post.id)}
@@ -429,6 +478,24 @@ export default function ForumModerationPage() {
                     >
                       {actionLoadingKey === `post:${post.id}` ? "Đang xử lý..." : post.isHidden ? "Bỏ ẩn" : "Ẩn"}
                     </button>
+                    {post.moderationStatus === "PENDING" && (
+                      <>
+                        <button
+                          disabled={actionLoadingKey === `review:${post.id}`}
+                          className="px-3 py-1 rounded text-white bg-blue-600 hover:bg-blue-700"
+                          onClick={() => reviewPost(post, "approve")}
+                        >
+                          {actionLoadingKey === `review:${post.id}` ? "Đang xử lý..." : "Duyệt"}
+                        </button>
+                        <button
+                          disabled={actionLoadingKey === `review:${post.id}`}
+                          className="px-3 py-1 rounded text-white bg-orange-600 hover:bg-orange-700"
+                          onClick={() => reviewPost(post, "reject")}
+                        >
+                          {actionLoadingKey === `review:${post.id}` ? "Đang xử lý..." : "Từ chối"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{post.content}</div>

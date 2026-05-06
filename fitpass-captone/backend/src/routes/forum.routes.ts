@@ -40,6 +40,8 @@ router.get('/admin/reports', authMiddleware, forumModeration.getAdminReports);
 
 // Admin: xem tất cả bài viết trên forum
 router.get('/admin/posts', authMiddleware, forumModeration.getAllPostsForAdmin);
+router.get('/admin/posts/:id', authMiddleware, forumModeration.getAdminPostDetail);
+router.patch('/admin/posts/:id/review', authMiddleware, forumModeration.reviewPostModeration);
 
 // Admin: hide/unhide posts
 router.post('/admin/posts/:id/hide', authMiddleware, forumModeration.hidePost);

@@ -93,7 +93,18 @@ export async function getAllPostsForAdmin(req: Request, res: Response) {
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
   try {
+    const status = typeof req.query.status === 'string' ? req.query.status.toUpperCase() : undefined;
+    const limit = Number(req.query.limit) || 30;
+    const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
+
+    const where = status && ['PENDING', 'APPROVED', 'REJECTED'].includes(status)
+      ? { moderationStatus: status as 'PENDING' | 'APPROVED' | 'REJECTED' }
+      : undefined;
+
     const posts = await prisma.forumPost.findMany({
+      where,
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
       include: {
         author: { select: { id: true, fullName: true, role: true, email: true } },
@@ -102,11 +113,70 @@ export async function getAllPostsForAdmin(req: Request, res: Response) {
         images: true,
       },
     });
-    res.json({ success: true, data: posts });
+
+    const hasNextPage = posts.length > limit;
+    const data = hasNextPage ? posts.slice(0, limit) : posts;
+    const nextCursor = hasNextPage ? data[data.length - 1]?.id : null;
+
+    res.json({
+      success: true,
+      data,
+      paging: {
+        hasNextPage,
+        nextCursor,
+      },
+    });
   } catch (error) {
     console.error('Get all forum posts (admin) error:', error);
     res.status(500).json({ success: false, message: 'Lỗi server khi lấy danh sách bài viết forum' });
   }
+}
+
+export async function getAdminPostDetail(req: Request, res: Response) {
+  const { id } = req.params;
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+  const post = await prisma.forumPost.findUnique({
+    where: { id },
+    include: {
+      author: { select: { id: true, fullName: true, avatar: true, role: true, email: true } },
+      images: true,
+      comments: {
+        include: { author: { select: { id: true, fullName: true, avatar: true, role: true } } },
+        orderBy: { createdAt: 'asc' },
+      },
+      reactions: true,
+    },
+  });
+
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  res.json(post);
+}
+
+export async function reviewPostModeration(req: Request, res: Response) {
+  const { id } = req.params;
+  const { action, reason } = req.body;
+  const user = req.user as Express.UserPayload | undefined;
+  if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+  if (!id || !action || !['approve', 'reject'].includes(String(action).toLowerCase())) {
+    return res.status(400).json({ error: 'Invalid moderation action' });
+  }
+
+  const moderationStatus = String(action).toLowerCase() === 'approve' ? 'APPROVED' : 'REJECTED';
+
+  await prisma.forumPost.update({
+    where: { id },
+    data: {
+      moderationStatus,
+      moderationNote: reason || null,
+      moderatedAt: new Date(),
+      isHidden: moderationStatus === 'REJECTED' ? true : false,
+    },
+  });
+
+  res.json({ success: true, moderationStatus });
 }
 
 // Unhide a forum post (admin only)

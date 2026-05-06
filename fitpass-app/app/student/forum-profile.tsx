@@ -83,6 +83,53 @@ type ForumProfileData = {
   }>;
 };
 
+const normalizeRole = (value?: string): RoleType => {
+  if (value === 'TEACHER' || value === 'ADMIN' || value === 'STUDENT') return value;
+  return 'STUDENT';
+};
+
+const normalizeForumProfile = (payload: any): ForumProfileData | null => {
+  const raw = payload?.data ?? payload;
+  if (!raw || typeof raw !== 'object') return null;
+
+  // New profile API shape
+  if (raw.user && raw.profileType) {
+    return {
+      ...raw,
+      profileType: normalizeRole(raw.profileType),
+      user: {
+        ...raw.user,
+        role: normalizeRole(raw.user?.role ?? raw.profileType),
+        memberSince: raw.user?.memberSince || raw.user?.createdAt || '',
+      },
+    } as ForumProfileData;
+  }
+
+  // Backward-compatible plain user shape from backend
+  if (raw.id && raw.fullName) {
+    const role = normalizeRole(raw.role);
+    return {
+      profileType: role,
+      user: {
+        id: raw.id,
+        fullName: raw.fullName,
+        avatar: raw.avatar || null,
+        role,
+        memberSince: raw.memberSince || raw.createdAt || '',
+      },
+      forumActivity: {
+        postCount: 0,
+        commentCount: 0,
+      },
+      stats: {},
+      classes: [],
+      recentReviews: [],
+    };
+  }
+
+  return null;
+};
+
 const getInitials = (fullName?: string) => {
   const normalized = (fullName || 'Thành viên').trim();
   if (!normalized) return 'TV';
@@ -189,7 +236,7 @@ export default function StudentForumProfileScreen({ route, navigation }: any) {
 
       setLoading(true);
       const response = await forumAPI.getUserProfile(userId);
-      setProfile(response?.data || response || null);
+      setProfile(normalizeForumProfile(response));
     } catch (error: any) {
       setProfile(null);
       Toast.show({
@@ -297,7 +344,14 @@ export default function StudentForumProfileScreen({ route, navigation }: any) {
     );
   }
 
-  const roleMeta = getRoleMeta(profile.user.role, isDark);
+  const safeUser = profile.user || {
+    id: userId || 'anonymous',
+    fullName: 'Thành viên',
+    avatar: null,
+    role: normalizeRole(profile.profileType),
+    memberSince: '',
+  };
+  const roleMeta = getRoleMeta(safeUser.role, isDark);
   const stats = profile.stats || {};
   const forumActivity = profile.forumActivity || {};
   const classes = profile.classes || [];
@@ -340,9 +394,9 @@ export default function StudentForumProfileScreen({ route, navigation }: any) {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {renderAvatar(profile.user, 84)}
+            {renderAvatar(safeUser, 84)}
             <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ color: colors.text.primary, fontSize: 24, fontWeight: '800' }}>{profile.user.fullName}</Text>
+              <Text style={{ color: colors.text.primary, fontSize: 24, fontWeight: '800' }}>{safeUser.fullName}</Text>
               <View
                 style={{
                   alignSelf: 'flex-start',
@@ -358,7 +412,7 @@ export default function StudentForumProfileScreen({ route, navigation }: any) {
                 <Ionicons name={roleMeta.icon} size={14} color={roleMeta.text} />
                 <Text style={{ color: roleMeta.text, fontWeight: '700', marginLeft: 6 }}>{roleMeta.label}</Text>
               </View>
-              <Text style={{ color: colors.text.secondary, marginTop: 10 }}>Tham gia từ {formatDate(profile.user.memberSince)}</Text>
+              <Text style={{ color: colors.text.secondary, marginTop: 10 }}>Tham gia từ {formatDate(safeUser.memberSince)}</Text>
             </View>
           </View>
 
