@@ -6,6 +6,11 @@ export class EmailService {
   private gmailTransporter: nodemailer.Transporter;
   private fromEmail: string = 'FitPass Team <noreply@fitpass.com>';
 
+  private logEmailStatus(status: 'START' | 'SUCCESS' | 'FALLBACK' | 'FAILED', context: string, detail: string) {
+    const prefix = status === 'SUCCESS' ? '✅' : status === 'FAILED' ? '❌' : status === 'FALLBACK' ? '⚠️' : '📧';
+    console.log(`${prefix} [Email:${context}] ${detail}`);
+  }
+
   private isGmailAddress(email: string): boolean {
     return email.trim().toLowerCase().endsWith('@gmail.com');
   }
@@ -16,6 +21,54 @@ export class EmailService {
       transporter: shouldUseGmail ? this.gmailTransporter : this.mailtrapTransporter,
       via: shouldUseGmail ? 'Gmail' : 'Mailtrap'
     };
+  }
+
+  private getFallbackTransporter(primaryVia: 'Gmail' | 'Mailtrap') {
+    return {
+      transporter: primaryVia === 'Gmail' ? this.mailtrapTransporter : this.gmailTransporter,
+      via: primaryVia === 'Gmail' ? 'Mailtrap' : 'Gmail'
+    };
+  }
+
+  private async sendMailWithFallback(
+    mailOptions: nodemailer.SendMailOptions,
+    to: string,
+    isGoogleUser: boolean,
+    emailType: string
+  ): Promise<'Gmail' | 'Mailtrap'> {
+    const primary = this.getPasswordResetTransporter(to, isGoogleUser) as {
+      transporter: nodemailer.Transporter;
+      via: 'Gmail' | 'Mailtrap';
+    };
+
+    this.logEmailStatus('START', emailType, `Attempting delivery to ${to} via ${primary.via}`);
+
+    try {
+      await primary.transporter.sendMail(mailOptions);
+      this.logEmailStatus('SUCCESS', emailType, `Delivered to ${to} via ${primary.via}`);
+      return primary.via;
+    } catch (primaryError) {
+      const fallback = this.getFallbackTransporter(primary.via) as {
+        transporter: nodemailer.Transporter;
+        via: 'Gmail' | 'Mailtrap';
+      };
+
+      this.logEmailStatus(
+        'FALLBACK',
+        emailType,
+        `Primary delivery via ${primary.via} failed for ${to}. Retrying with ${fallback.via}`
+      );
+
+      try {
+        await fallback.transporter.sendMail(mailOptions);
+        this.logEmailStatus('SUCCESS', emailType, `Delivered to ${to} via fallback ${fallback.via}`);
+        return fallback.via;
+      } catch (fallbackError) {
+        this.logEmailStatus('FAILED', emailType, `Both ${primary.via} and ${fallback.via} delivery failed for ${to}`);
+        console.error(`❌ ${emailType} fallback delivery via ${fallback.via} also failed for ${to}:`, fallbackError);
+        throw primaryError;
+      }
+    }
   }
 
   constructor() {
@@ -322,11 +375,16 @@ export class EmailService {
         `
       };
 
-      const { transporter, via } = this.getPasswordResetTransporter(to, isGoogleUser);
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Password reset email sent via ${via} to ${to}`);
+      const via = await this.sendMailWithFallback(
+        mailOptions,
+        to,
+        isGoogleUser,
+        'Password reset email'
+      );
+      this.logEmailStatus('SUCCESS', 'Password reset email', `Final provider: ${via}; recipient: ${to}`);
       console.log(`🌐 Reset URL (${urlSource}): ${webResetUrl}`);
     } catch (error) {
+      this.logEmailStatus('FAILED', 'Password reset email', `Unable to deliver to ${to}`);
       console.error('❌ Password reset email sending failed:', error);
       throw new Error('Failed to send password reset email');
     }
@@ -368,10 +426,15 @@ export class EmailService {
         `
       };
 
-      const { transporter, via } = this.getPasswordResetTransporter(to, isGoogleUser);
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Password change confirmation email sent via ${via} to ${to}`);
+      const via = await this.sendMailWithFallback(
+        mailOptions,
+        to,
+        isGoogleUser,
+        'Password change confirmation email'
+      );
+      this.logEmailStatus('SUCCESS', 'Password change confirmation email', `Final provider: ${via}; recipient: ${to}`);
     } catch (error) {
+      this.logEmailStatus('FAILED', 'Password change confirmation email', `Unable to deliver to ${to}`);
       console.error('❌ Password change confirmation email failed:', error);
       // Do not throw: password has already been changed successfully.
     }
