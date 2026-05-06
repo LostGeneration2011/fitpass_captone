@@ -104,7 +104,7 @@ export default function ForumModerationPage() {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [comments, setComments] = useState<ForumComment[]>([]);
   const [postVisibilityFilter, setPostVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
-  const [moderationFilter, setModerationFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | "all">("PENDING");
+  const [moderationFilter, setModerationFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | "all">("all");
   const [showHiddenOnlyComments, setShowHiddenOnlyComments] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [nextCursor, setNextCursor] = useState<string | null>(null);

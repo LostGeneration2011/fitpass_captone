@@ -44,6 +44,9 @@ type ForumPost = {
   id: string;
   authorId?: string;
   content: string;
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  moderationNote?: string | null;
+  isHidden?: boolean;
   createdAt: string;
   author?: ForumAuthor;
   _count?: {
@@ -1148,6 +1151,15 @@ export default function StudentForumScreen({ navigation }: any) {
               </View>
             </View>
             <View style={{ height: 8 }} />
+            {item.author?.id === currentUserId && item.moderationStatus && item.moderationStatus !== 'APPROVED' && (
+              <View style={[styles.helperTag, { marginBottom: 8 }]}> 
+                <Text style={styles.helperTagText}>
+                  {item.moderationStatus === 'PENDING'
+                    ? 'Dang cho duyet'
+                    : `Bi tu choi${item.moderationNote ? `: ${item.moderationNote}` : ''}`}
+                </Text>
+              </View>
+            )}
             <Text style={[styles.textPrimary, { lineHeight: 22, fontSize: 14 }]}>{item.content}</Text>
             {Array.isArray(item.images) && item.images.length > 0 && (
               <View style={{ marginTop: 8 }}>
@@ -1325,7 +1337,18 @@ export default function StudentForumScreen({ navigation }: any) {
                     </View>
                   </>
                 ) : (
-                  <Text style={styles.textPrimary}>{detailPost.content}</Text>
+                  <>
+                    {detailPost.author?.id === currentUserId && detailPost.moderationStatus && detailPost.moderationStatus !== 'APPROVED' && (
+                      <View style={[styles.helperTag, { marginBottom: 8 }]}> 
+                        <Text style={styles.helperTagText}>
+                          {detailPost.moderationStatus === 'PENDING'
+                            ? 'Dang cho duyet'
+                            : `Bi tu choi${detailPost.moderationNote ? `: ${detailPost.moderationNote}` : ''}`}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={styles.textPrimary}>{detailPost.content}</Text>
+                  </>
                 )}
                 {Array.isArray(detailPost.images) && detailPost.images.length > 0 && (
                   <View style={{ marginTop: 10 }}>

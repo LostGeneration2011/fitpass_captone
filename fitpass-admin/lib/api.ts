@@ -23,11 +23,11 @@ const isLocalHostRuntime =
 
 // Local development should use local backend by default to avoid stale ngrok links/token mismatches.
 const API_BASE_URL = (() => {
-  if (isLocalHostRuntime && !forceRemoteApiOnLocal) {
-    return LOCAL_API_BASE_URL;
-  }
   if (configuredBaseUrl) {
     return configuredBaseUrl;
+  }
+  if (isLocalHostRuntime && !forceRemoteApiOnLocal) {
+    return LOCAL_API_BASE_URL;
   }
   // Fallback: production backend only, never ngrok
   return DEFAULT_REMOTE_API_BASE_URL;

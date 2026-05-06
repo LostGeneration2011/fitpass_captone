@@ -14,11 +14,17 @@ function canParticipateInCommunity(role?: string) {
 export async function getPosts(req: Request, res: Response) {
   const limit = Number(req.query.limit) || 10;
   const cursor = req.query.cursor as string | undefined;
-  const currentUserId = (req.user as Express.UserPayload | undefined)?.id;
+  const currentUser = getUserPayload(req);
+  const currentUserId = currentUser?.id;
   const posts = await prisma.forumPost.findMany({
     where: {
-      moderationStatus: 'APPROVED',
-      isHidden: false,
+      OR: [
+        {
+          moderationStatus: 'APPROVED',
+          isHidden: false,
+        },
+        ...(currentUserId ? [{ authorId: currentUserId }] : []),
+      ],
     },
     take: limit,
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
@@ -75,8 +81,9 @@ export async function createPost(req: Request, res: Response) {
 // Get post detail
 export async function getPostDetail(req: Request, res: Response) {
   const { id } = req.params;
+  const currentUser = getUserPayload(req);
   const post = await prisma.forumPost.findUnique({
-    where: { id, moderationStatus: 'APPROVED', isHidden: false },
+    where: { id },
     include: {
       author: { select: { id: true, fullName: true, avatar: true, role: true } },
       images: true,
@@ -87,7 +94,17 @@ export async function getPostDetail(req: Request, res: Response) {
       reactions: true,
     },
   });
+
   if (!post) return res.status(404).json({ error: 'Not found' });
+
+  const isPubliclyVisible = post.moderationStatus === 'APPROVED' && !post.isHidden;
+  const isOwner = Boolean(currentUser?.id && post.authorId === currentUser.id);
+  const isAdmin = currentUser?.role === 'ADMIN';
+
+  if (!isPubliclyVisible && !isOwner && !isAdmin) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+
   res.json(post);
 }
 
