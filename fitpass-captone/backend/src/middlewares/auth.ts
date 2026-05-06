@@ -30,15 +30,23 @@ export function authMiddleware(
 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as any;
-    console.log('🔐 Auth middleware - payload:', { id: payload.id || payload.userId, email: payload.email, role: payload.role });
-    
+    const resolvedUserId = payload.id || payload.userId || payload.sub;
+    const resolvedRole = typeof payload.role === 'string' ? payload.role.toUpperCase() : payload.role;
+
+    console.log('🔐 Auth middleware - payload:', { id: resolvedUserId, email: payload.email, role: resolvedRole });
+
+    if (!resolvedUserId || !resolvedRole) {
+      console.log('❌ Auth failed: Invalid token payload');
+      return res.status(401).json({ message: 'Invalid token payload' });
+    }
+
     (req as any).user = {
-      id: payload.id || payload.userId,
+      id: resolvedUserId,
       email: payload.email,
-      role: payload.role,
+      role: resolvedRole,
       fullName: payload.fullName,
     };
-    req.userId = payload.id || payload.userId; // For payment controllers
+    req.userId = resolvedUserId; // For payment controllers
     
     console.log('✅ Auth success - userId:', req.userId, 'role:', (req as any).user.role);
     return next();

@@ -343,7 +343,8 @@ export default function AdminChatPage() {
         setReplyTo(null);
       }
     } catch (error: any) {
-      setSendError(error?.message || 'Không gửi được tin nhắn. Vui lòng thử lại.');
+      const apiMessage = error?.response?.data?.error || error?.response?.data?.message;
+      setSendError(apiMessage || error?.message || 'Không gửi được tin nhắn. Vui lòng thử lại.');
     } finally {
       setSending(false);
     }

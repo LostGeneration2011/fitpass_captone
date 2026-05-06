@@ -69,6 +69,14 @@ const api = axios.create({
   withCredentials: true, // Gửi cookie httpOnly lên backend
 });
 
+const getApiErrorMessage = (error: any): string => {
+  const payload = error?.response?.data;
+  if (typeof payload === 'string') return payload;
+  if (payload?.error) return payload.error;
+  if (payload?.message) return payload.message;
+  return error?.message || 'Unknown API error';
+};
+
 console.log('🔧 API BASE URL:', API_BASE_URL);
 
 // Request interceptor chỉ thêm header phụ trợ, KHÔNG thêm token
@@ -132,7 +140,7 @@ export async function apiGet(url: string, config?: RequestConfigWithOptions): Pr
     return response.data;
   } catch (error: any) {
     if (!config?.suppressErrorLog) {
-      console.error(`❌ GET ${url} failed:`, error.response?.data || error.message);
+      console.error(`❌ GET ${url} failed (${error?.response?.status || 'no-status'}):`, getApiErrorMessage(error));
     }
     throw error;
   }
@@ -146,7 +154,7 @@ export async function apiPost(url: string, data: any, config?: AxiosRequestConfi
     const response: AxiosResponse = await api.post(url, data, config);
     return response.data;
   } catch (error: any) {
-    console.error(`❌ POST ${url} failed:`, error.response?.data || error.message);
+    console.error(`❌ POST ${url} failed (${error?.response?.status || 'no-status'}):`, getApiErrorMessage(error));
     throw error;
   }
 }
@@ -159,7 +167,7 @@ export async function apiPut(url: string, data: any, config?: AxiosRequestConfig
     const response: AxiosResponse = await api.put(url, data, config);
     return response.data;
   } catch (error: any) {
-    console.error(`❌ PUT ${url} failed:`, error.response?.data || error.message);
+    console.error(`❌ PUT ${url} failed (${error?.response?.status || 'no-status'}):`, getApiErrorMessage(error));
     throw error;
   }
 }
@@ -170,7 +178,7 @@ export async function apiDelete(url: string, config?: AxiosRequestConfig): Promi
     const response: AxiosResponse = await api.delete(url, config);
     return response.data;
   } catch (error: any) {
-    console.error(`❌ DELETE ${url} failed:`, error.response?.data || error.message);
+    console.error(`❌ DELETE ${url} failed (${error?.response?.status || 'no-status'}):`, getApiErrorMessage(error));
     throw error;
   }
 }
@@ -181,7 +189,7 @@ export async function apiPatch(url: string, data: any, config?: AxiosRequestConf
     const response: AxiosResponse = await api.patch(url, data, config);
     return response.data;
   } catch (error: any) {
-    console.error(`❌ PATCH ${url} failed:`, error.response?.data || error.message);
+    console.error(`❌ PATCH ${url} failed (${error?.response?.status || 'no-status'}):`, getApiErrorMessage(error));
     throw error;
   }
 }
