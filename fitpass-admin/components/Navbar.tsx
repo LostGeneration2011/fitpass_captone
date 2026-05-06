@@ -76,7 +76,10 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
     const wsBaseUrl = API_BASE_URL.replace(/\/api$/, '');
     const socket = io(wsBaseUrl, {
       auth: { token: adminToken },
-      transports: ['polling', 'websocket'],
+      // Railway proxies can intermittently fail websocket upgrades (Invalid frame header).
+      // Polling is enough for navbar badges and avoids UI freezing/reconnect storms.
+      transports: ['polling'],
+      upgrade: false,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });
