@@ -344,14 +344,16 @@ export class EmailService {
     isGoogleUser: boolean = false
   ): Promise<void> {
     try {
-      // Reset password must point to a frontend page, never backend host.
+      // Reset password must point to admin frontend, never backend host.
       const normalizedFrontend = (process.env.FRONTEND_URL || '').trim().replace(/\/+$/, '');
       const normalizedAdmin = (process.env.ADMIN_URL || '').trim().replace(/\/+$/, '');
 
+      // Priority 1: FRONTEND_URL or ADMIN_URL (production / Railway)
       let baseWebUrl = normalizedFrontend || normalizedAdmin || '';
-      let urlSource = normalizedFrontend ? 'FRONTEND_URL' : normalizedAdmin ? 'ADMIN_URL' : 'fallback';
+      let urlSource = normalizedFrontend ? 'FRONTEND_URL' : normalizedAdmin ? 'ADMIN_URL' : '';
 
       if (!baseWebUrl) {
+        // Priority 2: live ngrok (local dev only)
         const liveNgrokUrl = await this.getCurrentNgrokUrl();
         if (liveNgrokUrl) {
           baseWebUrl = liveNgrokUrl;
@@ -360,7 +362,9 @@ export class EmailService {
           baseWebUrl = process.env.NGROK_URL.replace(/\/+$/, '');
           urlSource = 'NGROK_URL';
         } else {
+          // Last resort fallback — will only hit in local dev with no config
           baseWebUrl = 'http://localhost:3000';
+          urlSource = 'localhost fallback';
         }
       }
 
