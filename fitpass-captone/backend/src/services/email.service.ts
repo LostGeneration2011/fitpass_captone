@@ -24,6 +24,9 @@ export class EmailService {
       host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
       port: 587,
       secure: false,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       auth: {
         user: process.env.MAILTRAP_USER || '',
         pass: process.env.MAILTRAP_PASS || ''
@@ -33,6 +36,9 @@ export class EmailService {
     // Gmail for Google OAuth welcome email
     this.gmailTransporter = nodemailer.createTransport({
       service: 'gmail',
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       auth: {
         user: process.env.GMAIL_USER || '',
         pass: process.env.GMAIL_PASS || ''
