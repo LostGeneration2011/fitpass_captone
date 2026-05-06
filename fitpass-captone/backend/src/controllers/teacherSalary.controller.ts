@@ -178,55 +178,57 @@ export const payTeacherSalary = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Get current admin user (in a real app, this would come from JWT token)
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'ADMIN' }
-    });
+    // Get admin from JWT token if available, fallback to first admin
+    const adminId = (req as any).user?.id;
+    const adminUser = adminId
+      ? await prisma.user.findUnique({ where: { id: adminId } })
+      : await prisma.user.findFirst({ where: { role: 'ADMIN' } });
 
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
-    // Check if salary record already exists for this month
-    let salaryRecord = await prisma.salaryRecord.findUnique({
-      where: {
-        teacherId_month_year: {
-          teacherId,
-          month: currentMonth,
-          year: currentYear
-        }
-      }
+    // Find all PENDING salary records for this teacher and mark them PAID
+    const pendingRecords = await prisma.salaryRecord.findMany({
+      where: { teacherId, status: 'PENDING' }
     });
 
-    if (salaryRecord) {
-      // Update existing record
-      salaryRecord = await prisma.salaryRecord.update({
-        where: { id: salaryRecord.id },
+    let salaryRecord: any;
+
+    if (pendingRecords.length > 0) {
+      // Mark all pending records as PAID
+      await prisma.salaryRecord.updateMany({
+        where: { teacherId, status: 'PENDING' },
         data: {
-          totalAmount: salaryRecord.totalAmount + amount,
           status: 'PAID',
           paidDate: new Date(),
           paidBy: adminUser?.id || null,
           paymentMethod: paymentMethod || 'Bank Transfer',
-          paymentNote: note || `Thanh toán bổ sung ${amount.toLocaleString()} VND`
+          paymentNote: note || `Thanh toán lương`
         }
       });
+      // Return the most recent one for the response
+      salaryRecord = pendingRecords[0]
+        ? await prisma.salaryRecord.findUnique({ where: { id: pendingRecords[0].id } })
+        : null;
+      console.log(`✅ Marked ${pendingRecords.length} PENDING record(s) as PAID for teacher ${teacherId}`);
     } else {
-      // Create new salary record
+      // No pending records — create a manual payment record
       salaryRecord = await prisma.salaryRecord.create({
         data: {
           teacherId,
           month: currentMonth,
           year: currentYear,
-          totalHours: 0, // Will be calculated from sessions
+          totalHours: 0,
           hourlyRate: teacher.hourlyRate || 50000,
           totalAmount: amount,
           status: 'PAID',
           paidDate: new Date(),
           paidBy: adminUser?.id || null,
           paymentMethod: paymentMethod || 'Bank Transfer',
-          paymentNote: note || `Thanh toán lương ${amount.toLocaleString()} VND`
+          paymentNote: note || `Thanh toán lương thủ công`
         }
       });
+      console.log(`✅ Created manual PAID record for teacher ${teacherId} (no pending records found)`);
     }
 
     // Calculate total paid amount for this teacher after the payment
