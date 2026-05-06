@@ -72,11 +72,14 @@ export class EmailService {
   }
 
   constructor() {
+    const mailtrapPort = Number(process.env.MAILTRAP_PORT || 587);
+    const mailtrapSecure = (process.env.MAILTRAP_SECURE || 'false').toLowerCase() === 'true';
+
     // Mailtrap for form registration
     this.mailtrapTransporter = nodemailer.createTransport({
       host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
-      port: 587,
-      secure: false,
+      port: Number.isNaN(mailtrapPort) ? 587 : mailtrapPort,
+      secure: mailtrapSecure,
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
