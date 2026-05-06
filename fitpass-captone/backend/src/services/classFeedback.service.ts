@@ -297,7 +297,7 @@ export class ClassFeedbackService {
 
     return prisma.classReview.upsert({
       where: { classId_studentId: { classId, studentId } },
-      update: { rating, comment, isHidden: false, moderationReason: null, moderatedAt: null, moderatedBy: null },
+      update: { rating, comment },
       create: { classId, studentId, rating, comment },
     });
   }
@@ -418,6 +418,12 @@ export class ClassFeedbackService {
 
     if (!review) {
       throw new Error('Review not found');
+    }
+
+    if (review.isHidden) {
+      const err = new Error('Không thể phản hồi review đang bị ẩn');
+      (err as any).status = 400;
+      throw err;
     }
 
     return prisma.classReview.update({
