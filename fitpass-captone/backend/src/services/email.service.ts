@@ -145,22 +145,29 @@ export class EmailService {
   }
 
   async sendVerificationEmail(to: string, fullName: string, verificationToken: string): Promise<void> {
-    // Get dynamic URL using NetworkUtils
-    const localIP = NetworkUtils.getLocalIPAddress();
-    let verificationUrl = `http://${localIP}:3001/api/auth/verify-email?token=${verificationToken}`;
-    let urlSource = 'dynamic IP detection';
+    // Priority 1: BACKEND_URL env (production / Railway)
+    let verificationUrl: string;
+    let urlSource: string;
 
-    // Priority 1: Live ngrok API (most current)
-    const liveNgrokUrl = await this.getCurrentNgrokUrl();
-    if (liveNgrokUrl) {
-      verificationUrl = `${liveNgrokUrl}/api/auth/verify-email?token=${verificationToken}`;
-      urlSource = 'live ngrok API';
+    const backendUrl = (process.env.BACKEND_URL || '').trim().replace(/\/+$/, '');
+    if (backendUrl) {
+      verificationUrl = `${backendUrl}/api/auth/verify-email?token=${verificationToken}`;
+      urlSource = 'BACKEND_URL';
     } else {
-      // Priority 2: Environment variable ngrok URL
-      const envNgrokUrl = process.env.NGROK_URL;
-      if (envNgrokUrl) {
-        verificationUrl = `${envNgrokUrl}/api/auth/verify-email?token=${verificationToken}`;
-        urlSource = 'env variable';
+      // Priority 2: Live ngrok API
+      const liveNgrokUrl = await this.getCurrentNgrokUrl();
+      if (liveNgrokUrl) {
+        verificationUrl = `${liveNgrokUrl}/api/auth/verify-email?token=${verificationToken}`;
+        urlSource = 'live ngrok API';
+      } else if (process.env.NGROK_URL) {
+        // Priority 3: NGROK_URL env
+        verificationUrl = `${process.env.NGROK_URL.replace(/\/+$/, '')}/api/auth/verify-email?token=${verificationToken}`;
+        urlSource = 'NGROK_URL';
+      } else {
+        // Fallback: local IP
+        const localIP = NetworkUtils.getLocalIPAddress();
+        verificationUrl = `http://${localIP}:3001/api/auth/verify-email?token=${verificationToken}`;
+        urlSource = 'local IP fallback';
       }
     }
 
