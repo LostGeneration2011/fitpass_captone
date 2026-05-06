@@ -123,8 +123,8 @@ export default function TeacherQR() {
         }
 
         const [allSessions, allClasses] = await Promise.all([
-          sessionsAPI.getAll(),
-          classAPI.getAll(),
+          sessionsAPI.getAll(user.id),
+          classAPI.getAll(user.id),
         ]);
 
         // Filter teacher's classes

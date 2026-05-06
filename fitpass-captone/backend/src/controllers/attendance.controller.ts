@@ -32,6 +32,36 @@ import { prisma } from "../config/prisma";
 
 const attendanceService = new AttendanceService();
 
+async function assertTeacherOwnsSession(user: any, sessionId: string) {
+  if (user?.role !== 'TEACHER') return;
+
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { class: { select: { teacherId: true } } }
+  });
+
+  if (!session || session.class.teacherId !== user.id) {
+    const err: any = new Error('Unauthorized');
+    err.status = 403;
+    throw err;
+  }
+}
+
+async function assertTeacherOwnsAttendance(user: any, attendanceId: string) {
+  if (user?.role !== 'TEACHER') return;
+
+  const attendance = await prisma.attendance.findUnique({
+    where: { id: attendanceId },
+    include: { session: { select: { class: { select: { teacherId: true } } } } }
+  });
+
+  if (!attendance || attendance.session.class.teacherId !== user.id) {
+    const err: any = new Error('Unauthorized');
+    err.status = 403;
+    throw err;
+  }
+}
+
 export const checkIn = async (req: Request, res: Response) => {
   try {
     const { sessionId, studentId, status = 'PRESENT' } = req.body;
@@ -45,6 +75,8 @@ export const checkIn = async (req: Request, res: Response) => {
     if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
       return res.status(403).json({ error: "Only teachers and admins can perform manual check-in" });
     }
+
+    await assertTeacherOwnsSession(user, sessionId);
 
     const attendance = await attendanceService.checkIn(sessionId, studentId, status as AttendanceStatus);
     
@@ -61,13 +93,23 @@ export const checkIn = async (req: Request, res: Response) => {
       });
       
       if (session && student) {
-        io.emit('attendance:checkin', {
+        const payload = {
           sessionId,
           classId: session.classId,
           studentId,
           studentName: student.fullName,
           status: status,
           timestamp: new Date().toISOString()
+        };
+
+        io.emit('attendance:checkin', payload);
+        io.to(`session_${sessionId}`).emit('attendance:new', {
+          id: attendance.id,
+          sessionId,
+          studentId,
+          student: { fullName: student.fullName, email: null },
+          status,
+          checkedInAt: attendance.checkedInAt,
         });
       }
     }
@@ -159,6 +201,14 @@ export const qrCheckIn = async (req: Request, res: Response) => {
           status: 'PRESENT',
           timestamp: new Date().toISOString()
         });
+        io.to(`session_${sessionId}`).emit('attendance:new', {
+          id: attendance.id,
+          sessionId,
+          studentId: user.id,
+          student: { fullName: user.fullName || 'Unknown', email: user.email || null },
+          status: 'PRESENT',
+          checkedInAt: attendance.checkedInAt,
+        });
       }
     }
     
@@ -182,6 +232,8 @@ export const getAttendanceBySession = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "sessionId is required" });
     }
 
+    await assertTeacherOwnsSession((req as any).user, sessionId as string);
+
     const attendances = await attendanceService.getAttendanceBySession(sessionId as string);
     return res.json({ attendances });
   } catch (err: any) {
@@ -197,6 +249,18 @@ export const getAttendanceByClass = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "classId is required" });
     }
 
+    const user = (req as any).user;
+    if (user?.role === 'TEACHER') {
+      const classData = await prisma.class.findUnique({
+        where: { id: classId as string },
+        select: { teacherId: true }
+      });
+
+      if (!classData || classData.teacherId !== user.id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+    }
+
     const attendances = await attendanceService.getAttendanceByClass(classId as string);
     return res.json({ attendances });
   } catch (err: any) {
@@ -210,6 +274,11 @@ export const getAttendanceByStudent = async (req: Request, res: Response) => {
 
     if (!studentId) {
       return res.status(400).json({ error: "studentId is required" });
+    }
+
+    const user = (req as any).user;
+    if (user?.role === 'STUDENT' && studentId !== user.id) {
+      return res.status(403).json({ error: 'Students can only view their own attendance' });
     }
 
     const attendances = await attendanceService.getAttendanceByStudent(studentId as string);
@@ -267,8 +336,21 @@ export const updateAttendance = async (req: Request, res: Response) => {
       if (!status) {
         return res.status(400).json({ error: "status is required" });
       }
+
+      await assertTeacherOwnsAttendance(user, attendanceId);
       
       const attendance = await attendanceService.updateAttendanceById(attendanceId, status as AttendanceStatus);
+      const io = (global as any).io;
+      if (io) {
+        io.to(`session_${attendance.session.id}`).emit('attendance:updated', {
+          id: attendance.id,
+          sessionId: attendance.session.id,
+          studentId: attendance.studentId,
+          student: { fullName: attendance.student.fullName, email: attendance.student.email },
+          status: attendance.status,
+          checkedInAt: attendance.checkedInAt,
+        });
+      }
       return res.json({ message: "Attendance updated successfully", attendance });
     } else {
       // Format: PATCH /attendance with { sessionId, studentId, status }
@@ -278,10 +360,24 @@ export const updateAttendance = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "sessionId, studentId, and status are required" });
       }
 
+      await assertTeacherOwnsSession(user, sessionId);
+
       const attendance = await attendanceService.updateAttendance(sessionId, studentId, status as AttendanceStatus);
+      const io = (global as any).io;
+      if (io) {
+        io.to(`session_${attendance.session.id}`).emit('attendance:updated', {
+          id: attendance.id,
+          sessionId: attendance.session.id,
+          studentId: attendance.studentId,
+          student: { fullName: attendance.student.fullName, email: attendance.student.email },
+          status: attendance.status,
+          checkedInAt: attendance.checkedInAt,
+        });
+      }
       return res.json({ message: "Attendance updated successfully", attendance });
     }
   } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+    const status = err?.status || 400;
+    return res.status(status).json({ error: err.message });
   }
 };

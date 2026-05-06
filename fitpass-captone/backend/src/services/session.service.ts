@@ -84,6 +84,29 @@ export class SessionService {
     });
   }
 
+  async getSessionsByTeacher(teacherId: string) {
+    return await prisma.session.findMany({
+      where: {
+        class: {
+          teacherId,
+        },
+      },
+      include: {
+        class: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            teacher: { select: { id: true, fullName: true } }
+          }
+        },
+        room: { select: { id: true, name: true, capacity: true } },
+        _count: { select: { attendances: true } }
+      },
+      orderBy: { startTime: 'asc' }
+    });
+  }
+
   // GET /api/sessions/:id
   async getSessionById(id: string) {
     const session = await prisma.session.findUnique({

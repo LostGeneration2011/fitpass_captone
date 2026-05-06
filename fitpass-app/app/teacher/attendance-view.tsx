@@ -73,11 +73,11 @@ export default function TeacherAttendanceScreen() {
       }
 
       // Get all sessions
-      const allSessions = await sessionsAPI.getAll();
+      const allSessions = await sessionsAPI.getAll(user.id);
       const sessionsArray = Array.isArray(allSessions) ? allSessions : (allSessions?.sessions || []);
 
       // Get all classes to filter by teacher
-      const allClasses = await classAPI.getAll();
+      const allClasses = await classAPI.getAll(user.id);
       const classesArray = Array.isArray(allClasses) ? allClasses : (allClasses?.classes || []);
       const teacherClassIds = classesArray
         .filter((c: any) => c.teacherId === user.id)

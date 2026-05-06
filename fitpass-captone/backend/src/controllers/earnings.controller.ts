@@ -127,6 +127,10 @@ export const getTeacherEarningsById = async (req: Request, res: Response) => {
     const { teacherId } = req.params;
     const user = (req as any).user;
 
+    if (!user || (user.role !== 'TEACHER' && user.role !== 'ADMIN')) {
+      return res.status(403).json({ error: 'Only teachers and admins can access earnings' });
+    }
+
     // Only allow teacher to view own or admin to view any
     if (user.role === 'TEACHER' && user.id !== teacherId) {
       return res.status(403).json({ error: 'You can only view your own earnings' });

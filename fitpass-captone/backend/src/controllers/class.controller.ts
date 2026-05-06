@@ -7,6 +7,7 @@ const classService = new ClassService();
 export const createClass = async (req: Request, res: Response) => {
   try {
     console.log('Creating class with data:', req.body);
+    const user = (req as any).user;
     
     if (!req.body.name || !req.body.duration) {
       return res.status(400).json({ 
@@ -42,6 +43,11 @@ export const createClass = async (req: Request, res: Response) => {
       req.body.level = 'ALL_LEVELS';
     }
 
+    // Teachers can only create classes owned by themselves.
+    if (user?.role === 'TEACHER') {
+      req.body.teacherId = user.id;
+    }
+
     const created = await classService.createClass(req.body);
     return res.status(201).json(created);
   } catch (err: any) {
@@ -52,7 +58,12 @@ export const createClass = async (req: Request, res: Response) => {
 
 export const getAllClasses = async (req: Request, res: Response) => {
   try {
-    const { status, approved, type, level, startDate, endDate } = req.query as Record<string, string | undefined>;
+    const { status, approved, type, level, startDate, endDate, teacherId } = req.query as Record<string, string | undefined>;
+    const user = (req as any).user;
+
+    if (teacherId && user?.role === 'TEACHER' && teacherId !== user.id) {
+      return res.status(403).json({ error: 'You can only view your own classes' });
+    }
 
     let classes;
     // If any filter present, use flexible search
@@ -62,12 +73,17 @@ export const getAllClasses = async (req: Request, res: Response) => {
         approvedOnly: approved === 'true',
         type: type as any,
         level: level as any,
+        teacherId,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
       });
     } else {
       // Default: all classes
       classes = await classService.getAllClasses();
+    }
+
+    if (teacherId) {
+      classes = classes.filter((item: any) => item.teacherId === teacherId);
     }
 
     return res.json(classes);
@@ -160,9 +176,30 @@ export const getClassById = async (req: Request, res: Response) => {
 export const updateClass = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
+    const user = (req as any).user;
     
     if (!id) {
       return res.status(400).json({ error: "Class ID is required" });
+    }
+
+    if (user?.role === 'TEACHER') {
+      const classData = await prisma.class.findUnique({
+        where: { id },
+        select: { teacherId: true }
+      });
+
+      if (!classData) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+
+      if (classData.teacherId !== user.id) {
+        return res.status(403).json({ error: 'You do not own this class' });
+      }
+
+      // Teachers cannot reassign class ownership.
+      if (req.body?.teacherId !== undefined) {
+        delete req.body.teacherId;
+      }
     }
     
     const updated = await classService.updateClass(id, req.body);

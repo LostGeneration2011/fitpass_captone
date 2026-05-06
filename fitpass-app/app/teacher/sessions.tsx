@@ -42,8 +42,8 @@ export default function TeacherSessionsScreen() {
 
       // Load all sessions and filter appropriately
       const [allSessions, allClasses] = await Promise.all([
-        sessionsAPI.getAll(),
-        classAPI.getAll(),
+        sessionsAPI.getAll(user.id),
+        classAPI.getAll(user.id),
       ]);
       
       console.log("🔍 Sessions - All sessions:", allSessions);

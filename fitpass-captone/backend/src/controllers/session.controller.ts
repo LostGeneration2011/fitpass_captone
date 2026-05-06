@@ -44,10 +44,17 @@ export const createSession = async (req: Request, res: Response) => {
 
 export const getSessions = async (req: Request, res: Response) => {
   try {
-    const { classId } = req.query;
+    const { classId, teacherId } = req.query;
+    const user = (req as any).user;
+
+    if (teacherId && user?.role === 'TEACHER' && teacherId !== user.id) {
+      return res.status(403).json({ error: 'You can only view your own sessions' });
+    }
 
     let sessions;
-    if (classId) {
+    if (teacherId) {
+      sessions = await sessionService.getSessionsByTeacher(teacherId as string);
+    } else if (classId) {
       sessions = await sessionService.getSessionsByClass(classId as string);
     } else {
       sessions = await sessionService.getAllSessions();

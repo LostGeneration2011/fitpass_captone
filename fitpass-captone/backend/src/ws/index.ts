@@ -94,6 +94,25 @@ export default function setupWebSocket(server: HTTPServer) {
       socket.emit('info', { message: `[BACKEND] Left thread_${threadId}` });
     });
 
+    // Join attendance session room
+    socket.on('session:join', (data: { sessionId: string }) => {
+      const { sessionId } = data || {};
+      if (!sessionId) {
+        socket.emit('error', { message: 'Session ID required' });
+        return;
+      }
+      socket.join(`session_${sessionId}`);
+      socket.emit('session:joined', { sessionId });
+    });
+
+    // Leave attendance session room
+    socket.on('session:leave', (data: { sessionId: string }) => {
+      const { sessionId } = data || {};
+      if (!sessionId) return;
+      socket.leave(`session_${sessionId}`);
+      socket.emit('session:left', { sessionId });
+    });
+
     // Handle typing indicator
     socket.on('chat.typing', (data: { threadId: string, isTyping: boolean }) => {
       const { threadId, isTyping } = data;
@@ -147,6 +166,23 @@ export default function setupWebSocket(server: HTTPServer) {
         // Import prisma here to avoid circular dependencies
         const { prisma } = await import('../config/prisma');
         
+        const session = await prisma.session.findUnique({
+          where: { id: sessionId },
+          select: {
+            class: { select: { teacherId: true } }
+          }
+        });
+
+        if (!session) {
+          socket.emit('error', { message: 'Session not found' });
+          return;
+        }
+
+        if (user.role === 'TEACHER' && session.class.teacherId !== user.id) {
+          socket.emit('error', { message: 'Unauthorized' });
+          return;
+        }
+
         const attendances = await prisma.attendance.findMany({
           where: { sessionId },
           include: {

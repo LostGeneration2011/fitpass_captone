@@ -67,6 +67,7 @@ export class ClassService {
     status?: 'PENDING' | 'APPROVED' | 'REJECTED';
     type?: 'YOGA' | 'CARDIO' | 'STRENGTH' | 'DANCE' | 'PILATES' | 'OTHER';
     level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ALL_LEVELS';
+    teacherId?: string;
     startDate?: Date;
     endDate?: Date;
     approvedOnly?: boolean;
@@ -87,6 +88,10 @@ export class ClassService {
 
     if (filters.level) {
       where.level = filters.level;
+    }
+
+    if (filters.teacherId) {
+      where.teacherId = filters.teacherId;
     }
 
     if (filters.startDate || filters.endDate) {
@@ -200,7 +205,7 @@ export class ClassService {
   }
 
   async updateClass(id: string, data: any) {
-    const allowed = ["name", "description", "capacity", "duration", "teacherId", "type", "level"];
+    const allowed = ["name", "description", "capacity", "duration", "type", "level"];
 
     const filtered: any = {};
     for (const key of allowed) {

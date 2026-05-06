@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getTeacherEarnings, getTeacherEarningsById } from '../controllers/earnings.controller';
-import { teacherOnly } from '../middlewares/rbac';
+import { teacherOnly, teacherOrAdmin } from '../middlewares/rbac';
 
 const router = Router();
 
@@ -8,6 +8,6 @@ const router = Router();
 router.get('/me', teacherOnly(), getTeacherEarnings);
 
 // GET /api/earnings/:teacherId - View specific teacher earnings (TEACHER/ADMIN, controlled in controller)
-router.get('/:teacherId', getTeacherEarningsById);
+router.get('/:teacherId', teacherOrAdmin(), getTeacherEarningsById);
 
 export default router;

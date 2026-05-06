@@ -62,7 +62,7 @@ export default function TeacherClasses() {
         return;
       }
 
-      const allClasses = await classAPI.getAll();
+      const allClasses = await classAPI.getAll(user.id);
       const teacherClasses = Array.isArray(allClasses) 
         ? allClasses.filter((c: any) => c.teacherId === user.id)
         : [];
