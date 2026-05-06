@@ -30,6 +30,40 @@ export class EmailService {
     };
   }
 
+  private async sendViaMailtrapApi(mailOptions: nodemailer.SendMailOptions): Promise<void> {
+    const apiToken = process.env.MAILTRAP_API_TOKEN;
+    const inboxId = process.env.MAILTRAP_INBOX_ID;
+
+    if (!apiToken || !inboxId) {
+      throw new Error('MAILTRAP_API_TOKEN or MAILTRAP_INBOX_ID env vars not set');
+    }
+
+    const fromRaw = mailOptions.from as string;
+    const fromNameMatch = fromRaw.match(/^"?(.+?)"?\s*</);
+    const fromEmailMatch = fromRaw.match(/<(.+)>/);
+    const fromName = fromNameMatch?.[1]?.replace(/^"|"$/g, '') ?? 'FitPass';
+    const fromEmail = fromEmailMatch ? fromEmailMatch[1] : 'noreply@fitpass.com';
+
+    const response = await fetch(`https://sandbox.api.mailtrap.io/api/send/${inboxId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: { email: fromEmail, name: fromName },
+        to: [{ email: mailOptions.to as string }],
+        subject: mailOptions.subject as string,
+        html: mailOptions.html as string,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Mailtrap API ${response.status}: ${body}`);
+    }
+  }
+
   private async sendMailWithFallback(
     mailOptions: nodemailer.SendMailOptions,
     to: string,
@@ -44,7 +78,11 @@ export class EmailService {
     this.logEmailStatus('START', emailType, `Attempting delivery to ${to} via ${primary.via}`);
 
     try {
-      await primary.transporter.sendMail(mailOptions);
+      if (primary.via === 'Mailtrap') {
+        await this.sendViaMailtrapApi(mailOptions);
+      } else {
+        await primary.transporter.sendMail(mailOptions);
+      }
       this.logEmailStatus('SUCCESS', emailType, `Delivered to ${to} via ${primary.via}`);
       return primary.via;
     } catch (primaryError) {
@@ -60,7 +98,11 @@ export class EmailService {
       );
 
       try {
-        await fallback.transporter.sendMail(mailOptions);
+        if (fallback.via === 'Mailtrap') {
+          await this.sendViaMailtrapApi(mailOptions);
+        } else {
+          await fallback.transporter.sendMail(mailOptions);
+        }
         this.logEmailStatus('SUCCESS', emailType, `Delivered to ${to} via fallback ${fallback.via}`);
         return fallback.via;
       } catch (fallbackError) {
@@ -182,7 +224,7 @@ export class EmailService {
     };
 
     try {
-      await this.mailtrapTransporter.sendMail(mailOptions);
+      await this.sendViaMailtrapApi(mailOptions);
       console.log(`✅ Verification email sent successfully to ${to}`);
     } catch (error) {
       console.error(`❌ Failed to send verification email to ${to}:`, error);
