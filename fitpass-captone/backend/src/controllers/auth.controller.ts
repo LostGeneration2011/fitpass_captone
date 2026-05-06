@@ -117,14 +117,22 @@ export const changePassword = async (req: any, res: Response) => {
 
     console.log(`🔐 [ChangePassword] Password updated for userId=${userId}, email=${user.email}. Triggering confirmation email...`);
 
+    const emailPromise = emailService.sendPasswordChangedConfirmationEmail(
+      user.email,
+      user.fullName,
+      !!user.googleId
+    );
+
     const emailResult = await Promise.race<boolean | null>([
-      emailService.sendPasswordChangedConfirmationEmail(
-        user.email,
-        user.fullName,
-        !!user.googleId
-      ),
+      emailPromise,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
     ]);
+
+    if (emailResult === null) {
+      void emailPromise.then((finalResult) => {
+        console.log(`📬 [ChangePassword] Final async email outcome for userId=${userId}:`, finalResult);
+      });
+    }
 
     console.log(`📧 [ChangePassword] Email result for userId=${userId}:`, emailResult);
 
