@@ -32,6 +32,8 @@ export default function AdminChatPage() {
   const [threadFilter, setThreadFilter] = useState<'ALL' | 'CLASS' | 'CLASS_GROUP' | 'SUPPORT'>('ALL');
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [pendingAttachments, setPendingAttachments] = useState<any[]>([]);
   const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
   const [unreadByThread, setUnreadByThread] = useState<Record<string, number>>({});
@@ -307,26 +309,43 @@ export default function AdminChatPage() {
   }, []);
 
   const handleSend = async () => {
-    if (!activeThread?.id || (!content.trim() && pendingAttachments.length === 0)) return;
-    if (editingMessageId) {
-      const message = await chatAPI.editMessage(editingMessageId, content.trim());
-      setMessages((prev) => prev.map((msg) => (msg.id === message.id ? message : msg)));
-      setEditingMessageId(null);
-      setContent('');
-    } else {
-      const message = await chatAPI.sendMessage(activeThread.id, content.trim(), {
-        attachments: pendingAttachments,
-        mentionUserIds,
-        replyToId: replyTo?.id,
-      });
-      setMessages((prev) => {
-        if (prev.some((msg) => msg.id === message.id)) return prev;
-        return [...prev, message];
-      });
-      setContent('');
-      setPendingAttachments([]);
-      setMentionUserIds([]);
-      setReplyTo(null);
+    if (sending) return;
+    const trimmedContent = content.trim();
+    const hasAttachment = pendingAttachments.length > 0;
+    if (!activeThread?.id || (!trimmedContent && !hasAttachment)) return;
+
+    setSendError('');
+    setSending(true);
+
+    try {
+      if (editingMessageId) {
+        if (!trimmedContent) {
+          setSendError('Nội dung tin nhắn không được để trống khi chỉnh sửa.');
+          return;
+        }
+        const message = await chatAPI.editMessage(editingMessageId, trimmedContent);
+        setMessages((prev) => prev.map((msg) => (msg.id === message.id ? message : msg)));
+        setEditingMessageId(null);
+        setContent('');
+      } else {
+        const message = await chatAPI.sendMessage(activeThread.id, trimmedContent, {
+          attachments: pendingAttachments,
+          mentionUserIds,
+          replyToId: replyTo?.id,
+        });
+        setMessages((prev) => {
+          if (prev.some((msg) => msg.id === message.id)) return prev;
+          return [...prev, message];
+        });
+        setContent('');
+        setPendingAttachments([]);
+        setMentionUserIds([]);
+        setReplyTo(null);
+      }
+    } catch (error: any) {
+      setSendError(error?.message || 'Không gửi được tin nhắn. Vui lòng thử lại.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -505,6 +524,14 @@ export default function AdminChatPage() {
     if (!mentionQuery) return list;
     return list.filter((user: any) => user.fullName?.toLowerCase().includes(mentionQuery));
   }, [activeThread, content, mentionQuery, threadMembers]);
+
+  const canSend = Boolean(
+    activeThread?.id &&
+      !uploading &&
+      !sending &&
+      !activeThread?.isLocked &&
+      (content.trim() || pendingAttachments.length > 0)
+  );
 
   const getMessageAttachmentUrl = (attachment: any, forImage: boolean = false) => {
     if (!attachment?.url) return '';
@@ -817,6 +844,9 @@ export default function AdminChatPage() {
           </div>
 
           <div className="p-4 border-t border-gray-200 dark:border-slate-700">
+            {sendError ? (
+              <div className="mb-2 text-xs text-red-600 dark:text-red-400">{sendError}</div>
+            ) : null}
             {replyTo ? (
               <div className="mb-2 flex items-center justify-between text-xs text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-lg">
                 <span>Trả lời: {replyTo.content || 'Tin nhắn'}</span>
@@ -858,17 +888,25 @@ export default function AdminChatPage() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onInput={handleTyping}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (canSend) {
+                      handleSend();
+                    }
+                  }
+                }}
                 placeholder="Nhập tin nhắn..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:placeholder:text-slate-500"
-                disabled={activeThread?.isLocked}
+                disabled={!activeThread?.id || activeThread?.isLocked || sending}
               />
               <button
                 onClick={handleSend}
-                disabled={!activeThread?.id || uploading || activeThread?.isLocked}
+                disabled={!canSend}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Send size={15} />
-                <span>Gửi</span>
+                <span>{sending ? 'Đang gửi...' : 'Gửi'}</span>
               </button>
             </div>
             {showEmojiPicker ? (

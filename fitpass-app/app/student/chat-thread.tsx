@@ -385,10 +385,6 @@ export default function StudentChatThreadScreen({ route, navigation }: any) {
         setPendingAttachments([]);
         setMentionUserIds([]);
         setReplyTo(null);
-        // Emit real-time event to other clients (MUST use backend event name)
-        if (socket) {
-          socket.emit('chat_message', { threadId, content: message.content });
-        }
       }
       chatAPI.markRead(threadId).catch(() => undefined);
       scrollRef.current?.scrollToEnd({ animated: true });
