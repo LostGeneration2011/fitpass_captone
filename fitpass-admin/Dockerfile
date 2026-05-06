@@ -3,9 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Allow NEXT_PUBLIC_API_URL to be baked in at build time (required for Next.js client bundles)
+# Allow API URLs to be available during build for client bundles and server routes
 ARG NEXT_PUBLIC_API_URL
+ARG BACKEND_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV BACKEND_API_URL=$BACKEND_API_URL
 
 # Copy package files
 COPY package*.json ./
@@ -25,6 +27,9 @@ RUN npm run build
 FROM node:20-alpine
 
 WORKDIR /app
+
+ARG BACKEND_API_URL
+ENV BACKEND_API_URL=$BACKEND_API_URL
 
 # Install dumb-init
 RUN apk add --no-cache dumb-init

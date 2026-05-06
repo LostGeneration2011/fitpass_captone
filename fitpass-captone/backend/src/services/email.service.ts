@@ -6,10 +6,22 @@ export class EmailService {
   private gmailTransporter: nodemailer.Transporter;
   private fromEmail: string = 'FitPass Team <noreply@fitpass.com>';
 
+  private isGmailAddress(email: string): boolean {
+    return email.trim().toLowerCase().endsWith('@gmail.com');
+  }
+
+  private getPasswordResetTransporter(to: string, isGoogleUser: boolean) {
+    const shouldUseGmail = isGoogleUser || this.isGmailAddress(to);
+    return {
+      transporter: shouldUseGmail ? this.gmailTransporter : this.mailtrapTransporter,
+      via: shouldUseGmail ? 'Gmail' : 'Mailtrap'
+    };
+  }
+
   constructor() {
     // Mailtrap for form registration
     this.mailtrapTransporter = nodemailer.createTransport({
-      host: 'sandbox.smtp.mailtrap.io',
+      host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
       port: 587,
       secure: false,
       auth: {
@@ -214,7 +226,12 @@ export class EmailService {
     return null;
   }
 
-  async sendPasswordResetEmail(to: string, fullName: string, resetToken: string): Promise<void> {
+  async sendPasswordResetEmail(
+    to: string,
+    fullName: string,
+    resetToken: string,
+    isGoogleUser: boolean = false
+  ): Promise<void> {
     try {
       // Reset password must point to a frontend page, never backend host.
       const normalizedFrontend = (process.env.FRONTEND_URL || '').trim().replace(/\/+$/, '');
@@ -299,8 +316,9 @@ export class EmailService {
         `
       };
 
-      await this.mailtrapTransporter.sendMail(mailOptions);
-      console.log(`✅ Password reset email sent to ${to}`);
+      const { transporter, via } = this.getPasswordResetTransporter(to, isGoogleUser);
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Password reset email sent via ${via} to ${to}`);
       console.log(`🌐 Reset URL (${urlSource}): ${webResetUrl}`);
     } catch (error) {
       console.error('❌ Password reset email sending failed:', error);

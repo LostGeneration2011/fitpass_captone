@@ -130,7 +130,7 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await prisma.user.findUnique({ 
       where: { email },
-      select: { id: true, email: true, fullName: true }
+      select: { id: true, email: true, fullName: true, googleId: true }
     });
     
     if (!user) {
@@ -152,7 +152,12 @@ export class AuthService {
     });
 
     // Send reset email
-    await this.emailService.sendPasswordResetEmail(user.email, user.fullName, resetToken);
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      user.fullName,
+      resetToken,
+      !!user.googleId
+    );
 
     return { message: "Reset email sent if account exists" };
   }
