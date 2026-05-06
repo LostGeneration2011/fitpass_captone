@@ -14,6 +14,30 @@ const normalizeBaseUrl = (value?: string) => {
   return value.trim().replace(/\/+$/, '');
 };
 
+function toQueryString(params?: Record<string, unknown>) {
+  if (!params) return '';
+
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value
+        .filter((item) => item !== undefined && item !== null && item !== '')
+        .forEach((item) => searchParams.append(key, String(item)));
+      return;
+    }
+
+    searchParams.set(key, String(value));
+  });
+
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : '';
+}
+
 const configuredBaseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL);
 const forceRemoteApiOnLocal = process.env.NEXT_PUBLIC_FORCE_REMOTE_API === 'true';
 
@@ -281,7 +305,7 @@ export const chatAPI = {
   listThreads: () => apiGet('/chat/threads'),
   listMembers: (threadId: string) => apiGet(`/chat/threads/${threadId}/members`),
   getMessages: (threadId: string, params?: { limit?: number; before?: string }) => {
-    const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const qs = toQueryString(params as Record<string, unknown> | undefined);
     return apiGet(`/chat/threads/${threadId}/messages${qs}`);
   },
   sendMessage: (threadId: string, content: string, options?: { replyToId?: string; attachments?: any[]; mentionUserIds?: string[] }) =>
@@ -355,14 +379,14 @@ export const salaryAPI = {
   payTeacher: (teacherId: string, amount: number) => 
     apiPost('/salary/teachers/pay', { teacherId, amount }),
   getPayrollHistory: (status?: string) => 
-    apiGet(`/salary/payroll${status ? `?status=${status}` : ''}`),
+    apiGet(`/salary/payroll${toQueryString({ status })}`),
   getTeacherHistory: (teacherId: string) => 
     apiGet(`/salary/teachers/${teacherId}/history`),
 };
 
 export const attendanceAPI = {
   getAll: (params?: Record<string, string>) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    const query = toQueryString(params as Record<string, unknown> | undefined);
     return apiGet(`/attendance/admin/all${query}`);
   },
   getById: (id: string) => apiGet(`/attendance/${id}`),
