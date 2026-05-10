@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
+import dns from 'node:dns';
 import { NetworkUtils } from '../utils/network.util';
 
 export class EmailService {
+  private static dnsConfigured = false;
   private mailtrapTransporter: nodemailer.Transporter;
   private gmailTransporter: nodemailer.Transporter;
   private gmailFallbackTransporter: nodemailer.Transporter;
@@ -115,6 +117,12 @@ export class EmailService {
   }
 
   constructor() {
+    if (!EmailService.dnsConfigured) {
+      // Railway often lacks IPv6 egress. Prefer IPv4 to avoid ENETUNREACH for Gmail SMTP.
+      dns.setDefaultResultOrder('ipv4first');
+      EmailService.dnsConfigured = true;
+    }
+
     const mailtrapPort = Number(process.env.MAILTRAP_PORT || 587);
     const mailtrapSecure = (process.env.MAILTRAP_SECURE || 'false').toLowerCase() === 'true';
     const gmailUser = (process.env.GMAIL_USER || '').trim();
