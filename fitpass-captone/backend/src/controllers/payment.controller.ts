@@ -26,6 +26,27 @@ interface PayPalOrderResponse {
   }>;
 }
 
+const getPublicBaseUrl = (req: Request): string => {
+  const backendUrlEnv = (process.env.BACKEND_URL || '').trim().replace(/\/+$/, '');
+  if (backendUrlEnv) {
+    return backendUrlEnv;
+  }
+
+  const productionApiUrl = (process.env.PRODUCTION_API_URL || '').trim().replace(/\/+$/, '');
+  if (productionApiUrl) {
+    return productionApiUrl.replace(/\/api$/i, '');
+  }
+
+  const forwardedProto = (req.headers['x-forwarded-proto'] as string | undefined)?.split(',')[0]?.trim();
+  const host = req.get('host');
+  if (host) {
+    return `${forwardedProto || req.protocol}://${host}`;
+  }
+
+  const localIP = NetworkUtils.getLocalIPAddress();
+  return `http://${localIP}:3001`;
+};
+
 // Get PayPal access token
 const getPayPalAccessToken = async (): Promise<string> => {
   console.log('🔑 Getting PayPal access token...');
@@ -125,6 +146,8 @@ export const createPayPalOrder = async (req: Request, res: Response) => {
     const priceUSD = (package_.price / 24000).toFixed(2);
     console.log(`💰 Price conversion: ${package_.price} VND = ${priceUSD} USD`);
 
+    const publicBaseUrl = getPublicBaseUrl(req);
+
     // Create PayPal order
     const orderData = {
       intent: 'CAPTURE',
@@ -137,8 +160,8 @@ export const createPayPalOrder = async (req: Request, res: Response) => {
         description: `FitPass - ${package_.name}`
       }],
       application_context: {
-        return_url: `http://${NetworkUtils.getLocalIPAddress()}:8081/payment/success?userPackageId=${userPackageId}`,
-        cancel_url: `http://${NetworkUtils.getLocalIPAddress()}:8081/payment/cancel`,
+        return_url: `${publicBaseUrl}/api/payment/success?userPackageId=${userPackageId}`,
+        cancel_url: `${publicBaseUrl}/api/payment/cancel?userPackageId=${userPackageId}`,
         brand_name: 'FitPass',
         user_action: 'PAY_NOW',
         shipping_preference: 'NO_SHIPPING'
@@ -442,9 +465,12 @@ export const handlePayPalReturn = async (req: Request, res: Response) => {
     console.log('🔑 Token:', token);
     console.log('👤 PayerID:', PayerID);
 
-    // Create redirect URL to mobile app deep link
-    const localIP = NetworkUtils.getLocalIPAddress();
-    const redirectURL = `exp://${localIP}:8081/--/payment/success?userPackageId=${userPackageId}&token=${token}&PayerID=${PayerID}`;
+    // Redirect back to the mobile app using the registered custom scheme.
+    const params = new URLSearchParams();
+    if (typeof userPackageId === 'string') params.set('userPackageId', userPackageId);
+    if (typeof token === 'string') params.set('orderId', token);
+    if (typeof PayerID === 'string') params.set('payerId', PayerID);
+    const redirectURL = `fitpass://payment/success?${params.toString()}`;
     
     // Send HTML page that redirects to mobile app
     res.send(`
@@ -530,9 +556,10 @@ export const handlePayPalCancel = async (req: Request, res: Response) => {
   try {
     console.log('❌ PayPal payment cancelled');
     
-    // Create redirect URL to mobile app
-    const localIP = NetworkUtils.getLocalIPAddress();
-    const redirectURL = `exp://${localIP}:8081/--/student/packages?payment=cancelled`;
+    const userPackageId = typeof req.query.userPackageId === 'string' ? req.query.userPackageId : '';
+    const redirectURL = userPackageId
+      ? `fitpass://payment/cancel?userPackageId=${encodeURIComponent(userPackageId)}`
+      : 'fitpass://payment/cancel';
     
     res.send(`
       <!DOCTYPE html>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, Text, Alert, ActivityIndicator, TouchableOpacity, Linking, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -51,6 +51,7 @@ export default function PackagesScreen() {
   const [paymentCheckInterval, setPaymentCheckInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const processedPaymentLinkRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Force clear any existing intervals when component mounts
@@ -186,6 +187,52 @@ export default function PackagesScreen() {
     }
   };
 
+  useEffect(() => {
+    const handlePayPalDeepLink = async (url: string) => {
+      if (!url.startsWith('fitpass://payment/')) {
+        return;
+      }
+
+      console.log('💳 Received PayPal deep link:', url);
+
+      const [baseUrl, queryString = ''] = url.split('?');
+      const params = new URLSearchParams(queryString);
+      const orderId = params.get('orderId') || params.get('token');
+      const userPackageId = params.get('userPackageId');
+      const dedupeKey = `${baseUrl}?${queryString}`;
+
+      if (processedPaymentLinkRef.current === dedupeKey) {
+        return;
+      }
+      processedPaymentLinkRef.current = dedupeKey;
+
+      if (baseUrl === 'fitpass://payment/success' && orderId && userPackageId) {
+        await checkPaymentStatus(orderId, userPackageId);
+        return;
+      }
+
+      if (baseUrl === 'fitpass://payment/cancel') {
+        setPurchasing(null);
+        setIsCheckingPayment(false);
+        Alert.alert('Thanh toán đã hủy', 'Bạn đã hủy giao dịch PayPal.');
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      void handlePayPalDeepLink(url);
+    });
+
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        void handlePayPalDeepLink(url);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [checkPaymentStatus]);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN').format(price);
   };
@@ -243,10 +290,9 @@ export default function PackagesScreen() {
         if (canOpen) {
           await Linking.openURL(approvalUrl);
           
-          // NO AUTOMATIC CHECKING - User manually checks when ready
           Alert.alert(
             'Complete PayPal Payment', 
-            'Finish your payment in the browser, then return here and tap "Check Payment Status".',
+            'Finish your payment in the browser. FitPass will reopen automatically after PayPal redirects back. If that does not happen, return here and tap "Check Payment Status".',
             [
               { 
                 text: 'Cancel', 
