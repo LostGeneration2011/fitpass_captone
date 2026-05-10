@@ -4,10 +4,13 @@ import { NetworkUtils } from '../utils/network.util';
 
 export class EmailService {
   private static dnsConfigured = false;
+  private static gmailIpv4Host: string | null = null;
   private mailtrapTransporter: nodemailer.Transporter;
   private gmailTransporter: nodemailer.Transporter;
   private gmailFallbackTransporter: nodemailer.Transporter;
   private fromEmail: string;
+  private gmailUser: string;
+  private gmailPass: string;
 
   private logEmailStatus(status: 'START' | 'SUCCESS' | 'FALLBACK' | 'FAILED', context: string, detail: string) {
     const prefix = status === 'SUCCESS' ? '✅' : status === 'FAILED' ? '❌' : status === 'FALLBACK' ? '⚠️' : '📧';
@@ -126,7 +129,11 @@ export class EmailService {
     const mailtrapPort = Number(process.env.MAILTRAP_PORT || 587);
     const mailtrapSecure = (process.env.MAILTRAP_SECURE || 'false').toLowerCase() === 'true';
     const gmailUser = (process.env.GMAIL_USER || '').trim();
+    const gmailPass = process.env.GMAIL_PASS || '';
     const customFrom = (process.env.EMAIL_FROM || '').trim();
+
+    this.gmailUser = gmailUser;
+    this.gmailPass = gmailPass;
 
     this.fromEmail = customFrom || (gmailUser ? `FitPass Team <${gmailUser}>` : 'FitPass Team <noreply@fitpass.com>');
 
@@ -154,7 +161,7 @@ export class EmailService {
       socketTimeout: 15000,
       auth: {
         user: gmailUser,
-        pass: process.env.GMAIL_PASS || ''
+        pass: gmailPass
       }
     });
 
@@ -169,9 +176,83 @@ export class EmailService {
       socketTimeout: 15000,
       auth: {
         user: gmailUser,
-        pass: process.env.GMAIL_PASS || ''
+        pass: gmailPass
       }
     });
+  }
+
+  private async resolveGmailIpv4Host(): Promise<string | null> {
+    if (EmailService.gmailIpv4Host) {
+      return EmailService.gmailIpv4Host;
+    }
+
+    try {
+      const addresses = await dns.promises.resolve4('smtp.gmail.com');
+      const firstAddress = addresses[0];
+      if (firstAddress) {
+        EmailService.gmailIpv4Host = firstAddress;
+        this.logEmailStatus('FALLBACK', 'Gmail SMTP', `Resolved smtp.gmail.com IPv4 -> ${EmailService.gmailIpv4Host}`);
+        return EmailService.gmailIpv4Host;
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not resolve smtp.gmail.com IPv4 address:', error);
+    }
+
+    return null;
+  }
+
+  private async sendViaGmailIpv4Fallback(mailOptions: nodemailer.SendMailOptions): Promise<void> {
+    const gmailIpv4Host = await this.resolveGmailIpv4Host();
+    if (!gmailIpv4Host) {
+      throw new Error('Unable to resolve IPv4 for smtp.gmail.com');
+    }
+
+    const gmail465Ipv4Transporter = nodemailer.createTransport({
+      host: gmailIpv4Host,
+      port: 465,
+      secure: true,
+      family: 4,
+      tls: {
+        servername: 'smtp.gmail.com'
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      auth: {
+        user: this.gmailUser,
+        pass: this.gmailPass,
+      },
+    } as any);
+
+    const gmail587Ipv4Transporter = nodemailer.createTransport({
+      host: gmailIpv4Host,
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      family: 4,
+      tls: {
+        servername: 'smtp.gmail.com'
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      auth: {
+        user: this.gmailUser,
+        pass: this.gmailPass,
+      },
+    } as any);
+
+    try {
+      await gmail465Ipv4Transporter.sendMail(mailOptions);
+      return;
+    } catch (primaryIpv4Error: any) {
+      this.logEmailStatus(
+        'FALLBACK',
+        'Gmail SMTP',
+        `IPv4 direct 465 failed (${primaryIpv4Error?.code || 'unknown'}). Retrying IPv4 direct 587 STARTTLS.`
+      );
+      await gmail587Ipv4Transporter.sendMail(mailOptions);
+    }
   }
 
   private async sendViaGmailWithFallback(mailOptions: nodemailer.SendMailOptions): Promise<void> {
@@ -184,7 +265,24 @@ export class EmailService {
         'Gmail SMTP',
         `Primary Gmail transport failed (${primaryError?.code || 'unknown'}). Retrying with port 587 STARTTLS.`
       );
-      await this.gmailFallbackTransporter.sendMail(mailOptions);
+      try {
+        await this.gmailFallbackTransporter.sendMail(mailOptions);
+      } catch (secondaryError: any) {
+        const errorText = `${secondaryError?.message || ''}`;
+        const isIpv6RouteIssue = secondaryError?.code === 'ESOCKET' && /ENETUNREACH/i.test(errorText);
+
+        if (!isIpv6RouteIssue) {
+          throw secondaryError;
+        }
+
+        this.logEmailStatus(
+          'FALLBACK',
+          'Gmail SMTP',
+          'Detected IPv6 route issue (ENETUNREACH). Retrying with direct IPv4 SMTP host.'
+        );
+
+        await this.sendViaGmailIpv4Fallback(mailOptions);
+      }
     }
   }
 
