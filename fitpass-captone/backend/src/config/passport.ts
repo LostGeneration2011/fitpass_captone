@@ -1,5 +1,6 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import crypto from 'crypto';
 import { prisma } from './prisma';
 import { EmailService } from '../services/email.service';
 const emailService = new EmailService();
@@ -38,6 +39,9 @@ passport.use(
           return done(new Error('No email from Google'), undefined);
         }
 
+        let shouldSendVerificationEmail = false;
+        let verificationTokenForSend: string | null = null;
+
         // Check if user exists with this googleId or email
         let user = await prisma.user.findFirst({
           where: {
@@ -57,7 +61,6 @@ passport.use(
                 googleId: profile.id,
                 provider: user.provider === 'local' ? 'both' : 'google',
                 avatar: profile.photos?.[0]?.value || user.avatar,
-                emailVerified: true, // Google users are auto-verified
               }
             });
           } else {
@@ -68,6 +71,21 @@ passport.use(
                 data: { avatar: profile.photos[0].value }
               });
             }
+          }
+
+          if (!user.emailVerified) {
+            verificationTokenForSend = user.verificationToken || crypto.randomBytes(32).toString('hex');
+
+            if (!user.verificationToken) {
+              user = await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                  verificationToken: verificationTokenForSend
+                }
+              });
+            }
+
+            shouldSendVerificationEmail = true;
           }
         } else {
           // Try to get signup role from nearby timestamp (within 5 minutes)
@@ -87,6 +105,8 @@ passport.use(
           }
           
           console.log(`👤 Creating new Google user (${email}) with role: ${signupRole}`);
+
+          const verificationToken = crypto.randomBytes(32).toString('hex');
           
           // Create new user
           user = await prisma.user.create({
@@ -96,19 +116,23 @@ passport.use(
               googleId: profile.id,
               provider: 'google',
               avatar: profile.photos?.[0]?.value,
-              emailVerified: true, // Google users are auto-verified
+              emailVerified: false,
+              verificationToken,
               password: null, // No password for Google-only users
               role: signupRole as 'STUDENT' | 'TEACHER',
             }
           });
 
-          // Send welcome email for new Google users
+          verificationTokenForSend = verificationToken;
+          shouldSendVerificationEmail = true;
+        }
+
+        if (shouldSendVerificationEmail && verificationTokenForSend) {
           try {
-            await emailService.sendWelcomeEmail(user.email, user.fullName, user.role);
-            console.log(`✅ Welcome email sent to new Google user: ${user.email} (${user.role})`);
+            await emailService.sendVerificationEmail(user.email, user.fullName, verificationTokenForSend);
+            console.log(`✅ Verification email sent to Google OAuth user: ${user.email}`);
           } catch (emailError) {
-            console.error(`❌ Failed to send welcome email to ${user.email}:`, emailError);
-            // Don't throw error - allow user creation even if email fails
+            console.error(`❌ Failed to send verification email to ${user.email}:`, emailError);
           }
         }
 

@@ -4,7 +4,7 @@ import { NetworkUtils } from '../utils/network.util';
 export class EmailService {
   private mailtrapTransporter: nodemailer.Transporter;
   private gmailTransporter: nodemailer.Transporter;
-  private fromEmail: string = 'FitPass Team <noreply@fitpass.com>';
+  private fromEmail: string;
 
   private logEmailStatus(status: 'START' | 'SUCCESS' | 'FALLBACK' | 'FAILED', context: string, detail: string) {
     const prefix = status === 'SUCCESS' ? '✅' : status === 'FAILED' ? '❌' : status === 'FALLBACK' ? '⚠️' : '📧';
@@ -116,6 +116,10 @@ export class EmailService {
   constructor() {
     const mailtrapPort = Number(process.env.MAILTRAP_PORT || 587);
     const mailtrapSecure = (process.env.MAILTRAP_SECURE || 'false').toLowerCase() === 'true';
+    const gmailUser = (process.env.GMAIL_USER || '').trim();
+    const customFrom = (process.env.EMAIL_FROM || '').trim();
+
+    this.fromEmail = customFrom || (gmailUser ? `FitPass Team <${gmailUser}>` : 'FitPass Team <noreply@fitpass.com>');
 
     // Mailtrap for form registration
     this.mailtrapTransporter = nodemailer.createTransport({
@@ -138,7 +142,7 @@ export class EmailService {
       greetingTimeout: 10000,
       socketTimeout: 15000,
       auth: {
-        user: process.env.GMAIL_USER || '',
+        user: gmailUser,
         pass: process.env.GMAIL_PASS || ''
       }
     });
@@ -149,10 +153,14 @@ export class EmailService {
     let verificationUrl: string;
     let urlSource: string;
 
-    const backendUrl = (process.env.BACKEND_URL || '').trim().replace(/\/+$/, '');
+    const backendUrlEnv = (process.env.BACKEND_URL || '').trim().replace(/\/+$/, '');
+    const productionApiUrl = (process.env.PRODUCTION_API_URL || '').trim().replace(/\/+$/, '');
+    const backendUrlFromApi = productionApiUrl ? productionApiUrl.replace(/\/api$/i, '') : '';
+    const backendUrl = backendUrlEnv || backendUrlFromApi;
+
     if (backendUrl) {
       verificationUrl = `${backendUrl}/api/auth/verify-email?token=${verificationToken}`;
-      urlSource = 'BACKEND_URL';
+      urlSource = backendUrlEnv ? 'BACKEND_URL' : 'PRODUCTION_API_URL';
     } else {
       // Priority 2: Live ngrok API
       const liveNgrokUrl = await this.getCurrentNgrokUrl();
@@ -230,9 +238,23 @@ export class EmailService {
       `
     };
 
+    const hasGmailCreds = Boolean((process.env.GMAIL_USER || '').trim() && (process.env.GMAIL_PASS || '').trim());
+    const shouldUseGmail = this.isGmailAddress(to);
+
     try {
+      // Gmail recipients are sent via Gmail transport.
+      if (shouldUseGmail) {
+        if (!hasGmailCreds) {
+          throw new Error('Missing GMAIL_USER/GMAIL_PASS. Gmail verification email cannot be delivered.');
+        }
+        await this.gmailTransporter.sendMail(mailOptions);
+        console.log(`✅ Verification email sent successfully to ${to} via Gmail`);
+        return;
+      }
+
+      // Non-Gmail recipients are sent via Mailtrap.
       await this.sendViaMailtrapApi(mailOptions);
-      console.log(`✅ Verification email sent successfully to ${to}`);
+      console.log(`✅ Verification email sent successfully to ${to} via Mailtrap`);
     } catch (error) {
       console.error(`❌ Failed to send verification email to ${to}:`, error);
       throw error;

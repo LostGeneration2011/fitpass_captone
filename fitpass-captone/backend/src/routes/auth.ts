@@ -49,6 +49,51 @@ router.get(
   (req, res) => {
     try {
       const user = req.user as any;
+
+      if (!user?.emailVerified) {
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Xác thực email</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                body {
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                  margin: 0;
+                  background: #f8fafc;
+                  color: #0f172a;
+                }
+                .card {
+                  max-width: 460px;
+                  background: white;
+                  border-radius: 14px;
+                  padding: 28px;
+                  text-align: center;
+                  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+                }
+                .icon { font-size: 44px; margin-bottom: 12px; }
+                h1 { margin: 0 0 12px 0; font-size: 22px; }
+                p { color: #475569; line-height: 1.6; margin: 0; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <div class="icon">📧</div>
+                <h1>Kiểm tra email để xác thực tài khoản</h1>
+                <p>
+                  Chúng tôi đã gửi email xác thực đến <strong>${user.email}</strong>.<br/>
+                  Vui lòng xác thực trước, sau đó đăng nhập lại bằng Google.
+                </p>
+              </div>
+            </body>
+          </html>
+        `);
+      }
       
       // Generate JWT token
       const token = jwt.sign(
