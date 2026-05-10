@@ -150,7 +150,7 @@ app.use('/api/enrollments', authMiddleware, enrollmentsRouter);
 app.use('/api/attendance', authMiddleware, attendanceRouter);
 app.use('/api/qr', authMiddleware, qrRouter);
 app.use('/api/user-packages', authMiddleware, userPackageRouter);
-app.use('/api/payment', authMiddleware, paymentRouter);
+app.use('/api/payment', paymentRouter);
 app.use('/api/salary', authMiddleware, salaryRouter);
 app.use('/api/earnings', authMiddleware, earningsRouter);
 app.use('/api/transactions', authMiddleware, transactionsRouter);
