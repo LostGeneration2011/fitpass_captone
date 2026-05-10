@@ -4,6 +4,7 @@ import { NetworkUtils } from '../utils/network.util';
 export class EmailService {
   private mailtrapTransporter: nodemailer.Transporter;
   private gmailTransporter: nodemailer.Transporter;
+  private gmailFallbackTransporter: nodemailer.Transporter;
   private fromEmail: string;
 
   private logEmailStatus(status: 'START' | 'SUCCESS' | 'FALLBACK' | 'FAILED', context: string, detail: string) {
@@ -135,9 +136,11 @@ export class EmailService {
       }
     });
 
-    // Gmail for Google OAuth welcome email
+    // Gmail primary SMTP (SSL 465)
     this.gmailTransporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
@@ -146,6 +149,35 @@ export class EmailService {
         pass: process.env.GMAIL_PASS || ''
       }
     });
+
+    // Gmail fallback SMTP (STARTTLS 587)
+    this.gmailFallbackTransporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      auth: {
+        user: gmailUser,
+        pass: process.env.GMAIL_PASS || ''
+      }
+    });
+  }
+
+  private async sendViaGmailWithFallback(mailOptions: nodemailer.SendMailOptions): Promise<void> {
+    try {
+      await this.gmailTransporter.sendMail(mailOptions);
+      return;
+    } catch (primaryError: any) {
+      this.logEmailStatus(
+        'FALLBACK',
+        'Gmail SMTP',
+        `Primary Gmail transport failed (${primaryError?.code || 'unknown'}). Retrying with port 587 STARTTLS.`
+      );
+      await this.gmailFallbackTransporter.sendMail(mailOptions);
+    }
   }
 
   async sendVerificationEmail(to: string, fullName: string, verificationToken: string): Promise<void> {
@@ -247,7 +279,7 @@ export class EmailService {
         if (!hasGmailCreds) {
           throw new Error('Missing GMAIL_USER/GMAIL_PASS. Gmail verification email cannot be delivered.');
         }
-        await this.gmailTransporter.sendMail(mailOptions);
+        await this.sendViaGmailWithFallback(mailOptions);
         console.log(`✅ Verification email sent successfully to ${to} via Gmail`);
         return;
       }
@@ -327,7 +359,7 @@ export class EmailService {
       };
 
       if (isGoogleUser) {
-        await this.gmailTransporter.sendMail(mailOptions);
+        await this.sendViaGmailWithFallback(mailOptions);
         console.log(`✅ Welcome email sent via Gmail to ${to}`);
       } else {
         await this.sendViaMailtrapApi(mailOptions);
@@ -669,7 +701,7 @@ export class EmailService {
 
     try {
       if (isGoogleUser) {
-        await this.gmailTransporter.sendMail(mailOptions);
+        await this.sendViaGmailWithFallback(mailOptions);
         console.log(`✅ Payment receipt email sent via Gmail to ${to}`);
       } else {
         await this.sendViaMailtrapApi(mailOptions);
