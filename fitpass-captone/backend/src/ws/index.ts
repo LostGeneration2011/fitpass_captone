@@ -95,14 +95,71 @@ export default function setupWebSocket(server: HTTPServer) {
     });
 
     // Join attendance session room
-    socket.on('session:join', (data: { sessionId: string }) => {
+    socket.on('session:join', async (data: { sessionId: string }) => {
       const { sessionId } = data || {};
       if (!sessionId) {
         socket.emit('error', { message: 'Session ID required' });
         return;
       }
-      socket.join(`session_${sessionId}`);
-      socket.emit('session:joined', { sessionId });
+
+      try {
+        const { prisma } = await import('../config/prisma');
+
+        const session = await prisma.session.findUnique({
+          where: { id: sessionId },
+          select: {
+            classId: true,
+            class: { select: { teacherId: true } },
+          },
+        });
+
+        if (!session) {
+          socket.emit('error', { message: 'Session not found' });
+          return;
+        }
+
+        if (user.role === 'ADMIN') {
+          socket.join(`session_${sessionId}`);
+          socket.emit('session:joined', { sessionId });
+          return;
+        }
+
+        if (user.role === 'TEACHER') {
+          if (session.class.teacherId !== user.id) {
+            socket.emit('error', { message: 'Unauthorized' });
+            return;
+          }
+          socket.join(`session_${sessionId}`);
+          socket.emit('session:joined', { sessionId });
+          return;
+        }
+
+        if (user.role === 'STUDENT') {
+          const enrollment = await prisma.enrollment.findUnique({
+            where: {
+              studentId_classId: {
+                studentId: user.id,
+                classId: session.classId,
+              },
+            },
+            select: { id: true },
+          });
+
+          if (!enrollment) {
+            socket.emit('error', { message: 'Unauthorized' });
+            return;
+          }
+
+          socket.join(`session_${sessionId}`);
+          socket.emit('session:joined', { sessionId });
+          return;
+        }
+
+        socket.emit('error', { message: 'Unauthorized' });
+      } catch (error) {
+        console.error('session:join authorization error:', error);
+        socket.emit('error', { message: 'Failed to join session room' });
+      }
     });
 
     // Leave attendance session room

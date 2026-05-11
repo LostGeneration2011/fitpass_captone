@@ -14,7 +14,7 @@ import { teacherOrAdmin, adminOnly } from '../middlewares/rbac';
 const router = Router();
 
 // POST /api/attendance/bulk - Get attendance for multiple sessionIds
-router.post('/bulk', getAttendanceBulk);
+router.post('/bulk', teacherOrAdmin(), getAttendanceBulk);
 
 // GET /api/attendance/admin/all - Admin: get all attendance records
 router.get('/admin/all', adminOnly(), getAllAttendanceForAdmin);

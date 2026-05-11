@@ -352,6 +352,7 @@ export const chatAPI = {
   listMembers: (threadId: string) => apiGet(`/chat/threads/${threadId}/members`),
   createSupportThread: () => apiPost('/chat/threads/support', {}),
   createClassThread: (classId: string) => apiPost('/chat/threads/class', { classId }),
+  createClassGroupThread: (classId: string) => apiPost('/chat/threads/class-group', { classId }),
   getMessages: (threadId: string, params?: { limit?: number; before?: string }) => {
     const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
     return apiGet(`/chat/threads/${threadId}/messages${qs}`);
@@ -443,7 +444,7 @@ export const sessionsAPI = {
       return items;
     });
   },
-  getById: (id) => apiGet(`/sessions/${id}`),
+  getById: (id) => apiGet(`/sessions/${id}`).then((res) => res?.session ?? res),
   create: (sessionData) => apiPost("/sessions", sessionData),
   updateStatus: (id, status) => apiPatch(`/sessions/${id}/status`, { status }),
   delete: (id) => apiDelete(`/sessions/${id}`)
@@ -454,6 +455,10 @@ export const attendanceAPI = {
   getBySession: (sessionId) => apiGet(`/attendance/session/${sessionId}`),
   getByStudent: (studentId) => apiGet(`/attendance?studentId=${studentId}`),
   getByClass: (classId) => apiGet(`/attendance?classId=${classId}`)
+};
+
+export const qrAPI = {
+  startSession: (sessionId: string) => apiPost(`/qr/sessions/${sessionId}/start`, {}),
 };
 
 // Enrollment

@@ -9,7 +9,10 @@ const emailService = new EmailService();
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const fullName = typeof req.body?.fullName === 'string' ? req.body.fullName.trim() : '';
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const password = req.body?.password;
+    const role = typeof req.body?.role === 'string' ? req.body.role.trim().toUpperCase() : '';
     
     // Validation
     if (!fullName || !email || !password) {
@@ -43,7 +46,8 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     console.log('Login request body:', req.body);
-    const { email, password } = req.body;
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const { password } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
@@ -162,7 +166,7 @@ export const changePassword = async (req: any, res: Response) => {
 
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     
     if (!email) {
       return res.status(400).json({ error: "Email is required" });

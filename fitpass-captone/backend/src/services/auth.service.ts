@@ -12,6 +12,10 @@ const JWT_SECRET =
 export class AuthService {
   private emailService = new EmailService();
 
+  private normalizeEmail(email: string) {
+    return email.trim().toLowerCase();
+  }
+
   public ensureStrongPassword(password: string) {
     const result = this.validatePasswordStrength(password);
     if (!result.valid) {
@@ -45,7 +49,14 @@ export class AuthService {
   }
 
   async register(fullName: string, email: string, password: string, role: UserRole = 'STUDENT') {
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = this.normalizeEmail(email);
+    const normalizedFullName = fullName.trim();
+
+    if (normalizedFullName.length < 2) {
+      throw new Error('Full name must be at least 2 characters');
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) throw new Error("Email already exists");
 
     // Validate password strength
@@ -56,8 +67,8 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: { 
-        fullName, 
-        email, 
+        fullName: normalizedFullName,
+        email: normalizedEmail,
         password: hashed, 
         role,
         emailVerified: false,
@@ -87,7 +98,8 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = this.normalizeEmail(email);
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user) throw new Error("Invalid email or password");
 
     if (!user.password) throw new Error("Invalid email or password");
@@ -128,8 +140,9 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
+    const normalizedEmail = this.normalizeEmail(email);
     const user = await prisma.user.findUnique({ 
-      where: { email },
+      where: { email: normalizedEmail },
       select: { id: true, email: true, fullName: true, googleId: true }
     });
     

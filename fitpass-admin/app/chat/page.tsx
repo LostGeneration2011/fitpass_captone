@@ -275,12 +275,16 @@ export default function AdminChatPage() {
       }));
     });
 
-    socket.on('chat.message.edit', (data: any) => {
+    socket.on('chat.message_edited', (data: any) => {
       setMessages((prev) => prev.map((msg: any) => (msg.id === data.message?.id ? data.message : msg)));
     });
 
     socket.on('chat.message_revoked', (data: any) => {
       setMessages((prev) => prev.map((msg: any) => (msg.id === data.message?.id ? data.message : msg)));
+    });
+
+    socket.on('chat.message_deleted', (data: any) => {
+      setMessages((prev) => prev.filter((msg: any) => msg.id !== data.messageId));
     });
 
     return () => {
@@ -718,8 +722,13 @@ export default function AdminChatPage() {
                       }`}
                     >
                       {msg.replyTo ? (
-                        <div className="mb-2 text-xs opacity-80 border-l-2 border-white/40 pl-2">
-                          Trả lời: {msg.replyTo.content || 'Tin nhắn'}
+                        <div className="mb-2 text-xs opacity-90 border-l-3 border-white/50 pl-2 py-1">
+                          <div className="font-semibold text-white">
+                            {msg.replyTo.sender?.fullName ? `Trả lời ${msg.replyTo.sender.fullName}` : 'Trả lời'}
+                          </div>
+                          <div className="line-clamp-2 text-white/80">
+                            {msg.replyTo.content || '[Tệp đính kèm]'}
+                          </div>
                         </div>
                       ) : null}
                       <div className="text-sm whitespace-pre-wrap break-words">

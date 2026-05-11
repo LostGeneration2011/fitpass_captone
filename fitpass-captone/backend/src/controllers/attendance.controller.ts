@@ -2,17 +2,26 @@
 export const getAttendanceBulk = async (req: Request, res: Response) => {
   try {
     const { sessionIds } = req.body;
+    const user = (req as any).user;
     if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
       return res.status(400).json({ error: "sessionIds must be a non-empty array" });
     }
 
+    if (!user || (user.role !== 'TEACHER' && user.role !== 'ADMIN')) {
+      return res.status(403).json({ error: 'Only teachers and admins can access bulk attendance' });
+    }
+
+    const where: any = {
+      sessionId: { in: sessionIds },
+    };
+
+    if (user.role === 'TEACHER') {
+      where.session = { class: { teacherId: user.id } };
+    }
+
     // Lấy tất cả attendance theo sessionIds
     const attendances = await prisma.attendance.findMany({
-      where: {
-        sessionId: {
-          in: sessionIds
-        }
-      },
+      where,
       include: {
         student: { select: { id: true, fullName: true, email: true } },
         session: { select: { id: true, startTime: true, endTime: true } }
@@ -27,8 +36,8 @@ export const getAttendanceBulk = async (req: Request, res: Response) => {
 import { Request, Response } from "express";
 import { AttendanceService } from "../services/attendance.service";
 import { AttendanceStatus } from "@prisma/client";
-import { nonceStore } from "../utils/nonce-store";
 import { prisma } from "../config/prisma";
+import { QRUtils } from "../utils/qr";
 
 const attendanceService = new AttendanceService();
 
@@ -102,7 +111,8 @@ export const checkIn = async (req: Request, res: Response) => {
           timestamp: new Date().toISOString()
         };
 
-        io.emit('attendance:checkin', payload);
+        io.to(`session_${sessionId}`).emit('attendance:checkin', payload);
+        io.to('role_admin').emit('attendance:checkin', payload);
         io.to(`session_${sessionId}`).emit('attendance:new', {
           id: attendance.id,
           sessionId,
@@ -123,41 +133,25 @@ export const checkIn = async (req: Request, res: Response) => {
 // QR-based checkin endpoint (standardized to use 'token' parameter)
 export const qrCheckIn = async (req: Request, res: Response) => {
   try {
-    // Get token from query (for GET) or body (for POST)
-    // Support both 'token' and legacy 'payload' for backwards compatibility
-    const tokenData = req.query.token || req.query.payload || req.body.token || req.body.payload;
+    // Accept only server-signed JWT QR token.
+    const tokenData = req.query.token || req.body.token;
     
     if (!tokenData) {
       return res.status(400).json({ error: "Missing token parameter" });
     }
 
-    // Decode base64 token
+    // Verify signed JWT token issued by QRUtils.generateQRToken.
     let payload;
     try {
-      const decodedPayload = Buffer.from(tokenData as string, 'base64').toString('utf8');
-      payload = JSON.parse(decodedPayload);
+      payload = QRUtils.verifyQRToken(tokenData as string);
     } catch (error) {
-      return res.status(400).json({ error: "Invalid QR token format" });
+      return res.status(400).json({ error: "Invalid or expired QR token" });
     }
 
-    // Validate token structure
-    const { sessionId, nonce, expiresAt } = payload;
-    if (!sessionId || !nonce || !expiresAt) {
-      return res.status(400).json({ error: "Invalid QR token structure" });
+    const { sessionId } = payload as { sessionId?: string };
+    if (!sessionId) {
+      return res.status(400).json({ error: "Invalid QR token payload" });
     }
-
-    // Check if QR is expired
-    if (Date.now() > expiresAt) {
-      return res.status(400).json({ error: "QR code expired" });
-    }
-
-    // Check if nonce already used
-    if (nonceStore.isUsed(nonce)) {
-      return res.status(400).json({ error: "QR already used" });
-    }
-
-    // Store nonce to prevent reuse
-    nonceStore.store(nonce);
 
     // Get authenticated user (student)
     const user = (req as any).user;
@@ -193,14 +187,16 @@ export const qrCheckIn = async (req: Request, res: Response) => {
       });
       
       if (session) {
-        io.emit('attendance:checkin', {
+        const payload = {
           sessionId,
           classId: session.classId,
           studentId: user.id,
           studentName: user.fullName || 'Unknown',
           status: 'PRESENT',
           timestamp: new Date().toISOString()
-        });
+        };
+        io.to(`session_${sessionId}`).emit('attendance:checkin', payload);
+        io.to('role_admin').emit('attendance:checkin', payload);
         io.to(`session_${sessionId}`).emit('attendance:new', {
           id: attendance.id,
           sessionId,
@@ -227,12 +223,44 @@ export const qrCheckIn = async (req: Request, res: Response) => {
 export const getAttendanceBySession = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.query;
+    const user = (req as any).user;
 
     if (!sessionId) {
       return res.status(400).json({ error: "sessionId is required" });
     }
 
-    await assertTeacherOwnsSession((req as any).user, sessionId as string);
+    if (user?.role === 'STUDENT') {
+      const session = await prisma.session.findUnique({ where: { id: sessionId as string }, select: { classId: true } });
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+
+      const enrollment = await prisma.enrollment.findFirst({
+        where: { classId: session.classId, studentId: user.id },
+        select: { id: true },
+      });
+      if (!enrollment) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const attendances = await prisma.attendance.findMany({
+        where: { sessionId: sessionId as string, studentId: user.id },
+        include: {
+          student: { select: { id: true, fullName: true, email: true } },
+          session: {
+            select: {
+              id: true,
+              startTime: true,
+              endTime: true,
+              class: { select: { id: true, name: true } },
+            },
+          },
+        },
+      });
+      return res.json({ attendances });
+    }
+
+    await assertTeacherOwnsSession(user, sessionId as string);
 
     const attendances = await attendanceService.getAttendanceBySession(sessionId as string);
     return res.json({ attendances });
@@ -250,6 +278,36 @@ export const getAttendanceByClass = async (req: Request, res: Response) => {
     }
 
     const user = (req as any).user;
+    if (user?.role === 'STUDENT') {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: { classId: classId as string, studentId: user.id },
+        select: { id: true },
+      });
+
+      if (!enrollment) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const attendances = await prisma.attendance.findMany({
+        where: {
+          studentId: user.id,
+          session: { classId: classId as string },
+        },
+        include: {
+          student: { select: { id: true, fullName: true, email: true } },
+          session: {
+            select: {
+              id: true,
+              startTime: true,
+              endTime: true,
+              class: { select: { id: true, name: true } },
+            },
+          },
+        },
+      });
+      return res.json({ attendances });
+    }
+
     if (user?.role === 'TEACHER') {
       const classData = await prisma.class.findUnique({
         where: { id: classId as string },
@@ -279,6 +337,37 @@ export const getAttendanceByStudent = async (req: Request, res: Response) => {
     const user = (req as any).user;
     if (user?.role === 'STUDENT' && studentId !== user.id) {
       return res.status(403).json({ error: 'Students can only view their own attendance' });
+    }
+
+    if (user?.role === 'TEACHER') {
+      const enrollments = await prisma.enrollment.findMany({
+        where: { studentId: studentId as string, class: { teacherId: user.id } },
+        select: { classId: true },
+      });
+
+      if (enrollments.length === 0) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const classIds = enrollments.map((e) => e.classId);
+      const attendances = await prisma.attendance.findMany({
+        where: {
+          studentId: studentId as string,
+          session: { classId: { in: classIds } },
+        },
+        include: {
+          student: { select: { id: true, fullName: true, email: true } },
+          session: {
+            select: {
+              id: true,
+              startTime: true,
+              endTime: true,
+              class: { select: { id: true, name: true } },
+            },
+          },
+        },
+      });
+      return res.json({ attendances });
     }
 
     const attendances = await attendanceService.getAttendanceByStudent(studentId as string);

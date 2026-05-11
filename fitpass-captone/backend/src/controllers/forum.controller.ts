@@ -105,6 +105,14 @@ export async function getPostDetail(req: Request, res: Response) {
     return res.status(404).json({ error: 'Not found' });
   }
 
+  // Hide moderated comments for non-admin users, except comment owner.
+  if (!isAdmin && Array.isArray(post.comments)) {
+    const currentUserId = currentUser?.id;
+    post.comments = post.comments.filter(
+      (comment) => !comment.isHidden || (currentUserId ? comment.authorId === currentUserId : false)
+    );
+  }
+
   res.json(post);
 }
 
@@ -125,10 +133,22 @@ export async function updatePost(req: Request, res: Response) {
   const userId = (req.user as Express.UserPayload | undefined)?.id;
   const post = await prisma.forumPost.findUnique({ where: { id } });
   if (!post || post.authorId !== userId) return res.status(403).json({ error: 'Forbidden' });
+
+  const hasContentChanged = content !== undefined && content !== post.content;
+  const hasImagesChanged = imageUrls !== undefined;
+  const shouldResetModeration = hasContentChanged || hasImagesChanged;
+
   const updated = await prisma.forumPost.update({
     where: { id },
     data: {
       ...(content !== undefined && { content }),
+      ...(shouldResetModeration && {
+        moderationStatus: 'PENDING',
+        moderationNote: null,
+        moderatedAt: null,
+        isHidden: false,
+        hiddenReason: null,
+      }),
       ...(imageUrls !== undefined && {
         images: {
           deleteMany: {},

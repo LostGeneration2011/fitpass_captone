@@ -67,15 +67,13 @@ export default function TeacherReportsScreen() {
         throw new Error('Unauthorized access');
       }
 
-      const [classesRes, sessionsRes, enrollmentsRes] = await Promise.all([
-        classAPI.getAll(),
-        sessionsAPI.getAll(),
-        enrollmentAPI.getAll(),
+      const [classesRes, sessionsRes] = await Promise.all([
+        classAPI.getAll(currentUser.id),
+        sessionsAPI.getAll(currentUser.id),
       ]);
 
-      const allClasses = Array.isArray(classesRes) ? classesRes : classesRes?.data || [];
-      const allSessions = Array.isArray(sessionsRes) ? sessionsRes : sessionsRes?.data || [];
-      const allEnrollments = Array.isArray(enrollmentsRes) ? enrollmentsRes : enrollmentsRes?.data || [];
+      const allClasses = Array.isArray(classesRes) ? classesRes : [];
+      const allSessions = Array.isArray(sessionsRes) ? sessionsRes : [];
 
       // Filter teacher's data
       const teacherClasses = allClasses.filter((c: any) => c.teacherId === currentUser.id);
@@ -83,9 +81,24 @@ export default function TeacherReportsScreen() {
         teacherClasses.some((c: any) => c.id === s.classId)
       );
 
+      const enrollmentResults = await Promise.allSettled(
+        teacherClasses.map((cls: any) => enrollmentAPI.getByClass(cls.id))
+      );
+
+      const enrollmentsByClassId = new Map<string, any[]>();
+      teacherClasses.forEach((cls: any, index: number) => {
+        const result = enrollmentResults[index];
+        if (result && result.status === 'fulfilled') {
+          const rows = Array.isArray(result.value) ? result.value : [];
+          enrollmentsByClassId.set(cls.id, rows);
+        } else {
+          enrollmentsByClassId.set(cls.id, []);
+        }
+      });
+
       // Calculate class breakdown with student counts
       const classBreakdown = teacherClasses.map((cls: any) => {
-        const classEnrollments = allEnrollments.filter((e: any) => e.classId === cls.id);
+        const classEnrollments = enrollmentsByClassId.get(cls.id) || [];
         const classSessions = teacherSessions.filter((s: any) => s.classId === cls.id);
         
         return {
@@ -107,10 +120,11 @@ export default function TeacherReportsScreen() {
 
       // Unique students count
       const allStudentIds = new Set();
-      allEnrollments.forEach((e: any) => {
-        if (teacherClasses.some((c: any) => c.id === e.classId)) {
+      teacherClasses.forEach((cls: any) => {
+        const classEnrollments = enrollmentsByClassId.get(cls.id) || [];
+        classEnrollments.forEach((e: any) => {
           allStudentIds.add(e.studentId);
-        }
+        });
       });
 
       setReportData({

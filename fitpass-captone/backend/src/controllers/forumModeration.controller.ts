@@ -1,6 +1,69 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+type JsonReport = {
+  userId?: string;
+  reason?: string;
+  detail?: string;
+  createdAt?: string;
+  status?: string;
+  reviewedAt?: string;
+  reviewNote?: string | null;
+  reviewedBy?: string;
+};
+
+const normalizeReportStatus = (report: JsonReport) => {
+  const raw = String(report?.status || 'PENDING').toUpperCase();
+  if (raw === 'REVIEWED' || raw === 'DISMISSED' || raw === 'PENDING') return raw;
+  return 'PENDING';
+};
+
+const markReviewedReport = (
+  reports: unknown,
+  index: number | null,
+  payload: { status: 'REVIEWED' | 'DISMISSED'; reviewedBy: string; reviewNote?: string }
+) => {
+  const current = Array.isArray(reports) ? ([...reports] as JsonReport[]) : [];
+  const now = new Date().toISOString();
+
+  const applyAt = (item: JsonReport = {}) => ({
+    ...item,
+    status: payload.status,
+    reviewedAt: now,
+    reviewedBy: payload.reviewedBy,
+    reviewNote: payload.reviewNote || null,
+  });
+
+  if (index !== null && index >= 0 && index < current.length) {
+    current[index] = applyAt(current[index] || {});
+    return current;
+  }
+
+  // Backward-compatible fallback for legacy ids without report index.
+  let updated = false;
+  for (let i = 0; i < current.length; i += 1) {
+    const existing = current[i] || {};
+    if (normalizeReportStatus(existing) === 'PENDING') {
+      current[i] = applyAt(existing);
+      updated = true;
+      break;
+    }
+  }
+
+  if (!updated) {
+    current.push(
+      applyAt({
+        reason: 'OTHER',
+        detail: 'Reviewed from legacy report id',
+        userId: undefined,
+        createdAt: now,
+      })
+    );
+  }
+
+  return current;
+};
+
 // Report a forum post
 export async function reportPost(req: Request, res: Response) {
   const { id } = req.params;
@@ -35,20 +98,34 @@ export async function reportComment(req: Request, res: Response) {
 // Hide/unhide post (admin only)
 export async function hidePost(req: Request, res: Response) {
   const { id } = req.params;
-  const { hide } = req.body;
+  const { hide, reason } = req.body;
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
-  await prisma.forumPost.update({ where: { id }, data: { isHidden: !!hide } });
+  const shouldHide = hide === undefined ? true : !!hide;
+  await prisma.forumPost.update({
+    where: { id },
+    data: {
+      isHidden: shouldHide,
+      hiddenReason: shouldHide ? (reason || null) : null,
+    },
+  });
   res.json({ success: true });
 }
 
 // Hide/unhide comment (admin only)
 export async function hideComment(req: Request, res: Response) {
   const { id } = req.params;
-  const { hide } = req.body;
+  const { hide, reason } = req.body;
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
-  await prisma.forumComment.update({ where: { id }, data: { isHidden: !!hide } });
+  const shouldHide = hide === undefined ? true : !!hide;
+  await prisma.forumComment.update({
+    where: { id },
+    data: {
+      isHidden: shouldHide,
+      hiddenReason: shouldHide ? (reason || null) : null,
+    },
+  });
   res.json({ success: true });
 }
 
@@ -87,22 +164,51 @@ export async function getAdminReports(req: Request, res: Response) {
     orderBy: { createdAt: 'desc' },
   })).filter(comment => Array.isArray(comment.reports) && comment.reports.length > 0);
 
-  const normalizeStatus = (report: any) => {
-    const raw = String(report?.status || 'PENDING').toUpperCase();
-    if (raw === 'REVIEWED' || raw === 'DISMISSED' || raw === 'PENDING') return raw;
-    return 'PENDING';
-  };
+  const reporterIds = new Set<string>();
+  const reviewerIds = new Set<string>();
+
+  posts.forEach((post) => {
+    (post.reports as JsonReport[]).forEach((report) => {
+      if (report?.userId) reporterIds.add(report.userId);
+      if (report?.reviewedBy) reviewerIds.add(report.reviewedBy);
+    });
+  });
+  comments.forEach((comment) => {
+    (comment.reports as JsonReport[]).forEach((report) => {
+      if (report?.userId) reporterIds.add(report.userId);
+      if (report?.reviewedBy) reviewerIds.add(report.reviewedBy);
+    });
+  });
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: Array.from(new Set([...reporterIds, ...reviewerIds])) } },
+    select: { id: true, fullName: true, role: true },
+  });
+  const userById = new Map(users.map((u) => [u.id, u]));
 
   const postReports = posts.flatMap((post) =>
-    (post.reports as any[]).map((report, index) => ({
+    (post.reports as JsonReport[]).map((report, index) => ({
       id: `post:${post.id}:${index}`,
       reason: report?.reason || 'OTHER',
       detail: report?.detail || null,
-      status: normalizeStatus(report),
+      status: normalizeReportStatus(report),
       createdAt: report?.createdAt || post.createdAt,
       reviewedAt: report?.reviewedAt || null,
       reviewNote: report?.reviewNote || null,
-      targetType: 'post',
+      targetType: 'POST',
+      reporter: report?.userId
+        ? {
+            id: report.userId,
+            fullName: userById.get(report.userId)?.fullName || 'Thành viên',
+            role: userById.get(report.userId)?.role || 'STUDENT',
+          }
+        : null,
+      reviewer: report?.reviewedBy
+        ? {
+            id: report.reviewedBy,
+            fullName: userById.get(report.reviewedBy)?.fullName || 'Admin',
+          }
+        : null,
       post: {
         id: post.id,
         content: post.content,
@@ -111,15 +217,28 @@ export async function getAdminReports(req: Request, res: Response) {
   );
 
   const commentReports = comments.flatMap((comment) =>
-    (comment.reports as any[]).map((report, index) => ({
+    (comment.reports as JsonReport[]).map((report, index) => ({
       id: `comment:${comment.id}:${index}`,
       reason: report?.reason || 'OTHER',
       detail: report?.detail || null,
-      status: normalizeStatus(report),
+      status: normalizeReportStatus(report),
       createdAt: report?.createdAt || comment.createdAt,
       reviewedAt: report?.reviewedAt || null,
       reviewNote: report?.reviewNote || null,
-      targetType: 'comment',
+      targetType: 'COMMENT',
+      reporter: report?.userId
+        ? {
+            id: report.userId,
+            fullName: userById.get(report.userId)?.fullName || 'Thành viên',
+            role: userById.get(report.userId)?.role || 'STUDENT',
+          }
+        : null,
+      reviewer: report?.reviewedBy
+        ? {
+            id: report.reviewedBy,
+            fullName: userById.get(report.reviewedBy)?.fullName || 'Admin',
+          }
+        : null,
       comment: {
         id: comment.id,
         content: comment.content,
@@ -236,7 +355,7 @@ export async function unhidePost(req: Request, res: Response) {
   const { id } = req.params;
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
-  await prisma.forumPost.update({ where: { id }, data: { isHidden: false } });
+  await prisma.forumPost.update({ where: { id }, data: { isHidden: false, hiddenReason: null } });
   res.json({ success: true });
 }
 
@@ -245,7 +364,7 @@ export async function unhideComment(req: Request, res: Response) {
   const { id } = req.params;
   const user = req.user as Express.UserPayload | undefined;
   if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
-  await prisma.forumComment.update({ where: { id }, data: { isHidden: false } });
+  await prisma.forumComment.update({ where: { id }, data: { isHidden: false, hiddenReason: null } });
   res.json({ success: true });
 }
 
@@ -265,7 +384,10 @@ export async function reviewReport(req: Request, res: Response) {
     const parsed = String(id).split(':');
     const parsedType = parsed.length >= 2 && (parsed[0] === 'post' || parsed[0] === 'comment') ? parsed[0] : null;
     const parsedTargetId = parsedType ? parsed[1] : id;
-    const targetType = contentType || parsedType;
+    const parsedReportIndex = parsedType && parsed.length >= 3 ? Number(parsed[2]) : null;
+    const reportIndex = Number.isInteger(parsedReportIndex) ? (parsedReportIndex as number) : null;
+    const normalizedContentType = typeof contentType === 'string' ? contentType.toLowerCase() : contentType;
+    const targetType = normalizedContentType || parsedType;
 
     let normalizedAction = String(action).toLowerCase();
     if (action === 'REVIEWED') {
@@ -280,20 +402,74 @@ export async function reviewReport(req: Request, res: Response) {
     }
 
     if (targetType === 'post') {
+      const post = await prisma.forumPost.findUnique({ where: { id: parsedTargetId }, select: { reports: true } });
+      if (!post) return res.status(404).json({ error: 'Post not found' });
+
+      const nextStatus = normalizedAction === 'dismiss' ? 'DISMISSED' : 'REVIEWED';
+      const reviewedReports = markReviewedReport(post.reports, reportIndex, {
+        status: nextStatus,
+        reviewedBy: user.id,
+        reviewNote,
+      });
+
       if (normalizedAction === 'hide') {
-        await prisma.forumPost.update({ where: { id: parsedTargetId }, data: { isHidden: true } });
+        await prisma.forumPost.update({
+          where: { id: parsedTargetId },
+          data: {
+            isHidden: true,
+            hiddenReason: reviewNote || 'Đã ẩn sau khi xử lý báo cáo',
+            reports: reviewedReports,
+          },
+        });
       } else if (normalizedAction === 'unhide') {
-        await prisma.forumPost.update({ where: { id: parsedTargetId }, data: { isHidden: false } });
+        await prisma.forumPost.update({
+          where: { id: parsedTargetId },
+          data: {
+            isHidden: false,
+            hiddenReason: null,
+            reports: reviewedReports,
+          },
+        });
       } else if (normalizedAction === 'dismiss') {
-        await prisma.forumPost.update({ where: { id: parsedTargetId }, data: { reports: [] } });
+        await prisma.forumPost.update({
+          where: { id: parsedTargetId },
+          data: { reports: reviewedReports },
+        });
       }
     } else if (targetType === 'comment') {
+      const comment = await prisma.forumComment.findUnique({ where: { id: parsedTargetId }, select: { reports: true } });
+      if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+      const nextStatus = normalizedAction === 'dismiss' ? 'DISMISSED' : 'REVIEWED';
+      const reviewedReports = markReviewedReport(comment.reports, reportIndex, {
+        status: nextStatus,
+        reviewedBy: user.id,
+        reviewNote,
+      });
+
       if (normalizedAction === 'hide') {
-        await prisma.forumComment.update({ where: { id: parsedTargetId }, data: { isHidden: true } });
+        await prisma.forumComment.update({
+          where: { id: parsedTargetId },
+          data: {
+            isHidden: true,
+            hiddenReason: reviewNote || 'Đã ẩn sau khi xử lý báo cáo',
+            reports: reviewedReports,
+          },
+        });
       } else if (normalizedAction === 'unhide') {
-        await prisma.forumComment.update({ where: { id: parsedTargetId }, data: { isHidden: false } });
+        await prisma.forumComment.update({
+          where: { id: parsedTargetId },
+          data: {
+            isHidden: false,
+            hiddenReason: null,
+            reports: reviewedReports,
+          },
+        });
       } else if (normalizedAction === 'dismiss') {
-        await prisma.forumComment.update({ where: { id: parsedTargetId }, data: { reports: [] } });
+        await prisma.forumComment.update({
+          where: { id: parsedTargetId },
+          data: { reports: reviewedReports },
+        });
       }
     }
 

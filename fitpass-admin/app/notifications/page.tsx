@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { apiGet, apiPost, apiDelete, apiPatch } from '@/lib/api';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { apiGet, apiPost, apiDelete, apiPatch, API_BASE_URL } from '@/lib/api';
 import { useToast } from '@/lib/toast';
 import { Bell, Trash2, Check, Mail } from 'lucide-react';
 import Link from 'next/link';
+import { io } from 'socket.io-client';
 
 interface Notification {
   id: string;
@@ -18,6 +19,17 @@ interface Notification {
     fullName: string;
     email: string;
   };
+}
+
+interface NotificationSocketPayload {
+  eventId?: string;
+  notificationId?: string;
+  userId?: string;
+  type?: string;
+  title?: string;
+  body?: string;
+  createdAt?: string;
+  data?: unknown;
 }
 
 const NOTIFICATION_TYPES = {
@@ -42,6 +54,9 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [selectedType, setSelectedType] = useState<string>('');
+  const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentPollingMsRef = useRef(30000);
+  const seenEventIdsRef = useRef<Set<string>>(new Set());
   const { showToast } = useToast();
 
   const emitUnreadCount = (count: number) => {
@@ -52,32 +67,128 @@ export default function NotificationsPage() {
     );
   };
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      loadNotifications();
-    }, 30000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async (options?: { silent?: boolean }) => {
     try {
-      setLoading(true);
+      if (!options?.silent) {
+        setLoading(true);
+      }
       const data = await apiGet('/notifications');
       const normalized = Array.isArray(data) ? data : data.data || [];
       setNotifications(normalized);
       emitUnreadCount(normalized.filter((n: Notification) => !n.isRead).length);
     } catch (error) {
       console.error('Failed to load notifications:', error);
-      showToast('Không thể tải danh sách thông báo', 'error');
+      if (!options?.silent) {
+        showToast('Không thể tải danh sách thông báo', 'error');
+      }
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
-  };
+  }, [showToast]);
+
+  const setPollingIntervalMs = useCallback((intervalMs: number) => {
+    if (currentPollingMsRef.current === intervalMs && pollingTimerRef.current) {
+      return;
+    }
+
+    currentPollingMsRef.current = intervalMs;
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
+      pollingTimerRef.current = null;
+    }
+
+    pollingTimerRef.current = setInterval(() => {
+      loadNotifications({ silent: true });
+    }, intervalMs);
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    const adminToken = typeof window !== 'undefined' ? localStorage.getItem('fitpass_admin_token') : null;
+    const wsBaseUrl = API_BASE_URL.replace(/\/api$/, '');
+
+    setPollingIntervalMs(30000);
+
+    const socket = io(wsBaseUrl, {
+      auth: { token: adminToken },
+      transports: ['polling'],
+      upgrade: false,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+
+    socket.on('connect', () => {
+      setPollingIntervalMs(30000);
+      loadNotifications({ silent: true });
+    });
+
+    socket.on('reconnect', () => {
+      setPollingIntervalMs(30000);
+      loadNotifications({ silent: true });
+    });
+
+    socket.on('disconnect', () => {
+      setPollingIntervalMs(10000);
+    });
+
+    socket.on('connect_error', () => {
+      setPollingIntervalMs(10000);
+    });
+
+    socket.on('notification', (payload: NotificationSocketPayload) => {
+      const eventKey = payload?.eventId || payload?.notificationId;
+      if (eventKey) {
+        if (seenEventIdsRef.current.has(eventKey)) {
+          return;
+        }
+        seenEventIdsRef.current.add(eventKey);
+      }
+
+      if (seenEventIdsRef.current.size > 600) {
+        seenEventIdsRef.current = new Set(Array.from(seenEventIdsRef.current).slice(-300));
+      }
+
+      const canUpsertImmediately =
+        typeof payload?.notificationId === 'string' &&
+        typeof payload?.title === 'string' &&
+        typeof payload?.body === 'string' &&
+        typeof payload?.type === 'string';
+
+      if (canUpsertImmediately) {
+        const incoming: Notification = {
+          id: payload.notificationId as string,
+          userId: payload.userId || '',
+          type: payload.type as string,
+          title: payload.title as string,
+          body: payload.body as string,
+          isRead: false,
+          createdAt: payload.createdAt || new Date().toISOString(),
+        };
+
+        setNotifications((prev) => {
+          const existed = prev.some((n) => n.id === incoming.id);
+          const next = existed ? prev.map((n) => (n.id === incoming.id ? { ...n, ...incoming } : n)) : [incoming, ...prev];
+          emitUnreadCount(next.filter((n) => !n.isRead).length);
+          return next;
+        });
+      } else {
+        loadNotifications({ silent: true });
+      }
+    });
+
+    return () => {
+      if (pollingTimerRef.current) {
+        clearInterval(pollingTimerRef.current);
+        pollingTimerRef.current = null;
+      }
+      socket.disconnect();
+    };
+  }, [loadNotifications, setPollingIntervalMs]);
 
   const handleMarkAsRead = async (id: string) => {
     try {

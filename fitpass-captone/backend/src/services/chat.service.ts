@@ -35,13 +35,12 @@ export class ChatService {
     if (!content?.trim()) throw new Error('Message content is required');
     const message = await prisma.chatMessage.findUnique({ where: { id: messageId } });
     if (!message) throw new Error('Message not found');
-    // Only sender can edit
+    // Only sender can edit their own messages (no admin edit of others' messages for audit trail)
     if (message.senderId !== user.id) {
-      const err = new Error('Unauthorized');
+      const err = new Error('Unauthorized - only message sender can edit');
       (err as any).status = 403;
       throw err;
     }
-    // Optionally: Only allow edit within X minutes (not implemented here)
     const updated = await prisma.chatMessage.update({
       where: { id: messageId },
       data: { content: content.trim() },
@@ -217,6 +216,59 @@ export class ChatService {
     });
   }
 
+  async getOrCreateClassGroupThread(user: { id: string; role: UserRole }, classId: string) {
+    if (user.role !== UserRole.STUDENT && user.role !== UserRole.TEACHER) {
+      const err = new Error('Only students and teachers can access class group chat');
+      (err as any).status = 403;
+      throw err;
+    }
+
+    const cls = await prisma.class.findUnique({ where: { id: classId } });
+    if (!cls) throw new Error('Class not found');
+
+    // Student must be enrolled
+    if (user.role === UserRole.STUDENT) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: { classId, studentId: user.id },
+        select: { id: true },
+      });
+      if (!enrollment) {
+        const err = new Error('Only enrolled students can access class group chat');
+        (err as any).status = 403;
+        throw err;
+      }
+    }
+
+    // Teacher must be the class teacher
+    if (user.role === UserRole.TEACHER && cls.teacherId !== user.id) {
+      const err = new Error('Only class teacher can access class group chat');
+      (err as any).status = 403;
+      throw err;
+    }
+
+    const existing = await prisma.chatThread.findFirst({
+      where: {
+        type: ChatThreadType.CLASS_GROUP,
+        classId,
+      },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    // Create new group thread (only once per class)
+    return prisma.chatThread.create({
+      data: {
+        type: ChatThreadType.CLASS_GROUP,
+        classId,
+        studentId: user.id,
+        teacherId: cls.teacherId || null,
+        createdById: user.id,
+      },
+    });
+  }
+
   async listMessages(user: { id: string; role: UserRole }, threadId: string, limit = 30, before?: string) {
     await this.ensureThreadAccessible(threadId, user);
 
@@ -233,20 +285,81 @@ export class ChatService {
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,
-      include: {
+      select: {
+        id: true,
+        threadId: true,
+        senderId: true,
+        senderRole: true,
+        content: true,
+        attachments: true,
+        createdAt: true,
+        deletedByStudentAt: true,
+        deletedByAdminAt: true,
+        replyToId: true,
+        mentionedUserIds: true,
         sender: { select: { id: true, fullName: true, role: true } },
+        replyTo: {
+          select: {
+            id: true,
+            content: true,
+            sender: { select: { id: true, fullName: true } },
+            attachments: true,
+          },
+        },
       },
     });
 
     return messages.reverse();
   }
 
-  async sendMessage(user: { id: string; role: UserRole }, threadId: string, content: string, attachments?: any[]) {
+  async sendMessage(user: { id: string; role: UserRole; fullName?: string }, threadId: string, content: string, attachments?: any[], replyToId?: string, mentionUserIds?: string[]) {
     if (!content?.trim() && (!attachments || attachments.length === 0)) {
       throw new Error('Message content or attachments are required');
     }
 
-    await this.ensureThreadAccessible(threadId, user);
+    const thread = await this.ensureThreadAccessible(threadId, user);
+
+    // Verify replyToId exists if provided
+    if (replyToId) {
+      const replyMessage = await prisma.chatMessage.findUnique({ where: { id: replyToId } });
+      if (!replyMessage) {
+        throw new Error('Replied message not found');
+      }
+      if (replyMessage.threadId !== threadId) {
+        throw new Error('Replied message is not in this thread');
+      }
+    }
+
+    // Validate and filter mentions by thread membership
+    let processedMentions: string[] = [];
+    if (Array.isArray(mentionUserIds) && mentionUserIds.length > 0) {
+      const mentionCandidates = Array.from(new Set(mentionUserIds.filter(Boolean))).filter((id) => id !== user.id);
+
+      const allowedMentionUserIds = new Set<string>();
+      if (thread.type === ChatThreadType.CLASS_GROUP && thread.classId) {
+        const enrolled = await prisma.enrollment.findMany({
+          where: { classId: thread.classId },
+          select: { studentId: true },
+        });
+        enrolled.forEach((e) => allowedMentionUserIds.add(e.studentId));
+        if (thread.teacherId) allowedMentionUserIds.add(thread.teacherId);
+      } else {
+        if (thread.studentId) allowedMentionUserIds.add(thread.studentId);
+        if (thread.teacherId) allowedMentionUserIds.add(thread.teacherId);
+      }
+
+      const allowedMentions = mentionCandidates.filter((id) => allowedMentionUserIds.has(id));
+      if (allowedMentions.length > 0) {
+        const mentionUsers = await prisma.user.findMany({
+          where: {
+            id: { in: allowedMentions },
+            notificationEnabled: true,
+          },
+          select: { id: true },
+        });
+        processedMentions = mentionUsers.map((u) => u.id);
+      }
+    }
 
     const message = await prisma.chatMessage.create({
       data: {
@@ -254,10 +367,20 @@ export class ChatService {
         senderId: user.id,
         senderRole: user.role,
         content: content?.trim() || '',
+        replyToId: replyToId || undefined,
+        mentionedUserIds: processedMentions.length > 0 ? processedMentions : undefined,
         ...(attachments && attachments.length > 0 ? { attachments } : {}),
       },
       include: {
         sender: { select: { id: true, fullName: true, role: true } },
+        replyTo: {
+          select: {
+            id: true,
+            content: true,
+            sender: { select: { id: true, fullName: true } },
+            attachments: true,
+          },
+        },
       },
     });
 
@@ -275,6 +398,24 @@ export class ChatService {
       },
     });
 
+    if (processedMentions.length > 0) {
+      const senderName = user.fullName || 'Một người dùng';
+      const shortPreview = preview || '[Tin nhắn mới]';
+      await prisma.notification.createMany({
+        data: processedMentions.map((mentionedUserId) => ({
+          userId: mentionedUserId,
+          title: 'Bạn được nhắc đến trong chat',
+          body: `${senderName} đã nhắc bạn: ${shortPreview}`,
+          type: 'CHAT_MENTION',
+          data: {
+            threadId,
+            messageId: message.id,
+            senderId: user.id,
+          },
+        })),
+      });
+    }
+
     return message;
   }
 
@@ -289,8 +430,9 @@ export class ChatService {
     if (!message) throw new Error('Message not found');
 
     const thread = await this.ensureThreadAccessible(message.threadId, user);
-    if (thread.studentId !== user.id) {
-      const err = new Error('Unauthorized');
+    // Check if user is the sender of the message (not just the thread's student)
+    if (message.senderId !== user.id) {
+      const err = new Error('You can only delete your own messages');
       (err as any).status = 403;
       throw err;
     }

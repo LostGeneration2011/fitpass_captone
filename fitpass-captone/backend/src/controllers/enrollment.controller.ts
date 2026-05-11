@@ -29,6 +29,16 @@ export const createEnrollment = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Students can only enroll themselves in classes" });
     }
 
+    if (user.role === 'TEACHER') {
+      const classData = await enrollmentService.getClassTeacher(classId);
+      if (!classData) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+      if (classData.teacherId !== user.id) {
+        return res.status(403).json({ error: 'Teachers can only enroll students into their own classes' });
+      }
+    }
+
     const result = await enrollmentService.createEnrollment(studentId, classId, userPackageId);
     
     // Handle both old format (direct enrollment object) and new format (result object)
@@ -74,12 +84,27 @@ export const createEnrollment = async (req: Request, res: Response) => {
 export const getEnrollmentsByClass = async (req: Request, res: Response) => {
   try {
     const { classId } = req.query;
+    const user = (req as any).user;
 
     if (!classId) {
       return res.status(400).json({ error: "classId is required" });
     }
 
-    const enrollments = await enrollmentService.getEnrollmentsByClass(classId as string);
+    if (user?.role === 'TEACHER') {
+      const classData = await enrollmentService.getClassTeacher(classId as string);
+      if (!classData) {
+        return res.status(404).json({ error: 'Class not found' });
+      }
+      if (classData.teacherId !== user.id) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    }
+
+    const scopedStudentId = user?.role === 'STUDENT' ? user.id : undefined;
+    const enrollments = await enrollmentService.getEnrollmentsByClass(classId as string, {
+      studentId: scopedStudentId,
+      includeEmail: user?.role !== 'STUDENT',
+    });
     return res.json({ enrollments });
   } catch (err: any) {
     return res.status(400).json({ error: err.message });
@@ -161,6 +186,7 @@ export const updateEnrollmentNote = async (req: Request, res: Response) => {
 export const getEnrollmentById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const user = (req as any).user;
 
     if (!id) {
       return res.status(400).json({ error: "Enrollment ID is required" });
@@ -170,6 +196,14 @@ export const getEnrollmentById = async (req: Request, res: Response) => {
     
     if (!enrollment) {
       return res.status(404).json({ error: "Enrollment not found" });
+    }
+
+    if (user?.role === 'STUDENT' && enrollment.student.id !== user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    if (user?.role === 'TEACHER' && enrollment.class.teacher?.id !== user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
 
     return res.json({ enrollment });

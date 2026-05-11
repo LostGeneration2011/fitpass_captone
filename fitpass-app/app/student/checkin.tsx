@@ -51,6 +51,12 @@ export default function StudentCheckInScreen() {
         throw new Error('Invalid QR code. Please scan a FitPass attendance QR code.');
       }
 
+      const parsedQrUrl = new URL(qrData);
+      const qrToken = parsedQrUrl.searchParams.get('token');
+      if (!qrToken) {
+        throw new Error('QR code is outdated. Please ask your teacher to refresh QR code.');
+      }
+
       // Get auth token and user
       const token = await getToken();
       const user = await getUser();

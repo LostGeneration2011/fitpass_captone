@@ -1,6 +1,12 @@
 import { prisma } from "../config/prisma";
 
 export class EnrollmentService {
+  async getClassTeacher(classId: string) {
+    return prisma.class.findUnique({
+      where: { id: classId },
+      select: { id: true, teacherId: true, status: true },
+    });
+  }
   
   /**
    * Enroll in class with business logic validation (credit-based)
@@ -17,6 +23,10 @@ export class EnrollmentService {
       throw new Error("Class not found");
     }
 
+    if (existingClass.status !== 'APPROVED') {
+      throw new Error('Only approved classes can accept enrollments');
+    }
+
     if (existingClass._count.enrollments >= existingClass.capacity) {
       throw new Error("Class is full");
     }
@@ -27,14 +37,22 @@ export class EnrollmentService {
       include: { package: true }
     });
 
-    if (!userPackage || userPackage.usedCredits >= userPackage.package.credits) {
+    if (!userPackage || userPackage.userId !== userId) {
+      throw new Error('User package not found for this student');
+    }
+
+    if (userPackage.status !== 'ACTIVE' || userPackage.expiresAt < new Date()) {
+      throw new Error('User package is expired or inactive');
+    }
+
+    if (userPackage.usedCredits >= userPackage.package.credits) {
       throw new Error('Gói tập đã hết credits');
     }
 
     // Check if already enrolled
     const existingEnrollment = await prisma.enrollment.findFirst({
       where: {
-        userId,
+        studentId: userId,
         classId,
         status: 'ACTIVE'
       }
@@ -169,6 +187,10 @@ export class EnrollmentService {
       throw new Error("Class not found");
     }
 
+    if (existingClass.status !== 'APPROVED') {
+      throw new Error('Only approved classes can accept enrollments');
+    }
+
     if (existingClass._count.enrollments >= existingClass.capacity) {
       throw new Error("Class is full");
     }
@@ -205,11 +227,20 @@ export class EnrollmentService {
   }
 
   // GET enrollments by class
-  async getEnrollmentsByClass(classId: string) {
+  async getEnrollmentsByClass(classId: string, options?: { studentId?: string; includeEmail?: boolean }) {
+    const where: any = { classId };
+    if (options?.studentId) {
+      where.studentId = options.studentId;
+    }
+
+    const includeEmail = options?.includeEmail !== false;
+
     return await prisma.enrollment.findMany({
-      where: { classId },
+      where,
       include: {
-        student: { select: { id: true, fullName: true, email: true } }
+        student: includeEmail
+          ? { select: { id: true, fullName: true, email: true } }
+          : { select: { id: true, fullName: true } }
       },
       orderBy: { createdAt: 'desc' }
     });

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, ScrollView, ActivityIndicator, Pressable, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import QRCode from "react-native-qrcode-svg";
-import { sessionsAPI, classAPI, API_URL } from "../../lib/api";
+import { sessionsAPI, classAPI, qrAPI, API_URL } from "../../lib/api";
 import Constants from "expo-constants";
 import { getUser } from "../../lib/auth";
 import { useWebSocket } from "../../lib/WebSocketProvider";
@@ -10,53 +10,14 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import { useThemeClasses } from "../../lib/theme";
 import { useTheme } from "../../lib/theme";
 
-// Simple base64 encode function for React Native
-function base64Encode(str: string): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-  let result = '';
-  let i = 0;
-  
-  while (i < str.length) {
-    const a = str.charCodeAt(i++);
-    const b = i < str.length ? str.charCodeAt(i++) : 0;
-    const c = i < str.length ? str.charCodeAt(i++) : 0;
-    
-    const bitmap = (a << 16) | (b << 8) | c;
-    
-    result += chars.charAt((bitmap >> 18) & 63) +
-              chars.charAt((bitmap >> 12) & 63) +
-              (i - 2 >= str.length ? '=' : chars.charAt((bitmap >> 6) & 63)) +
-              (i - 1 >= str.length ? '=' : chars.charAt(bitmap & 63));
-  }
-  
-  return result;
-}
-
-// Generate a secure nonce for QR payload
-function generateNonce(): string {
-  const timestamp = Date.now().toString();
-  const random = Math.random().toString(36).substring(2, 15);
-  return `${timestamp}_${random}_${Math.random().toString(36).substring(2, 15)}`;
-}
-
 // Get API base URL
 function getApiBaseUrl(): string {
   const base = API_URL;
   return base.replace(/\/api$/, "");
 }
 
-// Build QR payload and encode it
-function buildQRPayload(sessionId: string): string {
-  const payload = {
-    sessionId,
-    nonce: generateNonce(),
-    expiresAt: Date.now() + 15000 // 15 seconds from now
-  };
-  
-  // Use react-native-base64 library
-  const jsonString = JSON.stringify(payload);
-  const encodedPayload = base64Encode(jsonString);
-  return `${getApiBaseUrl()}/api/attendance/checkin?payload=${encodedPayload}`;
+function buildSignedQRUrl(token: string): string {
+  return `${getApiBaseUrl()}/api/attendance/checkin?token=${encodeURIComponent(token)}`;
 }
 
 export default function TeacherQR() {
@@ -88,17 +49,25 @@ export default function TeacherQR() {
     setForceUpdate(prev => prev + 1);
   }, [isDark]);
 
-  // Generate new QR code
-  const generateNewQR = () => {
+  // Request signed QR token from server and build QR URL.
+  const generateNewQR = async () => {
     if (!selectedSession) return;
-    
-    const newQrValue = buildQRPayload(selectedSession.id);
-    const newExpiresAt = Date.now() + 15000;
-    
-    setQrValue(newQrValue);
-    setExpiresAt(newExpiresAt);
-    
-    console.log("🔍 Generated new QR for session:", selectedSession.id);
+
+    try {
+      const response = await qrAPI.startSession(selectedSession.id);
+      const token = response?.qr;
+      if (!token) {
+        throw new Error('QR token missing from server response');
+      }
+
+      setQrValue(buildSignedQRUrl(token));
+      // Token is signed with 5-minute expiry in backend QRUtils.
+      setExpiresAt(Date.now() + 5 * 60 * 1000);
+
+      console.log("🔍 Generated signed QR for session:", selectedSession.id);
+    } catch (error) {
+      console.error('Failed to generate signed QR:', error);
+    }
   };
 
   // Auto-refresh QR every 10 seconds (also depends on isDark to force re-render on theme change)
@@ -106,7 +75,9 @@ export default function TeacherQR() {
     if (!selectedSession) return;
     
     generateNewQR();
-    const interval = setInterval(generateNewQR, 10000);
+    const interval = setInterval(() => {
+      generateNewQR();
+    }, 4 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, [selectedSession, isDark]);
@@ -271,6 +242,7 @@ export default function TeacherQR() {
               ) : (
                 <View style={{ width: 200, height: 200, alignItems: 'center', justifyContent: 'center' }}>
                   <ActivityIndicator size="large" color="#7c3aed" />
+                  <Text className={`${textMuted} mt-2`}>Đang tạo QR bảo mật...</Text>
                 </View>
               )}
             </View>
@@ -285,7 +257,7 @@ export default function TeacherQR() {
               marginBottom: 24
             }}>
               <Text className={`${textSecondary} text-center text-sm leading-5`}>
-                QR tự động làm mới mỗi 10 giây.{"\n"}
+                QR bảo mật tự động làm mới trước khi hết hạn (5 phút).{"\n"}
                 Yêu cầu học viên quét bằng ứng dụng FitPass.
               </Text>
             </View>

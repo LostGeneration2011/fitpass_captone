@@ -47,18 +47,72 @@ export const getSessions = async (req: Request, res: Response) => {
     const { classId, teacherId } = req.query;
     const user = (req as any).user;
 
-    if (teacherId && user?.role === 'TEACHER' && teacherId !== user.id) {
-      return res.status(403).json({ error: 'You can only view your own sessions' });
+    let sessions;
+
+    if (user?.role === 'ADMIN') {
+      if (teacherId) {
+        sessions = await sessionService.getSessionsByTeacher(teacherId as string);
+      } else if (classId) {
+        sessions = await sessionService.getSessionsByClass(classId as string);
+      } else {
+        sessions = await sessionService.getAllSessions();
+      }
+      return res.json({ sessions });
     }
 
-    let sessions;
-    if (teacherId) {
-      sessions = await sessionService.getSessionsByTeacher(teacherId as string);
-    } else if (classId) {
-      sessions = await sessionService.getSessionsByClass(classId as string);
-    } else {
-      sessions = await sessionService.getAllSessions();
+    if (user?.role === 'TEACHER') {
+      if (teacherId && teacherId !== user.id) {
+        return res.status(403).json({ error: 'You can only view your own sessions' });
+      }
+
+      if (classId) {
+        const classData = await prisma.class.findUnique({
+          where: { id: classId as string },
+          select: { teacherId: true },
+        });
+        if (!classData || classData.teacherId !== user.id) {
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
+        sessions = await sessionService.getSessionsByClass(classId as string);
+      } else {
+        sessions = await sessionService.getSessionsByTeacher(user.id);
+      }
+      return res.json({ sessions });
     }
+
+    // STUDENT scope: only sessions from enrolled classes.
+    if (teacherId) {
+      return res.status(403).json({ error: 'Students cannot query sessions by teacherId' });
+    }
+
+    const studentClassFilter: any = {
+      class: {
+        enrollments: {
+          some: { studentId: user.id },
+        },
+      },
+    };
+
+    if (classId) {
+      studentClassFilter.classId = classId as string;
+    }
+
+    sessions = await prisma.session.findMany({
+      where: studentClassFilter,
+      include: {
+        class: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            teacher: { select: { id: true, fullName: true } },
+          },
+        },
+        room: { select: { id: true, name: true, capacity: true } },
+        _count: { select: { attendances: true } },
+      },
+      orderBy: { startTime: 'asc' },
+    });
 
     return res.json({ sessions });
   } catch (err: any) {
@@ -69,12 +123,46 @@ export const getSessions = async (req: Request, res: Response) => {
 export const getSessionById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const user = (req as any).user;
 
     if (!id) {
       return res.status(400).json({ error: "Session ID is required" });
     }
 
     const session = await sessionService.getSessionById(id);
+
+    if (user?.role === 'TEACHER' && session.class?.teacher?.id !== user.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    if (user?.role === 'STUDENT') {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          classId: session.class.id,
+          studentId: user.id,
+        },
+        select: { id: true },
+      });
+
+      if (!enrollment) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const ownAttendance = session.attendances.filter((item: any) => item.student?.id === user.id);
+      const sanitizedSession = {
+        ...session,
+        attendances: ownAttendance.map((item: any) => ({
+          ...item,
+          student: {
+            id: item.student?.id,
+            fullName: item.student?.fullName,
+          },
+        })),
+      };
+
+      return res.json({ session: sanitizedSession });
+    }
+
     return res.json({ session });
   } catch (err: any) {
     return res.status(404).json({ error: err.message });

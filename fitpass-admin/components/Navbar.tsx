@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bars3Icon, BellIcon, SunIcon, MoonIcon, ArrowRightOnRectangleIcon, Cog6ToothIcon, UserCircleIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth';
 import { apiPatch, apiGet, API_BASE_URL } from '@/lib/api';
@@ -26,6 +26,9 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadChat, setUnreadChat] = useState(0);
   const hasShownUnreadNetworkWarning = useRef(false);
+  const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentPollingMsRef = useRef(30000);
+  const seenNotificationEventsRef = useRef<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -36,26 +39,58 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
     return 0;
   };
 
-  useEffect(() => {
-    setFullName(user?.fullName || '');
-    loadUnreadCount();
-  }, [user?.fullName]);
-
-  const loadUnreadCount = async () => {
+  const loadUnreadCount = useCallback(async () => {
     try {
       const response = await apiGet('/notifications/unread/count', { suppressErrorLog: true });
-      setUnreadNotifications(extractUnreadCount(response));
+      const nextCount = extractUnreadCount(response);
+      setUnreadNotifications(nextCount);
+      window.dispatchEvent(
+        new CustomEvent('notifications:unread-changed', {
+          detail: { unreadCount: nextCount },
+        })
+      );
       hasShownUnreadNetworkWarning.current = false;
     } catch (error) {
-      setUnreadNotifications(0);
       if (!hasShownUnreadNetworkWarning.current) {
         console.warn('Notifications service is temporarily unavailable.');
         hasShownUnreadNetworkWarning.current = true;
       }
     }
-  };
+  }, []);
+
+  const setPollingIntervalMs = useCallback((intervalMs: number) => {
+    if (currentPollingMsRef.current === intervalMs && pollingTimerRef.current) {
+      return;
+    }
+
+    currentPollingMsRef.current = intervalMs;
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
+      pollingTimerRef.current = null;
+    }
+
+    pollingTimerRef.current = setInterval(() => {
+      loadUnreadCount();
+    }, intervalMs);
+  }, [loadUnreadCount]);
 
   useEffect(() => {
+    setFullName(user?.fullName || '');
+    loadUnreadCount();
+  }, [user?.fullName, loadUnreadCount]);
+
+  useEffect(() => {
+    type NotificationSocketPayload = {
+      eventId?: string;
+      notificationId?: string;
+      userId?: string;
+      type?: string;
+      title?: string;
+      body?: string;
+      createdAt?: string;
+      data?: unknown;
+    };
+
     const handleUnreadChanged = (event: Event) => {
       const customEvent = event as CustomEvent<{ unreadCount?: number }>;
       if (typeof customEvent.detail?.unreadCount === 'number') {
@@ -66,7 +101,7 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
       loadUnreadCount();
     };
 
-    const pollingInterval = setInterval(loadUnreadCount, 30000);
+    setPollingIntervalMs(30000);
 
     window.addEventListener('notifications:unread-changed', handleUnreadChanged as EventListener);
     window.addEventListener('focus', loadUnreadCount);
@@ -83,9 +118,44 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });
-    socket.on('notification', () => {
-      setUnreadNotifications((prev) => prev + 1);
+
+    socket.on('connect', () => {
+      setPollingIntervalMs(30000);
+      loadUnreadCount();
     });
+
+    socket.on('reconnect', () => {
+      setPollingIntervalMs(30000);
+      loadUnreadCount();
+    });
+
+    socket.on('disconnect', () => {
+      setPollingIntervalMs(10000);
+    });
+
+    socket.on('connect_error', () => {
+      setPollingIntervalMs(10000);
+    });
+
+    socket.on('notification', (payload: NotificationSocketPayload) => {
+      const eventKey = payload?.eventId || payload?.notificationId;
+      if (eventKey) {
+        if (seenNotificationEventsRef.current.has(eventKey)) {
+          return;
+        }
+        seenNotificationEventsRef.current.add(eventKey);
+      }
+
+      if (seenNotificationEventsRef.current.size > 600) {
+        seenNotificationEventsRef.current = new Set(
+          Array.from(seenNotificationEventsRef.current).slice(-300)
+        );
+      }
+
+      window.dispatchEvent(new CustomEvent('notifications:event', { detail: payload || {} }));
+      loadUnreadCount();
+    });
+
     socket.on('chat.message', () => {
       // Dispatch event for Sidebar badge; ignore if already on /chat
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/chat')) {
@@ -95,12 +165,15 @@ export default function Navbar({ toggleSidebar, toggleDarkMode, isDarkMode, titl
     });
 
     return () => {
-      clearInterval(pollingInterval);
+      if (pollingTimerRef.current) {
+        clearInterval(pollingTimerRef.current);
+        pollingTimerRef.current = null;
+      }
       window.removeEventListener('notifications:unread-changed', handleUnreadChanged as EventListener);
       window.removeEventListener('focus', loadUnreadCount);
       socket.disconnect();
     };
-  }, []);
+  }, [loadUnreadCount, setPollingIntervalMs]);
 
   // Close dropdown on outside click or ESC
   useEffect(() => {

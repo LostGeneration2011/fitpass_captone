@@ -1,4 +1,4 @@
-import { editMessage, markThreadAsRead, listThreadMembers, revokeMessage, lockThread, unlockThread } from '../controllers/chat.controller';
+import { editMessage, markThreadAsRead, listThreadMembers, revokeMessage, lockThread, unlockThread, createClassGroupThread } from '../controllers/chat.controller';
 import { chatMediaUpload, uploadChatMedia } from '../controllers/chatMedia.controller';
 import { Router } from 'express';
 import {
@@ -26,6 +26,7 @@ router.post('/threads/:id/read', markThreadAsRead);
 router.get('/threads', listThreads);
 router.post('/threads/support', createSupportThread);
 router.post('/threads/class', createClassThread);
+router.post('/threads/class-group', createClassGroupThread);
 
 // Messages
 router.get('/threads/:id/messages', listMessages);

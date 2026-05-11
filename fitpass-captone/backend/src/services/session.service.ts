@@ -112,7 +112,14 @@ export class SessionService {
     const session = await prisma.session.findUnique({
       where: { id },
       include: {
-        class: { select: { id: true, name: true, description: true } },
+        class: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            teacher: { select: { id: true } },
+          },
+        },
         room: { select: { id: true, name: true, capacity: true, equipment: true } },
         attendances: {
           include: {

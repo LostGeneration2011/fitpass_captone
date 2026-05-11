@@ -25,6 +25,68 @@ router.post("/login", login);
 router.get("/me", authMiddleware, me);
 router.post("/logout", logout);
 router.post("/change-password", authMiddleware, changePassword);
+router.patch("/me", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as any)?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { fullName, avatar } = req.body || {};
+    const updateData: any = {};
+
+    if (fullName !== undefined) {
+      if (typeof fullName !== 'string' || !fullName.trim()) {
+        return res.status(400).json({ error: 'fullName must be a non-empty string' });
+      }
+      updateData.fullName = fullName.trim();
+    }
+
+    if (avatar !== undefined) {
+      if (avatar === null || avatar === '') {
+        updateData.avatar = null;
+      } else if (typeof avatar === 'string') {
+        const isValidMime =
+          avatar.startsWith('data:image/png') ||
+          avatar.startsWith('data:image/jpeg') ||
+          avatar.startsWith('data:image/jpg');
+
+        if (!isValidMime) {
+          return res.status(400).json({ error: 'Avatar must be a PNG or JPG image' });
+        }
+
+        const base64Payload = avatar.includes(',') ? (avatar.split(',')[1] || '') : avatar;
+        const byteLength = Buffer.byteLength(base64Payload, 'base64');
+        const maxBytes = 5 * 1024 * 1024;
+        if (byteLength > maxBytes) {
+          return res.status(400).json({ error: 'Avatar file is too large (max 5MB)' });
+        }
+
+        updateData.avatar = avatar;
+      } else {
+        return res.status(400).json({ error: 'avatar must be a string or null' });
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'No updatable fields provided' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        avatar: true,
+      },
+    });
+
+    return res.json({ message: 'Profile updated successfully', user });
+  } catch (error: any) {
+    return res.status(400).json({ error: error.message || 'Failed to update profile' });
+  }
+});
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/validate-reset-token", validateResetToken);

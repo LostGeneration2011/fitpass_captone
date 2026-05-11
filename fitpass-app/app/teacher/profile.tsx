@@ -288,36 +288,27 @@ export default function TeacherProfileScreen() {
       if (currentUser?.id) {
         // Load teacher statistics
         const [classesRes, sessionsRes] = await Promise.all([
-          classAPI.getAll(),
-          sessionsAPI.getAll()
+          classAPI.getAll(currentUser.id),
+          sessionsAPI.getAll(currentUser.id)
         ]);
         
-        // Safely access data with fallbacks
-        const allClasses = classesRes?.data || [];
-        const allSessions = sessionsRes?.data || [];
+        const allClasses = Array.isArray(classesRes) ? classesRes : [];
+        const allSessions = Array.isArray(sessionsRes) ? sessionsRes : [];
         
         const teacherClasses = allClasses.filter((c: any) => c.teacherId === currentUser.id);
         const teacherSessions = allSessions.filter((s: any) => {
           return teacherClasses.some((c: any) => c.id === s.classId);
         });
-        
-        // Calculate unique students
-        const uniqueStudents = new Set();
-        teacherSessions.forEach((session: any) => {
-          if (session.attendance && Array.isArray(session.attendance)) {
-            session.attendance.forEach((att: any) => {
-              if (att?.studentId) {
-                uniqueStudents.add(att.studentId);
-              }
-            });
-          }
-        });
+
+        const totalStudents = teacherClasses.reduce((sum: number, item: any) => {
+          return sum + (item?._count?.enrollments || 0);
+        }, 0);
         
         setStats({
           totalClasses: teacherClasses.length,
           totalSessions: teacherSessions.length,
-          totalStudents: uniqueStudents.size,
-          completedSessions: teacherSessions.filter((s: any) => s.status === 'completed').length
+          totalStudents,
+          completedSessions: teacherSessions.filter((s: any) => String(s.status || '').toUpperCase() === 'DONE').length
         });
       }
     } catch (error) {

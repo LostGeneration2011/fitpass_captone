@@ -6,7 +6,7 @@ type RequestConfigWithOptions = AxiosRequestConfig & {
 
 const ADMIN_TOKEN_KEY = 'fitpass_admin_token';
 
-const LOCAL_API_BASE_URL = 'http://localhost:3001/api';
+const LOCAL_API_BASE_URL = 'http://localhost:3000/api';
 const DEFAULT_REMOTE_API_BASE_URL = 'https://fortunate-wholeness-production.up.railway.app/api';
 
 const normalizeBaseUrl = (value?: string) => {
@@ -312,6 +312,9 @@ export const reviewModerationAPI = {
 export const chatAPI = {
   listThreads: () => apiGet('/chat/threads'),
   listMembers: (threadId: string) => apiGet(`/chat/threads/${threadId}/members`),
+  createSupportThread: () => apiPost('/chat/threads/support', {}),
+  createClassThread: (classId: string) => apiPost('/chat/threads/class', { classId }),
+  createClassGroupThread: (classId: string) => apiPost('/chat/threads/class-group', { classId }),
   getMessages: (threadId: string, params?: { limit?: number; before?: string }) => {
     const qs = toQueryString(params as Record<string, unknown> | undefined);
     return apiGet(`/chat/threads/${threadId}/messages${qs}`);

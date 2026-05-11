@@ -17,7 +17,7 @@ export const editMessage = async (req: Request, res: Response) => {
     const wss = (global as any).wss;
     if (wss && updated) {
       const payload = JSON.stringify({
-        type: 'chat.message.edit',
+        type: 'chat.message_edited',
         threadId: updated.threadId,
         message: updated,
       });
@@ -32,8 +32,8 @@ export const editMessage = async (req: Request, res: Response) => {
     // Broadcast edit event via Socket.IO (web/admin)
     const io = (global as any).io;
     if (io && updated) {
-      io.to(`thread_${updated.threadId}`).emit('chat.message.edit', { threadId: updated.threadId, message: updated });
-      io.to('role_admin').emit('chat.message.edit', { threadId: updated.threadId, message: updated });
+      io.to(`thread_${updated.threadId}`).emit('chat.message_edited', { threadId: updated.threadId, message: updated });
+      io.to('role_admin').emit('chat.message_edited', { threadId: updated.threadId, message: updated });
     }
     return res.json({ message: 'Message updated', data: updated });
   } catch (err: any) {
@@ -118,6 +118,23 @@ export const createClassThread = async (req: Request, res: Response) => {
   }
 };
 
+export const createClassGroupThread = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as Express.UserPayload;
+    const { classId } = req.body;
+
+    if (!classId) {
+      return res.status(400).json({ error: 'classId is required' });
+    }
+
+    const thread = await chatService.getOrCreateClassGroupThread(user, classId);
+    return res.status(201).json(thread);
+  } catch (err: any) {
+    const status = err.status || 400;
+    return res.status(status).json({ error: err.message });
+  }
+};
+
 export const listMessages = async (req: Request, res: Response) => {
   try {
     const user = req.user as Express.UserPayload;
@@ -141,13 +158,13 @@ export const sendMessage = async (req: Request, res: Response) => {
   try {
     const user = req.user as Express.UserPayload;
     const threadId = req.params.id;
-    const { content, attachments } = req.body;
+    const { content, attachments, replyToId, mentionUserIds } = req.body;
 
     if (!threadId) {
       return res.status(400).json({ error: 'Thread ID is required' });
     }
 
-    const message = await chatService.sendMessage(user, threadId, content, attachments);
+    const message = await chatService.sendMessage(user, threadId, content, attachments, replyToId, mentionUserIds);
 
     // Emit real-time qua WebSocket thuáº§n (giá»¯ nguyĂªn)
     const wss = (global as any).wss;
@@ -171,6 +188,43 @@ export const sendMessage = async (req: Request, res: Response) => {
     if (io) {
       io.to(`thread_${threadId}`).emit('chat.message', { threadId, message });
       io.to('role_admin').emit('chat.message', { threadId, message });
+
+      const mentionedIdsForIo = Array.isArray((message as any).mentionedUserIds)
+        ? ((message as any).mentionedUserIds as string[])
+        : [];
+      for (const mentionUserId of mentionedIdsForIo) {
+        io.to(`user_${mentionUserId}`).emit('notification', {
+          eventId: `chat_mention:${message.id}:${mentionUserId}`,
+          userId: mentionUserId,
+          type: 'CHAT_MENTION',
+          title: 'Bạn được nhắc đến trong chat',
+          body: `${message.sender?.fullName || 'Một người dùng'} đã nhắc bạn trong cuộc trò chuyện.`,
+          threadId,
+          messageId: message.id,
+          createdAt: message.createdAt,
+        });
+      }
+    }
+
+    const mentionedIdsForWs = Array.isArray((message as any).mentionedUserIds)
+      ? ((message as any).mentionedUserIds as string[])
+      : [];
+    if (wss && mentionedIdsForWs.length > 0) {
+      mentionedIdsForWs.forEach((mentionUserId: string) => {
+        const payload = JSON.stringify({
+          type: 'notification',
+          notification: {
+            type: 'CHAT_MENTION',
+            threadId,
+            messageId: message.id,
+          },
+        });
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1 && client.user?.id === mentionUserId) {
+            client.send(payload);
+          }
+        });
+      });
     }
 
     return res.status(201).json(message);
@@ -216,8 +270,8 @@ export const deleteMessageForStudent = async (req: Request, res: Response) => {
     // Broadcast delete event via Socket.IO (web/admin)
     const io = (global as any).io;
     if (io && updated) {
-      io.to(`thread_${updated.threadId}`).emit('chat.message.delete', { threadId: updated.threadId, messageId });
-      io.to('role_admin').emit('chat.message.delete', { threadId: updated.threadId, messageId });
+      io.to(`thread_${updated.threadId}`).emit('chat.message_deleted', { threadId: updated.threadId, messageId });
+      io.to('role_admin').emit('chat.message_deleted', { threadId: updated.threadId, messageId });
     }
     return res.json({ message: 'Message hidden for student', data: updated });
   } catch (err: any) {
@@ -239,8 +293,8 @@ export const deleteMessageAsAdmin = async (req: Request, res: Response) => {
     // Broadcast delete event via Socket.IO (web/admin)
     const io = (global as any).io;
     if (io && deleted) {
-      io.to(`thread_${deleted.threadId}`).emit('chat.message.delete', { threadId: deleted.threadId, messageId });
-      io.to('role_admin').emit('chat.message.delete', { threadId: deleted.threadId, messageId });
+      io.to(`thread_${deleted.threadId}`).emit('chat.message_deleted', { threadId: deleted.threadId, messageId });
+      io.to('role_admin').emit('chat.message_deleted', { threadId: deleted.threadId, messageId });
     }
     return res.json({ message: 'Message deleted' });
   } catch (err: any) {
@@ -282,14 +336,34 @@ export const revokeMessage = async (req: Request, res: Response) => {
     const updated = await prisma.chatMessage.update({
       where: { id: messageId },
       data: {
-        content: '[Tin nháº¯n Ä‘Ă£ bá»‹ thu há»“i]',
+        content: '[Tin nhắn đã bị thu hồi]',
         deletedByAdminAt: new Date(),
         deletedByAdminId: user.id,
       },
     });
+    
+    // Broadcast revoke event via WebSocket (wss)
+    const wss = (global as any).wss;
+    if (wss) {
+      const payload = JSON.stringify({
+        type: 'chat.message_revoked',
+        threadId: updated.threadId,
+        message: updated,
+      });
+      wss.clients.forEach((client: any) => {
+        if (client.readyState === 1) {
+          if (client.subscribedThreads?.has(updated.threadId) || client.user?.role === 'ADMIN') {
+            client.send(payload);
+          }
+        }
+      });
+    }
+    
+    // Broadcast revoke event via Socket.IO (web/admin)
     const io = (global as any).io;
     if (io) {
-      io.to(`thread_${updated.threadId}`).emit('chat.message.revoke', { threadId: updated.threadId, messageId });
+      io.to(`thread_${updated.threadId}`).emit('chat.message_revoked', { threadId: updated.threadId, message: updated });
+      io.to('role_admin').emit('chat.message_revoked', { threadId: updated.threadId, message: updated });
     }
     return res.json({ message: 'Message revoked', data: updated });
   } catch (err: any) {

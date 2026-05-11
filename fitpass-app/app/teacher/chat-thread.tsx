@@ -245,7 +245,6 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
     let socket: any = null;
     let token: string | null = null;
     let removeListeners: (() => void)[] = [];
-    let refreshInterval: NodeJS.Timeout | null = null;
 
     // Get token from user (async)
     (async () => {
@@ -324,13 +323,7 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
       ];
     })();
 
-    // Refresh messages every 5s (optional, for fallback)
-    refreshInterval = setInterval(() => {
-      loadMessages(true);
-    }, 5000);
-
     return () => {
-      if (refreshInterval) clearInterval(refreshInterval);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -636,7 +629,25 @@ export default function TeacherChatThreadScreen({ route, navigation }: any) {
                   }`}
                 >
                   {msg.replyTo ? (
-                    <Text className="text-xs text-blue-200 mb-1">Trả lời: {msg.replyTo.content || 'Tin nhắn'}</Text>
+                    <View 
+                      style={{
+                        borderLeftWidth: 3,
+                        borderLeftColor: msg.senderRole === 'TEACHER' ? '#93c5fd' : '#3b82f6',
+                        paddingLeft: 8,
+                        marginBottom: 8,
+                        opacity: 0.8,
+                      }}
+                    >
+                      <Text className="text-xs font-semibold text-blue-200">
+                        {msg.replyTo.sender?.fullName ? `Trả lời ${msg.replyTo.sender.fullName}` : 'Trả lời'}
+                      </Text>
+                      <Text 
+                        className={`text-xs ${msg.senderRole === 'TEACHER' ? 'text-blue-100' : 'text-slate-600'}`}
+                        numberOfLines={2}
+                      >
+                        {msg.replyTo.content || '[Tệp đính kèm]'}
+                      </Text>
+                    </View>
                   ) : null}
                   {msg.content && !msg.revokedAt ? (
                     <Text className={`${msg.senderRole === 'TEACHER' ? 'text-white' : textPrimary}`}>

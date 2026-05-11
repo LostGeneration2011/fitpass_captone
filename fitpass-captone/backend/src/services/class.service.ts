@@ -13,8 +13,26 @@ export class ClassService {
 
     console.log('ClassService: Filtered data:', filtered);
 
-    if (!filtered.name) throw new Error("Class name is required.");
+    if (!filtered.name || typeof filtered.name !== 'string' || !filtered.name.trim()) {
+      throw new Error("Class name is required.");
+    }
     if (!filtered.duration) throw new Error("Class duration is required.");
+
+    filtered.name = filtered.name.trim();
+
+    const duration = Number(filtered.duration);
+    if (!Number.isInteger(duration) || duration <= 0 || duration > 600) {
+      throw new Error('Class duration must be an integer between 1 and 600 minutes');
+    }
+    filtered.duration = duration;
+
+    if (filtered.capacity !== undefined) {
+      const capacity = Number(filtered.capacity);
+      if (!Number.isInteger(capacity) || capacity <= 0 || capacity > 500) {
+        throw new Error('Capacity must be an integer between 1 and 500');
+      }
+      filtered.capacity = capacity;
+    }
 
     // Validate teacherId if provided
     if (filtered.teacherId) {
@@ -205,7 +223,7 @@ export class ClassService {
   }
 
   async updateClass(id: string, data: any) {
-    const allowed = ["name", "description", "capacity", "duration", "type", "level"];
+    const allowed = ["name", "description", "capacity", "duration", "type", "level", "teacherId", "status", "rejectionReason"];
 
     const filtered: any = {};
     for (const key of allowed) {
@@ -215,6 +233,46 @@ export class ClassService {
     const existingClass = await prisma.class.findUnique({ where: { id } });
     if (!existingClass) {
       throw new Error("Class not found");
+    }
+
+    if (filtered.name !== undefined) {
+      if (typeof filtered.name !== 'string' || !filtered.name.trim()) {
+        throw new Error('Class name must be a non-empty string');
+      }
+      filtered.name = filtered.name.trim();
+    }
+
+    if (filtered.duration !== undefined) {
+      const duration = Number(filtered.duration);
+      if (!Number.isInteger(duration) || duration <= 0 || duration > 600) {
+        throw new Error('Class duration must be an integer between 1 and 600 minutes');
+      }
+      filtered.duration = duration;
+    }
+
+    if (filtered.capacity !== undefined) {
+      const capacity = Number(filtered.capacity);
+      if (!Number.isInteger(capacity) || capacity <= 0 || capacity > 500) {
+        throw new Error('Capacity must be an integer between 1 and 500');
+      }
+      filtered.capacity = capacity;
+    }
+
+    if (filtered.teacherId !== undefined) {
+      if (filtered.teacherId === null || filtered.teacherId === '') {
+        filtered.teacherId = null;
+      } else {
+        const teacher = await prisma.user.findFirst({
+          where: {
+            id: filtered.teacherId,
+            role: 'TEACHER',
+          },
+          select: { id: true },
+        });
+        if (!teacher) {
+          throw new Error('Invalid teacherId');
+        }
+      }
     }
 
     return prisma.class.update({

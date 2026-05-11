@@ -130,6 +130,8 @@ model ChatMessage {
   senderRole UserRole
   content    String
   attachments Json?
+  replyToId  String?
+  mentionedUserIds Json?    // Array of user IDs mentioned with @
   deletedByStudentAt DateTime?
   deletedByStudentId String?
   deletedByAdminAt   DateTime?
@@ -137,8 +139,11 @@ model ChatMessage {
   createdAt  DateTime  @default(now())
   thread     ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
   sender     User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo    ChatMessage? @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies    ChatMessage[] @relation("MessageReply")
 
   @@index([threadId, createdAt])
+  @@index([replyToId])
 }
 
 model ClassImage {
@@ -394,6 +399,7 @@ enum ReactionType {
 enum ChatThreadType {
   SUPPORT
   CLASS
+  CLASS_GROUP
 }
 
 enum PackageStatus {
@@ -426,6 +432,7 @@ model ForumPost {
   comments   ForumComment[]
   reactions  ForumReaction[]
   isHidden   Boolean       @default(false)
+  hiddenReason String?
   moderationStatus ForumModerationStatus @default(APPROVED)
   moderationNote   String?
   moderatedAt      DateTime?
@@ -442,6 +449,7 @@ model ForumComment {
   postId     String
   post       ForumPost     @relation(fields: [postId], references: [id])
   isHidden   Boolean       @default(false)
+  hiddenReason String?
   reports    Json[]
 }
 
