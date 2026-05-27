@@ -182,6 +182,22 @@ export default function TeacherSalaryPage() {
     });
   };
 
+  const handlePayTeacherClick = (teacher: Teacher) => {
+    const teacherName = teacher.fullName || teacher.email;
+
+    if (teacher.totalHours <= 0) {
+      showToast(`${teacherName} chưa có buổi dạy hoàn thành, không thể thanh toán`, 'error');
+      return;
+    }
+
+    if (teacher.unpaidAmount <= 0) {
+      showToast(`${teacherName} hiện không còn lương chưa trả`, 'info');
+      return;
+    }
+
+    payTeacherSalary(teacher.id, teacherName, teacher.unpaidAmount);
+  };
+
   const showPaymentHistory = async () => {
     try {
       const data = await salaryAPI.getPayrollHistory('PAID');
@@ -547,14 +563,12 @@ export default function TeacherSalaryPage() {
                     Cập nhật lương
                   </button>
                   
-                  {teacher.unpaidAmount > 0 && (
-                    <button
-                      className="btn btn-success text-xs px-2 py-1"
-                      onClick={() => payTeacherSalary(teacher.id, teacher.fullName || teacher.email, teacher.unpaidAmount)}
-                    >
-                      Thanh toán
-                    </button>
-                  )}
+                  <button
+                    className="btn btn-success text-xs px-2 py-1"
+                    onClick={() => handlePayTeacherClick(teacher)}
+                  >
+                    Thanh toán
+                  </button>
                   
                   <button
                     className="btn btn-secondary text-xs px-2 py-1"

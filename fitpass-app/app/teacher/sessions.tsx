@@ -1,11 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, SafeAreaView, Alert, Pressable } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  SafeAreaView,
+  Alert,
+  Pressable,
+  TextInput,
+  ScrollView,
+  SectionList,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUser } from "../../lib/auth";
 import { sessionsAPI, classAPI } from "../../lib/api";
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeClasses } from '../../lib/theme';
+
+const FILTER_STORAGE_KEY = 'teacher_sessions_filters_v1';
+const STATUS_FILTERS = ['ALL', 'UPCOMING', 'ACTIVE', 'DONE', 'PENDING'] as const;
+type SessionStatusFilter = (typeof STATUS_FILTERS)[number];
 
 export default function TeacherSessionsScreen() {
   const navigation = useNavigation();
@@ -16,16 +32,70 @@ export default function TeacherSessionsScreen() {
   const {
     isDark,
     screenClass,
-    cardClass,
     textPrimary,
     textSecondary,
     textMuted,
   } = useThemeClasses();
 
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [allSessions, setAllSessions] = useState<any[]>([]);
+  const [teacherClasses, setTeacherClasses] = useState<any[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<SessionStatusFilter>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    const hydrateFilters = async () => {
+      try {
+        if (classId) {
+          setSelectedClassId(classId);
+          setFiltersHydrated(true);
+          return;
+        }
+
+        const stored = await AsyncStorage.getItem(FILTER_STORAGE_KEY);
+        if (!stored) {
+          setFiltersHydrated(true);
+          return;
+        }
+
+        const parsed = JSON.parse(stored);
+        if (typeof parsed?.selectedClassId === 'string') {
+          setSelectedClassId(parsed.selectedClassId);
+        }
+        if (typeof parsed?.selectedStatus === 'string' && STATUS_FILTERS.includes(parsed.selectedStatus)) {
+          setSelectedStatus(parsed.selectedStatus as SessionStatusFilter);
+        }
+        if (typeof parsed?.searchQuery === 'string') {
+          setSearchQuery(parsed.searchQuery);
+        }
+      } catch (storageError) {
+        console.log('[TeacherSessions] Unable to hydrate filters:', storageError);
+      } finally {
+        setFiltersHydrated(true);
+      }
+    };
+
+    hydrateFilters();
+  }, [classId]);
+
+  useEffect(() => {
+    if (!filtersHydrated) return;
+
+    AsyncStorage.setItem(
+      FILTER_STORAGE_KEY,
+      JSON.stringify({
+        selectedClassId,
+        selectedStatus,
+        searchQuery,
+      })
+    ).catch((storageError) => {
+      console.log('[TeacherSessions] Unable to persist filters:', storageError);
+    });
+  }, [selectedClassId, selectedStatus, searchQuery, filtersHydrated]);
 
   const loadSessions = async () => {
     try {
@@ -55,24 +125,13 @@ export default function TeacherSessionsScreen() {
         ? allClasses.filter((c: any) => c.teacherId === user.id)
         : [];
 
-      // Filter sessions
-      let filteredSessions;
-      if (classId) {
-        // If classId provided, show only sessions for that class
-        filteredSessions = Array.isArray(allSessions) 
-          ? allSessions.filter((s: any) => s.classId === classId)
-          : [];
-      } else {
-        // If no classId, show all teacher's sessions
-        filteredSessions = Array.isArray(allSessions) 
-          ? allSessions.filter((s: any) => 
-              teacherClasses.some((c: any) => c.id === s.classId)
-            )
-          : [];
-      }
+      const teacherSessionList = Array.isArray(allSessions)
+        ? allSessions.filter((s: any) => teacherClasses.some((c: any) => c.id === s.classId))
+        : [];
 
-      console.log("🔍 Sessions - Filtered sessions:", filteredSessions);
-      setSessions(filteredSessions);
+      console.log("🔍 Sessions - Filtered sessions:", teacherSessionList);
+      setTeacherClasses(teacherClasses);
+      setAllSessions(teacherSessionList);
     } catch (e: any) {
       console.log("[TeacherSessions] Error loading sessions:", e);
       setError(e?.message ?? "Không thể tải các buổi học.");
@@ -83,7 +142,61 @@ export default function TeacherSessionsScreen() {
 
   useEffect(() => {
     loadSessions();
-  }, [classId]);
+  }, []);
+
+  useEffect(() => {
+    if (!filtersHydrated || !classId) return;
+    setSelectedClassId(classId);
+  }, [classId, filtersHydrated]);
+
+  const filteredSessions = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return allSessions
+      .filter((session) => {
+        if (selectedClassId !== 'ALL' && session.classId !== selectedClassId) {
+          return false;
+        }
+
+        const statusUpper = session.status?.toUpperCase?.() || '';
+        if (selectedStatus !== 'ALL' && statusUpper !== selectedStatus) {
+          return false;
+        }
+
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        const classLabel = (session.class?.name || '').toLowerCase();
+        const dateLabel = new Date(session.startTime).toLocaleDateString().toLowerCase();
+        return classLabel.includes(normalizedQuery) || dateLabel.includes(normalizedQuery);
+      })
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [allSessions, selectedClassId, selectedStatus, searchQuery]);
+
+  const sections = useMemo(() => {
+    const grouped = new Map<string, { title: string; classId: string; data: any[] }>();
+
+    filteredSessions.forEach((session) => {
+      const sessionClassId = session.classId || 'unknown';
+      const current = grouped.get(sessionClassId);
+
+      if (current) {
+        current.data.push(session);
+        return;
+      }
+
+      grouped.set(sessionClassId, {
+        title: session.class?.name || className || 'Lớp không xác định',
+        classId: sessionClassId,
+        data: [session],
+      });
+    });
+
+    return Array.from(grouped.values()).sort((a, b) => a.title.localeCompare(b.title, 'vi'));
+  }, [filteredSessions, className]);
+
+  const totalSessionCount = filteredSessions.length;
 
   const handleOpenQR = (session: any) => {
     (navigation as any).navigate('QR', {
@@ -107,7 +220,7 @@ export default function TeacherSessionsScreen() {
               await sessionsAPI.delete(session.id);
               
               // Remove from list
-              setSessions(sessions.filter(s => s.id !== session.id));
+              setAllSessions((prev) => prev.filter((s) => s.id !== session.id));
               
               Toast.show({
                 type: 'success',
@@ -232,26 +345,137 @@ export default function TeacherSessionsScreen() {
     );
   }
 
-  if (!sessions.length) {
-    return (
-      <SafeAreaView className={`flex-1 ${screenClass} justify-center items-center p-4`}>
-        <Text className={`${textSecondary} text-center`}>
-          Chưa có buổi học nào được lên lịch cho lớp này.
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className={`flex-1 ${screenClass}`}>
       <View className="flex-1 p-4">
         <Text className={`${textPrimary} text-xl font-bold mb-4`}>
-          {classId ? className || "Buổi học lớp" : "Tất cả buổi học của tôi"}
+          Buổi học của tôi
         </Text>
-        <FlatList
-          data={sessions}
+
+        <View
+          className="mb-4 rounded-xl p-3"
+          style={{
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            borderWidth: 1,
+            borderColor: isDark ? '#334155' : '#e2e8f0',
+          }}
+        >
+          <View
+            className="mb-3 flex-row items-center rounded-lg px-3"
+            style={{
+              backgroundColor: isDark ? '#0f172a' : '#f8fafc',
+              borderWidth: 1,
+              borderColor: isDark ? '#334155' : '#e2e8f0',
+            }}
+          >
+            <Ionicons name="search" size={16} color={isDark ? '#94a3b8' : '#64748b'} />
+            <TextInput
+              className={`${textPrimary} flex-1 py-2 px-2`}
+              placeholder="Tìm lớp hoặc ngày học..."
+              placeholderTextColor={isDark ? '#94a3b8' : '#64748b'}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+
+          <Text className={`${textMuted} text-xs mb-2`}>Lọc theo lớp</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                className="mr-2 rounded-full px-3 py-2"
+                style={{
+                  backgroundColor: selectedClassId === 'ALL' ? '#2563eb' : isDark ? '#334155' : '#e2e8f0',
+                }}
+                onPress={() => setSelectedClassId('ALL')}
+              >
+                <Text className={selectedClassId === 'ALL' ? 'text-white text-xs font-semibold' : `${textSecondary} text-xs`}>
+                  Tất cả lớp
+                </Text>
+              </TouchableOpacity>
+
+              {teacherClasses.map((teacherClass: any) => {
+                const active = selectedClassId === teacherClass.id;
+                return (
+                  <TouchableOpacity
+                    key={teacherClass.id}
+                    className="mr-2 rounded-full px-3 py-2"
+                    style={{
+                      backgroundColor: active ? '#2563eb' : isDark ? '#334155' : '#e2e8f0',
+                    }}
+                    onPress={() => setSelectedClassId(teacherClass.id)}
+                  >
+                    <Text className={active ? 'text-white text-xs font-semibold' : `${textSecondary} text-xs`}>
+                      {teacherClass.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          <Text className={`${textMuted} text-xs mb-2`}>Lọc theo trạng thái</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row items-center">
+              {STATUS_FILTERS.map((status) => {
+                const active = selectedStatus === status;
+                const label = status === 'ALL' ? 'Tất cả' : status;
+                return (
+                  <TouchableOpacity
+                    key={status}
+                    className="mr-2 rounded-full px-3 py-2"
+                    style={{
+                      backgroundColor: active ? '#16a34a' : isDark ? '#334155' : '#e2e8f0',
+                    }}
+                    onPress={() => setSelectedStatus(status)}
+                  >
+                    <Text className={active ? 'text-white text-xs font-semibold' : `${textSecondary} text-xs`}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              <TouchableOpacity
+                className="rounded-full px-3 py-2"
+                style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9', borderWidth: 1, borderColor: isDark ? '#475569' : '#cbd5e1' }}
+                onPress={() => {
+                  setSelectedClassId(classId || 'ALL');
+                  setSelectedStatus('ALL');
+                  setSearchQuery('');
+                }}
+              >
+                <Text className={`${textSecondary} text-xs`}>Đặt lại</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+
+        <Text className={`${textSecondary} mb-3`}>
+          {sections.length} lớp, {totalSessionCount} buổi học
+        </Text>
+
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          renderSectionHeader={({ section }) => (
+            <View
+              className="mb-2 mt-1 rounded-lg px-3 py-2"
+              style={{ backgroundColor: isDark ? '#0f172a' : '#f1f5f9' }}
+            >
+              <Text className={`${textPrimary} font-semibold`}>
+                {section.title} ({section.data.length})
+              </Text>
+            </View>
+          )}
+          ListEmptyComponent={
+            <View className="items-center py-10">
+              <Text className={`${textSecondary} text-center`}>
+                Không có buổi học phù hợp với bộ lọc hiện tại.
+              </Text>
+            </View>
+          }
+          stickySectionHeadersEnabled={false}
           contentContainerStyle={{ paddingBottom: 24 }}
         />
       </View>

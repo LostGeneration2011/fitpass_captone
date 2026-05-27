@@ -160,11 +160,17 @@ export const getMonthlyPayroll = async (req: Request, res: Response): Promise<vo
 export const payTeacherSalary = async (req: Request, res: Response): Promise<void> => {
   try {
     const { teacherId, amount, paymentMethod, note } = req.body;
+    const paymentAmount = Number(amount);
 
     console.log('Pay teacher salary request:', { teacherId, amount, paymentMethod, note });
 
     if (!teacherId || !amount) {
       res.status(400).json({ message: 'Teacher ID and amount are required' });
+      return;
+    }
+
+    if (Number.isNaN(paymentAmount) || paymentAmount <= 0) {
+      res.status(400).json({ message: 'Số tiền thanh toán không hợp lệ' });
       return;
     }
 
@@ -184,6 +190,60 @@ export const payTeacherSalary = async (req: Request, res: Response): Promise<voi
       ? await prisma.user.findUnique({ where: { id: adminId } })
       : await prisma.user.findFirst({ where: { role: 'ADMIN' } });
 
+    // Calculate completed teaching hours and total earnings from DONE sessions
+    const teacherWithSessions = await prisma.user.findUnique({
+      where: { id: teacherId },
+      include: {
+        classesTeaching: {
+          include: {
+            sessions: {
+              where: { status: 'DONE' }
+            }
+          }
+        }
+      }
+    });
+
+    let totalHours = 0;
+    if (teacherWithSessions) {
+      teacherWithSessions.classesTeaching.forEach((cls) => {
+        cls.sessions.forEach((session) => {
+          const startTime = new Date(session.startTime);
+          const endTime = new Date(session.endTime);
+          const sessionHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+          totalHours += sessionHours;
+        });
+      });
+    }
+
+    if (totalHours <= 0) {
+      res.status(400).json({ message: 'Giáo viên chưa có buổi dạy hoàn thành, không thể thanh toán lương' });
+      return;
+    }
+
+    const totalEarnings = totalHours * (teacher.hourlyRate || 50000);
+
+    const paidBeforeRecords = await prisma.salaryRecord.findMany({
+      where: {
+        teacherId,
+        status: 'PAID'
+      }
+    });
+    const totalPaidBefore = paidBeforeRecords.reduce((sum, record) => sum + record.totalAmount, 0);
+    const unpaidBefore = Math.max(0, totalEarnings - totalPaidBefore);
+
+    if (unpaidBefore <= 0) {
+      res.status(400).json({ message: 'Giáo viên hiện không còn lương chưa trả' });
+      return;
+    }
+
+    if (paymentAmount > unpaidBefore) {
+      res.status(400).json({
+        message: `Số tiền thanh toán vượt quá công nợ hiện tại (${Math.round(unpaidBefore).toLocaleString('vi-VN')} VND)`
+      });
+      return;
+    }
+
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
@@ -194,7 +254,9 @@ export const payTeacherSalary = async (req: Request, res: Response): Promise<voi
 
     let salaryRecord: any;
 
-    if (pendingRecords.length > 0) {
+    const isFullSettlement = Math.abs(paymentAmount - unpaidBefore) < 1;
+
+    if (pendingRecords.length > 0 && isFullSettlement) {
       // Mark all pending records as PAID
       await prisma.salaryRecord.updateMany({
         where: { teacherId, status: 'PENDING' },
@@ -220,7 +282,7 @@ export const payTeacherSalary = async (req: Request, res: Response): Promise<voi
           year: currentYear,
           totalHours: 0,
           hourlyRate: teacher.hourlyRate || 50000,
-          totalAmount: amount,
+          totalAmount: paymentAmount,
           status: 'PAID',
           paidDate: new Date(),
           paidBy: adminUser?.id || null,
@@ -239,32 +301,6 @@ export const payTeacherSalary = async (req: Request, res: Response): Promise<voi
       }
     });
     const totalPaid = allPaidRecords.reduce((sum, record) => sum + record.totalAmount, 0);
-
-    // Calculate total earnings from sessions to determine what should be owed
-    const teacherWithSessions = await prisma.user.findUnique({
-      where: { id: teacherId },
-      include: {
-        classesTeaching: {
-          include: {
-            sessions: {
-              where: { status: 'DONE' }
-            }
-          }
-        }
-      }
-    });
-
-    let totalEarnings = 0;
-    if (teacherWithSessions) {
-      teacherWithSessions.classesTeaching.forEach(cls => {
-        cls.sessions.forEach(session => {
-          const startTime = new Date(session.startTime);
-          const endTime = new Date(session.endTime);
-          const sessionHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-          totalEarnings += sessionHours * (teacher.hourlyRate || 50000);
-        });
-      });
-    }
 
     // Update teacher's salary owed to reflect accurate amount
     const newSalaryOwed = Math.max(0, totalEarnings - totalPaid);

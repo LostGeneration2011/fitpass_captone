@@ -16,7 +16,9 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "seed": "ts-node prisma/seed.ts",
+    "seed:append": "ts-node prisma/seed-append-demo.ts",
     "db:seed": "npm run prisma:push && npm run seed",
+    "db:seed:append": "npm run prisma:push && npm run seed:append",
     "check-all": "sh ./check-all.sh"
   },
   "dependencies": {

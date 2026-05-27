@@ -1,14 +1,16 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Pressable, SafeAreaView } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator, Pressable, SafeAreaView, TextInput, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import QRCode from "react-native-qrcode-svg";
 import { sessionsAPI, classAPI, qrAPI, API_URL } from "../../lib/api";
-import Constants from "expo-constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUser } from "../../lib/auth";
 import { useWebSocket } from "../../lib/WebSocketProvider";
-import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useThemeClasses } from "../../lib/theme";
 import { useTheme } from "../../lib/theme";
+
+const QR_FILTER_STORAGE_KEY = 'teacher_qr_filters_v1';
 
 // Get API base URL
 function getApiBaseUrl(): string {
@@ -22,8 +24,6 @@ function buildSignedQRUrl(token: string): string {
 
 export default function TeacherQR() {
   const navigation = useNavigation();
-  const route = useRoute();
-  const params = (route.params as any) || {};
   
   // Ensure theme context is loaded
   const { isDark: isDarkTheme } = useTheme();
@@ -31,16 +31,18 @@ export default function TeacherQR() {
   const {
     isDark,
     screenClass,
-    cardClass,
     textPrimary,
     textSecondary,
     textMuted,
   } = useThemeClasses();
 
   const [sessions, setSessions] = useState<any[]>([]);
+  const [teacherClasses, setTeacherClasses] = useState<any[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any | null>(null);
   const [qrValue, setQrValue] = useState<string>("");
-  const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const { isConnected, reconnect } = useWebSocket();
   const [forceUpdate, setForceUpdate] = useState(0);
@@ -48,6 +50,45 @@ export default function TeacherQR() {
   useEffect(() => {
     setForceUpdate(prev => prev + 1);
   }, [isDark]);
+
+  useEffect(() => {
+    const hydrateFilters = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(QR_FILTER_STORAGE_KEY);
+        if (!stored) {
+          setFiltersHydrated(true);
+          return;
+        }
+
+        const parsed = JSON.parse(stored);
+        if (typeof parsed?.selectedClassId === 'string') {
+          setSelectedClassId(parsed.selectedClassId);
+        }
+        if (typeof parsed?.searchQuery === 'string') {
+          setSearchQuery(parsed.searchQuery);
+        }
+      } catch (storageError) {
+        console.log('[TeacherQR] Unable to hydrate filters:', storageError);
+      } finally {
+        setFiltersHydrated(true);
+      }
+    };
+
+    hydrateFilters();
+  }, []);
+
+  useEffect(() => {
+    if (!filtersHydrated) return;
+    AsyncStorage.setItem(
+      QR_FILTER_STORAGE_KEY,
+      JSON.stringify({
+        selectedClassId,
+        searchQuery,
+      })
+    ).catch((storageError) => {
+      console.log('[TeacherQR] Unable to persist filters:', storageError);
+    });
+  }, [selectedClassId, searchQuery, filtersHydrated]);
 
   // Request signed QR token from server and build QR URL.
   const generateNewQR = async () => {
@@ -61,8 +102,6 @@ export default function TeacherQR() {
       }
 
       setQrValue(buildSignedQRUrl(token));
-      // Token is signed with 5-minute expiry in backend QRUtils.
-      setExpiresAt(Date.now() + 5 * 60 * 1000);
 
       console.log("🔍 Generated signed QR for session:", selectedSession.id);
     } catch (error) {
@@ -102,6 +141,7 @@ export default function TeacherQR() {
         const teacherClasses = Array.isArray(allClasses) 
           ? allClasses.filter((c: any) => c.teacherId === user.id)
           : [];
+        setTeacherClasses(teacherClasses);
         
         // Filter teacher's sessions with ACTIVE + UPCOMING status
         const teacherSessions = Array.isArray(allSessions) 
@@ -129,6 +169,46 @@ export default function TeacherQR() {
 
     loadSessions();
   }, []);
+
+  const filteredSessions = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return sessions
+      .filter((session) => {
+        if (selectedClassId !== 'ALL' && session.classId !== selectedClassId) {
+          return false;
+        }
+
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        const classLabel = (session.class?.name || '').toLowerCase();
+        const dateLabel = new Date(session.startTime).toLocaleDateString().toLowerCase();
+        return classLabel.includes(normalizedQuery) || dateLabel.includes(normalizedQuery);
+      })
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [sessions, selectedClassId, searchQuery]);
+
+  const groupedSessions = useMemo(() => {
+    const grouped = new Map<string, { title: string; data: any[] }>();
+
+    filteredSessions.forEach((session) => {
+      const key = session.classId || 'unknown';
+      const current = grouped.get(key);
+      if (current) {
+        current.data.push(session);
+        return;
+      }
+
+      grouped.set(key, {
+        title: session.class?.name || 'Lớp không xác định',
+        data: [session],
+      });
+    });
+
+    return Array.from(grouped.values()).sort((a, b) => a.title.localeCompare(b.title, 'vi'));
+  }, [filteredSessions]);
 
   if (loading) {
     return (
@@ -174,23 +254,151 @@ export default function TeacherQR() {
         ) : !selectedSession ? (
           <>
             <Text className={`${textSecondary} text-lg mb-4`}>Chọn một buổi học:</Text>
-            {sessions.map((session) => (
-              <Pressable
-                key={session.id}
-                style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#475569' : '#e2e8f0', borderWidth: 1, borderRadius: 12, padding: 16, marginBottom: 12 }}
-                onPress={() => setSelectedSession(session)}
+            <View
+              style={{
+                backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                borderColor: isDark ? '#475569' : '#e2e8f0',
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 12,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: isDark ? '#0f172a' : '#f8fafc',
+                  borderColor: isDark ? '#334155' : '#e2e8f0',
+                  borderWidth: 1,
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  marginBottom: 10,
+                }}
               >
-                <Text className={`${textPrimary} font-semibold text-lg`}>
-                  {session.class?.name || "Buổi học"}
-                </Text>
-                <Text className={`${textSecondary} mt-1`}>
-                  {new Date(session.startTime).toLocaleString()}
-                </Text>
-                <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999, marginTop: 8, alignSelf: 'flex-start' }}>
-                  <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '500' }}>{session.status}</Text>
+                <Ionicons name="search" size={16} color={isDark ? '#94a3b8' : '#64748b'} />
+                <TextInput
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Tìm lớp hoặc ngày học..."
+                  placeholderTextColor={isDark ? '#94a3b8' : '#64748b'}
+                  className={`${textPrimary} flex-1 py-2 px-2`}
+                />
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: selectedClassId === 'ALL' ? '#2563eb' : isDark ? '#334155' : '#e2e8f0',
+                      borderRadius: 999,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      marginRight: 8,
+                    }}
+                    onPress={() => setSelectedClassId('ALL')}
+                  >
+                    <Text style={{ color: selectedClassId === 'ALL' ? '#fff' : isDark ? '#cbd5e1' : '#334155', fontSize: 12, fontWeight: '600' }}>
+                      Tất cả lớp
+                    </Text>
+                  </TouchableOpacity>
+
+                  {teacherClasses.map((teacherClass: any) => {
+                    const active = selectedClassId === teacherClass.id;
+                    return (
+                      <TouchableOpacity
+                        key={teacherClass.id}
+                        style={{
+                          backgroundColor: active ? '#2563eb' : isDark ? '#334155' : '#e2e8f0',
+                          borderRadius: 999,
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          marginRight: 8,
+                        }}
+                        onPress={() => setSelectedClassId(teacherClass.id)}
+                      >
+                        <Text style={{ color: active ? '#fff' : isDark ? '#cbd5e1' : '#334155', fontSize: 12, fontWeight: '600' }}>
+                          {teacherClass.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  <TouchableOpacity
+                    style={{
+                      borderWidth: 1,
+                      borderColor: isDark ? '#475569' : '#cbd5e1',
+                      borderRadius: 999,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                    }}
+                    onPress={() => {
+                      setSelectedClassId('ALL');
+                      setSearchQuery('');
+                    }}
+                  >
+                    <Text className={`${textSecondary} text-xs`}>Đặt lại</Text>
+                  </TouchableOpacity>
                 </View>
-              </Pressable>
+              </ScrollView>
+            </View>
+
+            <Text className={`${textMuted} mb-3`}>
+              {groupedSessions.length} lớp, {filteredSessions.length} buổi phù hợp
+            </Text>
+
+            {groupedSessions.map((group) => (
+              <View key={group.title} style={{ marginBottom: 12 }}>
+                <View
+                  style={{
+                    backgroundColor: isDark ? '#0f172a' : '#f1f5f9',
+                    borderRadius: 10,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text className={`${textPrimary} font-semibold`}>
+                    {group.title} ({group.data.length})
+                  </Text>
+                </View>
+
+                {group.data.map((session) => (
+                  <Pressable
+                    key={session.id}
+                    style={{ backgroundColor: isDark ? '#1e293b' : '#ffffff', borderColor: isDark ? '#475569' : '#e2e8f0', borderWidth: 1, borderRadius: 12, padding: 16, marginBottom: 8 }}
+                    onPress={() => setSelectedSession(session)}
+                  >
+                    <Text className={`${textPrimary} font-semibold text-lg`}>
+                      {session.class?.name || "Buổi học"}
+                    </Text>
+                    <Text className={`${textSecondary} mt-1`}>
+                      {new Date(session.startTime).toLocaleString()}
+                    </Text>
+                    <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999, marginTop: 8, alignSelf: 'flex-start' }}>
+                      <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '500' }}>{session.status}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
             ))}
+
+            {filteredSessions.length === 0 && (
+              <View
+                style={{
+                  backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                  borderColor: isDark ? '#475569' : '#e2e8f0',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 20,
+                  alignItems: 'center',
+                }}
+              >
+                <Text className={`${textSecondary} text-center`}>
+                  Không có buổi học phù hợp với bộ lọc hiện tại.
+                </Text>
+              </View>
+            )}
           </>
         ) : (
           <View style={{ alignItems: 'center' }}>
@@ -306,17 +514,16 @@ export default function TeacherQR() {
                   width: '100%'
                 }}
                 onPress={() => {
-                  const firstSession = sessions[0];
-                  if (firstSession?.classId && firstSession?.class?.name) {
+                  if (selectedSession?.classId && selectedSession?.class?.name) {
                     (navigation as any).navigate('Sessions', {
-                      classId: firstSession.classId,
-                      className: firstSession.class.name
+                      classId: selectedSession.classId,
+                      className: selectedSession.class.name
                     });
                   }
                 }}
               >
                 <Text className={`${textSecondary} font-semibold`} style={{ textAlign: 'center' }}>
-                  Xem tất cả buổi học cho {sessions[0]?.class?.name}
+                  Xem tất cả buổi học cho {selectedSession?.class?.name}
                 </Text>
               </Pressable>
             )}

@@ -2,6 +2,8 @@ import {
   PrismaClient,
   UserRole,
   ReactionType,
+  AttendanceStatus,
+  ChatThreadType,
   ForumModerationStatus,
   PaymentMethod,
   TransactionStatus,
@@ -58,8 +60,46 @@ async function main() {
     'Phạm Thị Lan',
     'Võ Minh Tuấn'
   ];
+  const teacherProfilePresets = [
+    {
+      bio: 'Huấn luyện viên yoga tập trung vào phục hồi vận động và kiểm soát hơi thở.',
+      years: 6,
+      specialties: ['Yoga Flow', 'Mobility', 'Recovery'],
+      certifications: ['RYT-200', 'CPR'],
+      highlights: ['Tổ chức 40+ workshop', 'Kèm 1-1 sau chấn thương'],
+    },
+    {
+      bio: 'Chuyên gia luyện tập sức bền và giảm mỡ cho người bận rộn.',
+      years: 8,
+      specialties: ['HIIT', 'Cardio', 'Weight Loss'],
+      certifications: ['ACE CPT', 'Nutrition Basics'],
+      highlights: ['Theo dõi tiến độ theo tuần', 'Lộ trình 12 tuần cá nhân hóa'],
+    },
+    {
+      bio: 'Giảng viên pilates và core stability cho dân văn phòng.',
+      years: 5,
+      specialties: ['Pilates', 'Core Training', 'Posture'],
+      certifications: ['STOTT Pilates', 'Functional Movement'],
+      highlights: ['Chuyên đề đau lưng cổ vai gáy', 'Lớp nhỏ tối đa 12 học viên'],
+    },
+    {
+      bio: 'Huấn luyện viên dance fitness với phong cách năng động, dễ theo.',
+      years: 7,
+      specialties: ['Dance Fitness', 'Aerobic', 'Beginner Coaching'],
+      certifications: ['Group Fitness', 'Dance Conditioning'],
+      highlights: ['Cộng đồng 500+ học viên', 'Chuỗi lớp thử miễn phí hàng tháng'],
+    },
+    {
+      bio: 'Chuyên gia kỹ thuật boxing căn bản kết hợp tăng sức mạnh toàn thân.',
+      years: 9,
+      specialties: ['Boxing Basics', 'Strength', 'Conditioning'],
+      certifications: ['Boxing Instructor', 'Sports Safety'],
+      highlights: ['Giáo án an toàn cho người mới', 'Đánh giá kỹ thuật theo video'],
+    },
+  ];
 
   for (let i = 0; i < teacherNames.length; i++) {
+    const profile = teacherProfilePresets[i] || teacherProfilePresets[0];
     const teacher = await prisma.user.create({
       data: {
         email: `giaovien${i + 1}@fitpass.com`,
@@ -69,11 +109,40 @@ async function main() {
         emailVerified: true,
         hourlyRate: 200000 + (i * 50000), // 200k-400k range
         salaryOwed: 0,
+        teacherBio: profile?.bio,
+        teacherExperienceYears: profile?.years,
+        teacherSpecialties: profile?.specialties || [],
+        teacherCertifications: profile?.certifications || [],
+        teacherHighlights: profile?.highlights || [],
+        teacherCoverImage: `https://images.unsplash.com/photo-${1510000000000 + i}000?auto=format&fit=crop&w=1600&q=80`,
+        teacherGalleryImages: [
+          `https://images.unsplash.com/photo-${1510000000100 + i}000?auto=format&fit=crop&w=1200&q=80`,
+          `https://images.unsplash.com/photo-${1510000000200 + i}000?auto=format&fit=crop&w=1200&q=80`,
+        ],
       },
     });
     teachers.push(teacher);
     console.log(`👨‍🏫 Created teacher: ${teacher.email} - ${teacher.fullName}`);
   }
+
+  // Dedicated teacher without classes/sessions for payroll edge-case demo
+  const idleTeacher = await prisma.user.create({
+    data: {
+      email: 'giaovien0@fitpass.com',
+      password: hashedPassword,
+      fullName: 'Giáo viên Chưa Có Ca Dạy',
+      role: UserRole.TEACHER,
+      emailVerified: true,
+      hourlyRate: 220000,
+      salaryOwed: 0,
+      teacherBio: 'Tài khoản seed để kiểm tra trạng thái chưa phát sinh công dạy.',
+      teacherExperienceYears: 1,
+      teacherSpecialties: ['Demo Payroll'],
+      teacherCertifications: ['Internal Demo'],
+      teacherHighlights: ['Chưa có buổi dạy DONE để test rule thanh toán'],
+    },
+  });
+  console.log(`👨‍🏫 Created edge-case teacher: ${idleTeacher.email} - ${idleTeacher.fullName}`);
 
   // Create 15 Students using loop
   const students: any[] = [];
@@ -369,8 +438,34 @@ async function main() {
 
   console.log(`✅ Created ${testEnrollments.length} enrollments for test classes`);
 
-  // Create attendance records for some test sessions (simulating completed sessions)
-  const testAttendanceCount = 0; // Will be 0 initially, can be updated after sessions complete
+  // Create attendance records for completed test sessions (for dashboard/report demos)
+  let testAttendanceCount = 0;
+  const completedTestSessions = testSessions.filter((session) => session.status === 'DONE').slice(0, 18);
+  for (const session of completedTestSessions) {
+    const sessionEnrollments = testEnrollments
+      .filter((enrollment) => enrollment.classId === session.classId)
+      .slice(0, 5);
+
+    for (let idx = 0; idx < sessionEnrollments.length; idx++) {
+      const enrollment = sessionEnrollments[idx];
+      const status =
+        idx % 6 === 0
+          ? AttendanceStatus.ABSENT
+          : idx % 4 === 0
+          ? AttendanceStatus.LATE
+          : AttendanceStatus.PRESENT;
+
+      await prisma.attendance.create({
+        data: {
+          sessionId: session.id,
+          studentId: enrollment.studentId,
+          enrollmentId: enrollment.id,
+          status,
+        },
+      });
+      testAttendanceCount++;
+    }
+  }
   
   // Create bookings for test students on test sessions
   let testBookingCount = 0;
@@ -468,6 +563,100 @@ async function main() {
     }
   }
 
+  // Seed additional attendance records for admin attendance screen demo
+  // Goal: selecting many sessions in admin menu can load attendance immediately.
+  const enrollmentByClass = new Map<string, any[]>();
+  for (const enrollment of enrollments) {
+    const list = enrollmentByClass.get(enrollment.classId) || [];
+    list.push(enrollment);
+    enrollmentByClass.set(enrollment.classId, list);
+  }
+
+  const candidateSessions = sessions
+    .filter((session) => session.status === 'DONE')
+    .slice(0, 120);
+
+  const attendanceSeedRows: Array<{
+    sessionId: string;
+    studentId: string;
+    enrollmentId: string;
+    status: AttendanceStatus;
+    checkedInAt: Date;
+  }> = [];
+
+  for (let i = 0; i < candidateSessions.length; i++) {
+    const session = candidateSessions[i];
+    const classEnrollments = (enrollmentByClass.get(session.classId) || []).slice(0, 6);
+
+    for (let j = 0; j < classEnrollments.length; j++) {
+      const enrollment = classEnrollments[j];
+      const status = (i + j) % 5 === 0 ? AttendanceStatus.ABSENT : AttendanceStatus.PRESENT;
+      const checkedInAt = new Date(session.startTime);
+      checkedInAt.setMinutes(checkedInAt.getMinutes() + (j % 3) * 5);
+
+      attendanceSeedRows.push({
+        sessionId: session.id,
+        studentId: enrollment.studentId,
+        enrollmentId: enrollment.id,
+        status,
+        checkedInAt,
+      });
+    }
+  }
+
+  let additionalAttendanceSeeded = 0;
+  if (attendanceSeedRows.length > 0) {
+    const createResult = await prisma.attendance.createMany({
+      data: attendanceSeedRows,
+      skipDuplicates: true,
+    });
+    additionalAttendanceSeeded = createResult.count;
+  }
+
+  console.log(`✅ Added ${additionalAttendanceSeeded} extra attendance records for admin attendance testing`);
+
+  // Ensure the latest 10 sessions always have attendance data for presentation demos
+  // (100% PRESENT so selecting recent sessions in admin attendance menu always shows records)
+  const latestSessionsForDemo = [...sessions]
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+    .slice(0, 10);
+
+  const latestSessionAttendanceRows: Array<{
+    sessionId: string;
+    studentId: string;
+    enrollmentId: string;
+    status: AttendanceStatus;
+    checkedInAt: Date;
+  }> = [];
+
+  for (const session of latestSessionsForDemo) {
+    const classEnrollments = (enrollmentByClass.get(session.classId) || []).slice(0, 8);
+    for (let idx = 0; idx < classEnrollments.length; idx++) {
+      const enrollment = classEnrollments[idx];
+      const checkedInAt = new Date(session.startTime);
+      checkedInAt.setMinutes(checkedInAt.getMinutes() + idx);
+
+      latestSessionAttendanceRows.push({
+        sessionId: session.id,
+        studentId: enrollment.studentId,
+        enrollmentId: enrollment.id,
+        status: AttendanceStatus.PRESENT,
+        checkedInAt,
+      });
+    }
+  }
+
+  let latestSessionAttendanceSeeded = 0;
+  if (latestSessionAttendanceRows.length > 0) {
+    const latestResult = await prisma.attendance.createMany({
+      data: latestSessionAttendanceRows,
+      skipDuplicates: true,
+    });
+    latestSessionAttendanceSeeded = latestResult.count;
+  }
+
+  console.log(`✅ Ensured latest 10 sessions have attendance rows (added ${latestSessionAttendanceSeeded})`);
+
   // Create transactions for purchased user packages (admin finance demo)
   const userPackages = await prisma.userPackage.findMany({
     include: {
@@ -486,6 +675,67 @@ async function main() {
         paymentId: `DEMO-PAY-${up.id.slice(0, 8).toUpperCase()}`,
         status: TransactionStatus.COMPLETED,
       },
+    });
+  }
+
+  // Seed chat threads/messages so contact menus are never empty on first demo login
+  let chatThreadCount = 0;
+  let chatMessageCount = 0;
+
+  for (let i = 0; i < Math.min(6, students.length); i++) {
+    const student = students[i];
+    const teacher = teachers[i % teachers.length];
+    const relatedClass = classes.find((c) => c.teacherId === teacher.id) || classes[i % classes.length];
+
+    if (!student || !teacher || !relatedClass) continue;
+
+    const thread = await prisma.chatThread.create({
+      data: {
+        type: ChatThreadType.CLASS,
+        classId: relatedClass.id,
+        studentId: student.id,
+        teacherId: teacher.id,
+        createdById: student.id,
+        lastMessageAt: new Date(),
+        lastMessagePreview: 'Cam on thay/co, em da nhan duoc lich hoc.',
+      },
+    });
+    chatThreadCount++;
+
+    const firstMessage = await prisma.chatMessage.create({
+      data: {
+        threadId: thread.id,
+        senderId: student.id,
+        senderRole: UserRole.STUDENT,
+        content: 'Chao thay/co, em muon hoi ve buoi hoc sap toi.',
+      },
+    });
+    chatMessageCount++;
+
+    await prisma.chatMessage.create({
+      data: {
+        threadId: thread.id,
+        senderId: teacher.id,
+        senderRole: UserRole.TEACHER,
+        content: 'Chao em, thay/co da cap nhat lich va phong hoc trong he thong.',
+        replyToId: firstMessage.id,
+      },
+    });
+    chatMessageCount++;
+
+    await prisma.chatThreadRead.createMany({
+      data: [
+        {
+          threadId: thread.id,
+          userId: student.id,
+          lastReadAt: new Date(),
+        },
+        {
+          threadId: thread.id,
+          userId: teacher.id,
+          lastReadAt: new Date(),
+        },
+      ],
     });
   }
 
@@ -518,36 +768,178 @@ async function main() {
     });
   }
 
-  // Create salary records for 3 recent months for each teacher
+  // Create payroll demo scenarios for teacher-salary screen
+  // Scenario map:
+  // - Teacher 1: unpaid > 0 (PENDING)
+  // - Teacher 2: fully paid (unpaid = 0)
+  // - Teacher 3: partially paid (PAID but still owed)
+  // - Teacher 4+: mixed pending for realistic data
+  // - idleTeacher: no classes/sessions and no salary records
   const currentMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  for (const teacher of teachers) {
-    for (let m = 0; m < 3; m++) {
-      const d = new Date(currentMonthDate);
-      d.setMonth(currentMonthDate.getMonth() - m);
-      const totalHours = 18 + ((teacher.id.length + m) % 10);
-      const totalAmount = totalHours * (teacher.hourlyRate || 250000);
 
+  for (let index = 0; index < teachers.length; index++) {
+    const teacher = teachers[index];
+    if (!teacher) continue;
+
+    const teacherWithDoneSessions = await prisma.user.findUnique({
+      where: { id: teacher.id },
+      include: {
+        classesTeaching: {
+          include: {
+            sessions: {
+              where: { status: 'DONE' },
+            },
+          },
+        },
+      },
+    });
+
+    let totalDoneHours = 0;
+    teacherWithDoneSessions?.classesTeaching.forEach((cls) => {
+      cls.sessions.forEach((session) => {
+        const start = new Date(session.startTime);
+        const end = new Date(session.endTime);
+        totalDoneHours += (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      });
+    });
+
+    const roundedHours = Math.round(totalDoneHours * 100) / 100;
+    const hourlyRate = teacher.hourlyRate || 250000;
+    const totalEarnings = Math.round(roundedHours * hourlyRate);
+    const previousMonthDate = new Date(currentMonthDate);
+    previousMonthDate.setMonth(currentMonthDate.getMonth() - 1);
+
+    let totalPaidForTeacher = 0;
+
+    if (index === 0) {
+      // Teacher 1: show "Còn nợ" state (button payment should be enabled)
       await prisma.salaryRecord.create({
         data: {
           teacherId: teacher.id,
-          month: d.getMonth() + 1,
-          year: d.getFullYear(),
-          totalHours,
-          hourlyRate: teacher.hourlyRate || 250000,
-          totalAmount,
-          status: m === 0 ? 'PENDING' : 'PAID',
-          paidDate: m === 0 ? null : new Date(d.getFullYear(), d.getMonth(), 28),
-          paidBy: m === 0 ? null : admin.id,
-          paymentMethod: m === 0 ? null : 'BANK_TRANSFER',
-          note: 'Demo payroll data for presentation',
+          month: currentMonthDate.getMonth() + 1,
+          year: currentMonthDate.getFullYear(),
+          totalHours: roundedHours,
+          hourlyRate,
+          totalAmount: totalEarnings,
+          status: 'PENDING',
+          note: 'Seed: Cong no hien tai de test nut Thanh toan',
         },
       });
+
+      const pastPaidAmount = Math.round(totalEarnings * 0.4);
+      await prisma.salaryRecord.create({
+        data: {
+          teacherId: teacher.id,
+          month: previousMonthDate.getMonth() + 1,
+          year: previousMonthDate.getFullYear(),
+          totalHours: Math.max(1, Math.round(roundedHours * 0.6 * 100) / 100),
+          hourlyRate,
+          totalAmount: pastPaidAmount,
+          status: 'PAID',
+          paidDate: new Date(previousMonthDate.getFullYear(), previousMonthDate.getMonth(), 27),
+          paidBy: admin.id,
+          paymentMethod: 'BANK_TRANSFER',
+          note: 'Seed: Lich su da thanh toan thang truoc',
+          paymentNote: 'Seed demo history',
+        },
+      });
+      totalPaidForTeacher = pastPaidAmount;
+    } else if (index === 1) {
+      // Teacher 2: fully paid state (unpaid = 0)
+      await prisma.salaryRecord.create({
+        data: {
+          teacherId: teacher.id,
+          month: currentMonthDate.getMonth() + 1,
+          year: currentMonthDate.getFullYear(),
+          totalHours: roundedHours,
+          hourlyRate,
+          totalAmount: totalEarnings,
+          status: 'PAID',
+          paidDate: new Date(),
+          paidBy: admin.id,
+          paymentMethod: 'BANK_TRANSFER',
+          note: 'Seed: Da thanh toan du',
+          paymentNote: 'Seed fully paid teacher',
+        },
+      });
+      totalPaidForTeacher = totalEarnings;
+    } else if (index === 2) {
+      // Teacher 3: partially paid state (has PAID record but still owes)
+      const partialPaidAmount = Math.round(totalEarnings * 0.5);
+      await prisma.salaryRecord.create({
+        data: {
+          teacherId: teacher.id,
+          month: currentMonthDate.getMonth() + 1,
+          year: currentMonthDate.getFullYear(),
+          totalHours: roundedHours,
+          hourlyRate,
+          totalAmount: partialPaidAmount,
+          status: 'PAID',
+          paidDate: new Date(),
+          paidBy: admin.id,
+          paymentMethod: 'BANK_TRANSFER',
+          note: 'Seed: Thanh toan mot phan',
+          paymentNote: 'Seed partial payment',
+        },
+      });
+      totalPaidForTeacher = partialPaidAmount;
+    } else {
+      // Remaining teachers: pending payroll for current month
+      await prisma.salaryRecord.create({
+        data: {
+          teacherId: teacher.id,
+          month: currentMonthDate.getMonth() + 1,
+          year: currentMonthDate.getFullYear(),
+          totalHours: roundedHours,
+          hourlyRate,
+          totalAmount: totalEarnings,
+          status: 'PENDING',
+          note: 'Seed: Cho thanh toan',
+        },
+      });
+
+      const paidHistoryAmount = Math.round(totalEarnings * 0.35);
+      await prisma.salaryRecord.create({
+        data: {
+          teacherId: teacher.id,
+          month: previousMonthDate.getMonth() + 1,
+          year: previousMonthDate.getFullYear(),
+          totalHours: Math.max(1, Math.round(roundedHours * 0.4 * 100) / 100),
+          hourlyRate,
+          totalAmount: paidHistoryAmount,
+          status: 'PAID',
+          paidDate: new Date(previousMonthDate.getFullYear(), previousMonthDate.getMonth(), 26),
+          paidBy: admin.id,
+          paymentMethod: 'CASH',
+          note: 'Seed: Thanh toan thang truoc',
+          paymentNote: 'Seed mixed payroll history',
+        },
+      });
+      totalPaidForTeacher = paidHistoryAmount;
     }
+
+    const salaryOwed = Math.max(0, totalEarnings - totalPaidForTeacher);
+    await prisma.user.update({
+      where: { id: teacher.id },
+      data: { salaryOwed },
+    });
   }
 
+  await prisma.user.update({
+    where: { id: idleTeacher.id },
+    data: { salaryOwed: 0 },
+  });
+
   // Create notifications for all roles
-  const notificationTargets = [admin, ...teachers.slice(0, 3), ...students.slice(0, 6)];
+  const notificationTargets = [admin, ...teachers, idleTeacher, ...students];
   for (const user of notificationTargets) {
+    const roleMessage =
+      user.role === UserRole.ADMIN
+        ? 'He thong da san sang voi dashboard bao cao, duyet va moderation.'
+        : user.role === UserRole.TEACHER
+        ? 'Lop hoc, buoi hoc, bang luong va profile da co du lieu demo day du.'
+        : 'Lich hoc, goi tap, booking va community da co du lieu de trinh bay.';
+
     await prisma.notification.createMany({
       data: [
         {
@@ -563,6 +955,13 @@ async function main() {
           body: 'Ban co buoi hoc sap toi trong lich 3 thang ke tiep.',
           type: 'REMINDER',
           isRead: true,
+        },
+        {
+          userId: user.id,
+          title: 'Du lieu vai tro da san sang',
+          body: roleMessage,
+          type: 'INFO',
+          isRead: false,
         },
       ],
     });
@@ -699,6 +1098,8 @@ async function main() {
   console.log('  Email: admin@fitpass.com');
   console.log('  Password: FitPass@2024!');
   console.log('\n👨‍🏫 TEACHERS:');
+  console.log('  Email: giaovien0@fitpass.com');
+  console.log('  Password: FitPass@2024! (chua co buoi day DONE)');
   for (let i = 1; i <= 5; i++) {
     console.log(`  Email: giaovien${i}@fitpass.com`);
     console.log(`  Password: FitPass@2024!`);
@@ -710,12 +1111,14 @@ async function main() {
   }
   console.log('\n📊 SUMMARY:');
   console.log(`  - 1 Admin`);
-  console.log(`  - 5 Teachers`);
+  console.log(`  - 6 Teachers`);
   console.log(`  - 15 Students`);
   console.log(`  - ${classes.length} Classes`);
   console.log(`  - ${sessions.length} Sessions`);
   console.log(`  - ${packages.length} Packages`);
   console.log(`  - ${enrollments.length} Enrollments`);
+  console.log(`  - ${testAttendanceCount} Attendance records`);
+  console.log(`  - ${chatThreadCount} Chat threads / ${chatMessageCount} Chat messages`);
   console.log(`  - 4 Forum posts (moderation mix)`);
 }
 
