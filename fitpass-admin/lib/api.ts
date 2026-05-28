@@ -254,7 +254,8 @@ export const roomsAPI = {
 };
 
 export const transactionsAPI = {
-  getAll: () => apiGet('/transactions'),
+  getAll: (params?: { page?: number; limit?: number; status?: string; userId?: string }) =>
+    apiGet(`/transactions${toQueryString(params as Record<string, unknown> | undefined)}`),
   getById: (id: string) => apiGet(`/transactions/${id}`),
   updateStatus: (id: string, status: string) => apiPatch(`/transactions/${id}`, { status }),
 };

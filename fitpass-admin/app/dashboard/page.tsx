@@ -132,7 +132,7 @@ export default function DashboardPage() {
         classesAPI.getAll(),
         sessionsAPI.getAll(),
         usersAPI.getAll(),
-        transactionsAPI.getAll(),
+        transactionsAPI.getAll({ page: 1, limit: 1000 }),
       ]);
       
       console.log('📊 Dashboard API Results:', {
@@ -153,7 +153,7 @@ export default function DashboardPage() {
         ? (usersRes.value?.users || usersRes.value || [])
         : [];
       const transactions = transactionsRes.status === 'fulfilled'
-        ? (transactionsRes.value?.data || transactionsRes.value || [])
+        ? (Array.isArray(transactionsRes.value?.data) ? transactionsRes.value.data : transactionsRes.value || [])
         : [];
         
       console.log('📈 Dashboard Data:', { 
@@ -222,9 +222,9 @@ export default function DashboardPage() {
       const studentSatisfaction = Math.min(95, Math.max(60, attendanceRate + 10));
 
       // Calculate Revenue Metrics
-      const completedTransactions = transactions.filter((t: any) => t.status === 'COMPLETED');
-      const totalRevenue = completedTransactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
-      const pendingCount = transactions.filter((t: any) => t.status === 'PENDING').length;
+      const completedTransactions = transactions.filter((t: any) => String(t.status || '').toUpperCase() === 'COMPLETED');
+      const totalRevenue = completedTransactions.reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
+      const pendingCount = transactions.filter((t: any) => String(t.status || '').toUpperCase() === 'PENDING').length;
       
       // Get recent 5 transactions sorted by date
       const sortedTransactions = [...transactions].sort((a: any, b: any) => {
@@ -305,7 +305,7 @@ export default function DashboardPage() {
           return tDate.toDateString() === date.toDateString();
         });
         
-        const dayRevenue = dayTransactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+        const dayRevenue = dayTransactions.reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
         
         revenueTrendData.push({
           date: dateStr,

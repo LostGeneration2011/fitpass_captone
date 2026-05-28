@@ -84,21 +84,21 @@ export default function RevenueReportPage() {
     setError("");
     try {
       // Fetch transactions
-      const response = await transactionsAPI.getAll();
+      const response = await transactionsAPI.getAll({ page: 1, limit: 1000 });
       const data = response?.data || response;
       const txList = Array.isArray(data) ? data : [];
       setTransactions(txList as Transaction[]);
 
       // Calculate statistics
-      const completed = txList.filter((t: Transaction) => t.status === 'COMPLETED');
-      const totalRevenue = completed.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+      const completed = txList.filter((t: Transaction) => String(t.status || '').toUpperCase() === 'COMPLETED');
+      const totalRevenue = completed.reduce((sum: number, t: Transaction) => sum + Number(t.amount || 0), 0);
       const avgAmount = completed.length > 0 ? totalRevenue / completed.length : 0;
 
       setStats({
         totalRevenue,
         completedCount: completed.length,
-        pendingCount: txList.filter((t: Transaction) => t.status === 'PENDING').length,
-        failedCount: txList.filter((t: Transaction) => t.status === 'FAILED').length,
+        pendingCount: txList.filter((t: Transaction) => String(t.status || '').toUpperCase() === 'PENDING').length,
+        failedCount: txList.filter((t: Transaction) => String(t.status || '').toUpperCase() === 'FAILED').length,
         avgAmount: Math.round(avgAmount),
       });
     } catch (err: any) {
