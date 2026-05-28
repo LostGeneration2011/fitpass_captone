@@ -48,6 +48,7 @@
     "prisma": "^5.22.0",
     "sharp": "^0.34.5",
     "socket.io": "^4.8.1",
+    "typescript": "^5.3.3",
     "ws": "^8.18.3"
   },
   "devDependencies": {
@@ -60,8 +61,7 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^20.19.39",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
+    "ts-node-dev": "^2.0.0"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
