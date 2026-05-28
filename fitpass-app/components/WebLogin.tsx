@@ -94,6 +94,15 @@ export const WebLogin: React.FC = () => {
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
         border: '1px solid #334155'
       }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <img
+            src="/assets/icon.png"
+            alt="FitPass"
+            width={72}
+            height={72}
+            style={{ borderRadius: '18px' }}
+          />
+        </div>
         <h1 style={{
           fontSize: '28px',
           fontWeight: 'bold',

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -85,11 +86,17 @@ export default function Sidebar({ isOpen = false, toggleSidebar }: SidebarProps)
         lg:translate-x-0
       `}>
         {/* Logo */}
-        <div className="flex items-center justify-center py-6 px-6 bg-gradient-to-r from-purple-600 to-blue-600">
+        <div className="flex items-center justify-center py-6 px-6 bg-gradient-to-r from-blue-700 to-cyan-500">
           <Link href="/dashboard">
             <div className="flex items-center space-x-3">
-              <div className="h-12 w-12 flex items-center justify-center rounded-full bg-white/20">
-                <span className="text-2xl font-bold text-white">F</span>
+              <div className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/15 p-1">
+                <Image
+                  src="/branding/fitpass-icon.svg"
+                  alt="FitPass icon"
+                  width={40}
+                  height={40}
+                  priority
+                />
               </div>
               <div className="text-white">
                 <div className="text-xl font-bold">FitPass</div>

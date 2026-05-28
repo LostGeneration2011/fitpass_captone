@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Linking,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -297,17 +298,21 @@ export default function RegisterScreen() {
             {/* Header */}
             <View className="items-center mb-8">
               <View 
-                className="w-20 h-20 rounded-full items-center justify-center mb-4"
+                className="w-20 h-20 rounded-2xl items-center justify-center mb-4 p-2"
                 style={{
-                  backgroundColor: '#8b5cf6',
-                  shadowColor: '#8b5cf6',
+                  backgroundColor: '#0b5fff',
+                  shadowColor: '#0b5fff',
                   shadowOffset: { width: 0, height: 6 },
                   shadowOpacity: 0.4,
                   shadowRadius: 12,
                   elevation: 12,
                 }}
               >
-                <Ionicons name="rocket-outline" size={32} color="#fff" />
+                <Image
+                  source={require('../assets/icon.png')}
+                  style={{ width: 56, height: 56, borderRadius: 14 }}
+                  resizeMode="contain"
+                />
               </View>
               <Text className="text-3xl font-bold text-white mb-2">
                 Tham gia FitPass

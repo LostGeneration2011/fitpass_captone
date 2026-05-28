@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ScrollView 
+  ScrollView,
+  Image
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -129,7 +130,11 @@ export default function ResetPasswordScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <Ionicons name="lock-closed" size={32} color="#4F46E5" />
+            <Image
+              source={require('../assets/icon.png')}
+              style={{ width: 48, height: 48, borderRadius: 12 }}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.title}>Reset Password</Text>
           <Text style={styles.subtitle}>Create your new password below</Text>

@@ -113,11 +113,11 @@ export default function WelcomeScreen() {
             paddingHorizontal: 32 
           }
         ]}>
-          {/* Icon */}
+          {/* Brand Icon */}
           <View 
-            className="w-40 h-40 rounded-full items-center justify-center mb-10"
+            className="w-40 h-40 rounded-3xl items-center justify-center mb-10"
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 15 },
               shadowOpacity: 0.35,
@@ -125,7 +125,15 @@ export default function WelcomeScreen() {
               elevation: 20,
             }}
           >
-            <Ionicons name={currentData.iconName as any} size={80} color="#fff" />
+            <Image
+              source={require('../assets/icon.png')}
+              style={{ width: 104, height: 104, borderRadius: 24 }}
+              resizeMode="contain"
+            />
+          </View>
+
+          <View className="mb-6">
+            <Ionicons name={currentData.iconName as any} size={28} color="#fff" />
           </View>
 
           {/* Title */}

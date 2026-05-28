@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -190,14 +191,18 @@ export default function ForgotPasswordScreen() {
 
             {/* Icon and Title */}
             <View className="items-center mb-12">
-              <View className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 rounded-full mb-6"
+              <View className="bg-blue-600 p-4 rounded-2xl mb-6"
                     style={{
                       shadowColor: '#3b82f6',
                       shadowOffset: { width: 0, height: 8 },
                       shadowOpacity: 0.4,
                       shadowRadius: 16,
                     }}>
-                <Ionicons name="lock-closed" size={48} color="#fff" />
+                <Image
+                  source={require('../assets/icon.png')}
+                  style={{ width: 72, height: 72, borderRadius: 16 }}
+                  resizeMode="contain"
+                />
               </View>
               <Text className="text-3xl font-bold text-white text-center mb-4">
                 Reset Your Password 🔐

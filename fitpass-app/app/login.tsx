@@ -10,7 +10,8 @@ import {
   Linking,
   ScrollView,
   KeyboardAvoidingView,
-  StyleSheet
+  StyleSheet,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -325,7 +326,7 @@ export default function LoginScreen() {
                 {
                   width: 80,
                   height: 80,
-                  borderRadius: 40,
+                  borderRadius: 20,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginBottom: 20,
@@ -333,10 +334,15 @@ export default function LoginScreen() {
                   shadowOpacity: 0.4,
                   shadowRadius: 12,
                   elevation: 12,
+                  padding: 8,
                 }
               ]}
             >
-              <Ionicons name="barbell" size={40} color="#fff" />
+              <Image
+                source={require('../assets/icon.png')}
+                style={{ width: 64, height: 64, borderRadius: 16 }}
+                resizeMode="contain"
+              />
             </View>
             <Text style={[styles.textPrimary, { fontSize: 28, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }]}>
               Chào mừng đến FitPass

@@ -1,0 +1,22 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">FitPass Logo Option 1</title>
+  <desc id="desc">Dynamic monogram symbol with FitPass wordmark</desc>
+  <defs>
+    <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B5FFF" />
+      <stop offset="100%" stop-color="#00B2FF" />
+    </linearGradient>
+    <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF6A00" />
+      <stop offset="100%" stop-color="#FFB347" />
+    </linearGradient>
+  </defs>
+
+  <rect x="44" y="44" width="272" height="272" rx="68" fill="#0A1220" />
+  <path d="M104 118H242V156H148V190H224V226H148V286H104V118Z" fill="url(#gradA)"/>
+  <path d="M170 118H216C263 118 292 145 292 188C292 228 264 256 220 256H206V286H170V118ZM216 224C241 224 255 210 255 189C255 167 240 154 216 154H206V224H216Z" fill="url(#gradB)"/>
+  <path d="M86 254C126 224 156 216 204 216C252 216 282 224 320 254" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.78"/>
+
+  <text x="372" y="202" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="126" font-weight="700" letter-spacing="1" fill="#0A1220">FitPass</text>
+  <text x="378" y="252" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="34" font-weight="500" letter-spacing="6" fill="#3A4A63">MOVE SMARTER</text>
+</svg>

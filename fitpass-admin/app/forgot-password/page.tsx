@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EnvelopeIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -95,8 +96,14 @@ export default function ForgotPasswordPage() {
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-2xl">
-            <span className="text-4xl font-bold text-white">F</span>
+          <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-3xl bg-gradient-to-r from-blue-700 to-cyan-500 shadow-2xl p-3">
+            <Image
+              src="/branding/fitpass-icon.svg"
+              alt="FitPass"
+              width={72}
+              height={72}
+              priority
+            />
           </div>
           <h2 className="mt-8 text-4xl font-extrabold text-black dark:text-white tracking-tight">
             Đặt lại mật khẩu

@@ -1,0 +1,22 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">FitPass App Icon Option 1</title>
+  <desc id="desc">Dynamic FP monogram icon</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081327"/>
+      <stop offset="100%" stop-color="#102B4A"/>
+    </linearGradient>
+    <linearGradient id="fgA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B5FFF"/>
+      <stop offset="100%" stop-color="#00B2FF"/>
+    </linearGradient>
+    <linearGradient id="fgB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF6A00"/>
+      <stop offset="100%" stop-color="#FFB347"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="220" fill="url(#bg)"/>
+  <path d="M280 282H664V386H396V474H608V572H396V762H280V282Z" fill="url(#fgA)"/>
+  <path d="M458 282H596C721 282 804 356 804 470C804 576 728 652 612 652H574V762H458V282ZM598 564C668 564 706 524 706 472C706 418 666 382 598 382H574V564H598Z" fill="url(#fgB)"/>
+  <path d="M208 678C306 604 380 584 500 584C620 584 694 604 792 678" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" opacity="0.82"/>
+</svg>
