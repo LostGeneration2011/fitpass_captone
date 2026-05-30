@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" version="21.0" type="device">
+  <diagram name="Sequence: Student Registration" id="seq_reg">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="title" value="Sequence Diagram: Student Registration" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="1800" height="20" as="geometry"/>
+        </mxCell>
+        <!-- Actors (Swimlane) -->
+        <mxCell id="student_box" value="Student App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#1B5E20;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="frontend_box" value="Frontend Logic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="250" y="60" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="backend_box" value="Backend API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD54F;strokeColor=#F57C00;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="60" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="database_box" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="750" y="60" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Sequence steps (code-accurate, swimlane) -->
+        <!-- 1. Student mở app, chọn Đăng ký -->
+        <mxCell id="arrow1" value="Mở app, chọn Đăng ký" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#1B5E20;strokeWidth=2" edge="1" parent="1" source="student_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 2. Nhập thông tin (email, password, fullName), chọn vai trò STUDENT -->
+        <mxCell id="arrow2" value="Nhập thông tin (email, password, fullName, role=STUDENT)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#1B5E20;strokeWidth=2" edge="1" parent="1" source="student_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 3. Frontend kiểm tra hợp lệ (format, độ dài, v.v.) -->
+        <mxCell id="arrow3" value="Kiểm tra hợp lệ dữ liệu" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 4. Gửi POST /auth/register lên Backend API -->
+        <mxCell id="arrow4" value="POST /auth/register {email, password, fullName, role=STUDENT}" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="backend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 5. Backend xác thực dữ liệu, kiểm tra trùng email, validate password -->
+        <mxCell id="arrow5" value="Validate dữ liệu, kiểm tra trùng email, validate password" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="backend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 5b. Nếu email đã tồn tại: trả lỗi 409 -->
+        <mxCell id="arrow5b" value="Nếu email đã tồn tại: trả lỗi 409" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#D32F2F;strokeWidth=2" edge="1" parent="1" source="backend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 5c. Nếu dữ liệu không hợp lệ: trả lỗi 400 -->
+        <mxCell id="arrow5c" value="Nếu dữ liệu không hợp lệ: trả lỗi 400" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#D32F2F;strokeWidth=2;dashed=1" edge="1" parent="1" source="backend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 6. Backend tạo user mới trong Database -->
+        <mxCell id="arrow6" value="Tạo user mới (role=STUDENT)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="database_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 7. Backend gửi email xác thực (nếu thành công) -->
+        <mxCell id="arrow7" value="Gửi email xác thực (nếu thành công)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="student_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 8. Backend trả kết quả (success/error) về Frontend -->
+        <mxCell id="arrow8" value="Trả kết quả (success/error: 201/400/409)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 9. Frontend hiển thị thông báo cho Student -->
+        <mxCell id="arrow9" value="Hiển thị thông báo (success/error)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="student_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

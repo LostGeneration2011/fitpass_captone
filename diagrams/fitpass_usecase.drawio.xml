@@ -1,0 +1,138 @@
+﻿<mxfile host="app.diagrams.net" modified="2026-05-12T10:20:00.000Z" agent="GPT-5.3-Codex" version="24.7.17" type="device">
+  <diagram id="fitpass-usecase-simple-01" name="FitPass Use Case (Simple)">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="sys" value="FitPass System" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;align=center;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="100" y="40" width="1600" height="900" as="geometry"/>
+        </mxCell>
+        <!-- Group: Admin -->
+        <mxCell id="group_admin" value="Chức năng Quản trị (Admin)" style="swimlane;html=1;rounded=1;fillColor=#F5F5F5;strokeColor=#616161;fontSize=16;fontStyle=1;" vertex="1" parent="sys">
+          <mxGeometry x="1200" y="60" width="400" height="350" as="geometry"/>
+        </mxCell>
+        <!-- Group: Giáo viên -->
+        <mxCell id="group_teacher" value="Chức năng Giáo viên" style="swimlane;html=1;rounded=1;fillColor=#FFF8E1;strokeColor=#E65100;fontSize=16;fontStyle=1;" vertex="1" parent="sys">
+          <mxGeometry x="700" y="60" width="400" height="350" as="geometry"/>
+        </mxCell>
+        <!-- Group: Học viên -->
+        <mxCell id="group_student" value="Chức năng Học viên" style="swimlane;html=1;rounded=1;fillColor=#E8F5E9;strokeColor=#1B5E20;fontSize=16;fontStyle=1;" vertex="1" parent="sys">
+          <mxGeometry x="200" y="60" width="400" height="350" as="geometry"/>
+        </mxCell>
+        <!-- Group: Dùng chung -->
+        <mxCell id="group_common" value="Chức năng Dùng chung" style="swimlane;html=1;rounded=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontSize=16;fontStyle=1;" vertex="1" parent="sys">
+          <mxGeometry x="700" y="430" width="400" height="180" as="geometry"/>
+        </mxCell>
+        <!-- Group: Xác thực & Tài khoản -->
+        <mxCell id="group_auth" value="Xác thực & Tài khoản" style="swimlane;html=1;rounded=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=16;fontStyle=1;" vertex="1" parent="sys">
+          <mxGeometry x="200" y="430" width="400" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="actor_student" value="Student" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="60" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="actor_teacher" value="Teacher" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="450" width="60" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="actor_admin" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="690" width="60" height="120" as="geometry"/>
+        </mxCell>
+
+
+
+        <!-- Use cases trong từng group -->
+        <!-- Admin -->
+        <mxCell id="uc_dashboard" value="Admin Dashboard" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="30" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_manage_users" value="Manage Users" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="200" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_manage_classes" value="Manage Classes" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="30" y="90" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_manage_rooms" value="Manage Rooms" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="200" y="90" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_manage_packages" value="Manage Packages" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="30" y="160" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_approve_class" value="Approve/Reject Class" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="200" y="160" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_payroll" value="Payroll Calculation" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="30" y="230" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_reports" value="Generate Reports" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_admin"><mxGeometry x="200" y="230" width="150" height="50" as="geometry"/></mxCell>
+
+        <!-- Teacher -->
+        <mxCell id="uc_manage_sessions" value="Manage Sessions" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="30" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_create_class" value="Create Class" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="200" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_generate_qr" value="Generate QR Code" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="30" y="90" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_take_attendance" value="Take Attendance" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="200" y="90" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_view_students" value="View Student List" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="30" y="160" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_view_salary" value="View Salary" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="200" y="160" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_view_schedule_teacher" value="View Schedule" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_teacher"><mxGeometry x="30" y="230" width="150" height="50" as="geometry"/></mxCell>
+
+        <!-- Student -->
+        <mxCell id="uc_browse" value="Browse Classes" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_student"><mxGeometry x="30" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_enroll" value="Enroll In Class" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_student"><mxGeometry x="200" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_view_schedule" value="View Schedule" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_student"><mxGeometry x="30" y="90" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_checkin" value="Check-in Attendance" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_student"><mxGeometry x="200" y="90" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_manage_profile" value="Manage Profile" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_student"><mxGeometry x="30" y="160" width="150" height="50" as="geometry"/></mxCell>
+
+        <!-- Common -->
+        <mxCell id="uc_common_view_schedule" value="View Schedule" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_common"><mxGeometry x="30" y="20" width="150" height="50" as="geometry"/></mxCell>
+
+        <!-- Auth -->
+        <mxCell id="uc_login" value="Login" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_auth"><mxGeometry x="30" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_logout" value="Logout" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_auth"><mxGeometry x="200" y="20" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="uc_resetpw" value="Reset Password" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="group_auth"><mxGeometry x="30" y="90" width="150" height="50" as="geometry"/></mxCell>
+
+        <!-- Student connections -->
+        <mxCell id="e1" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_login"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e1a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_resetpw"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_browse"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_enroll"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_view_schedule"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_checkin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_manage_profile"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_logout"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Teacher connections -->
+        <mxCell id="e7" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_login"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_resetpw"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_manage_sessions"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_create_class"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8b" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_generate_qr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_take_attendance"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_view_students"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_view_schedule"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_view_salary"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_logout"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Admin connections -->
+        <mxCell id="e13" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_login"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_resetpw"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_dashboard"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_manage_users"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_manage_classes"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16a" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_manage_rooms"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16b" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_manage_packages"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16c" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_approve_class"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16d" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_payroll"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_reports"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_logout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_browse"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_enroll"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_checkin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_manage_profile"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_student" target="uc_logout"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e7" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_login"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_manage_sessions"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_take_attendance"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_view_students"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_view_salary"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_teacher" target="uc_logout"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="e13" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_login"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_dashboard"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_manage_users"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_manage_classes"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_reports"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" style="endArrow=none;html=1;" edge="1" parent="1" source="actor_admin" target="uc_logout"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

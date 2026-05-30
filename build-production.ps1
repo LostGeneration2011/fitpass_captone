@@ -5,9 +5,9 @@ Write-Host "🚀 Building FitPass for Production Deployment" -ForegroundColor Gr
 $env:NODE_ENV = "production"
 $env:IS_PRODUCTION = "true"
 
-# Production API URLs (replace with your actual domains)
-$env:EXPO_PUBLIC_API = "https://your-backend-domain.vercel.app/api"
-$env:EXPO_PUBLIC_WS = "wss://your-backend-domain.vercel.app/ws"
+# Production API URLs (replace with your actual Railway domains)
+$env:EXPO_PUBLIC_API = "https://your-backend-domain.railway.app/api"
+$env:EXPO_PUBLIC_WS = "wss://your-backend-domain.railway.app/ws"
 
 Write-Host "📱 Building Expo App..." -ForegroundColor Cyan
 Set-Location fitpass-app
@@ -43,7 +43,7 @@ Write-Host "  • Mobile: Built via EAS"
 Write-Host "  • Admin: fitpass-admin/.next"
 Write-Host ""
 Write-Host "🌐 Next Steps:" -ForegroundColor Cyan
-Write-Host "  1. Deploy backend to Vercel/Railway/etc"
-Write-Host "  2. Deploy admin to Vercel"
+Write-Host "  1. Deploy backend to Railway"
+Write-Host "  2. Deploy admin to Railway"
 Write-Host "  3. Submit mobile app to stores"
 Write-Host "  4. Update production environment variables"

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" version="21.0" type="device">
+  <diagram name="Sequence: Teacher View Earnings" id="seq_teacher_view_earnings">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1200" height="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="title" value="Sequence Diagram: Teacher View Earnings" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="1200" height="20" as="geometry"/>
+        </mxCell>
+        <!-- Actors -->
+        <mxCell id="teacher_box" value="Teacher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFB74D;strokeColor=#E65100;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="frontend_box" value="Teacher App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="250" y="60" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="backend_box" value="Backend API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD54F;strokeColor=#F57C00;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="60" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Sequence steps (chi tiết, bám sát codebase) -->
+        <!-- 1. Teacher mở app, chọn 'Xem thu nhập' -->
+        <mxCell id="arrow1" value="Mở app, chọn 'Xem thu nhập'" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#E65100;strokeWidth=2" edge="1" parent="1" source="teacher_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 2. Frontend gửi GET /teacher/earnings kèm JWT lên Backend -->
+        <mxCell id="arrow2" value="GET /teacher/earnings (Authorization: Bearer ...)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="backend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 3. Backend xác thực JWT, kiểm tra role TEACHER -->
+        <mxCell id="arrow3" value="Xác thực JWT, kiểm tra role TEACHER" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2;dashed=1" edge="1" parent="1" source="backend_box" target="backend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 3b. Nếu không hợp lệ: trả lỗi 401/403 -->
+        <mxCell id="arrow3b" value="Nếu không hợp lệ: trả lỗi 401/403" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#D32F2F;strokeWidth=2" edge="1" parent="1" source="backend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 4. Backend truy vấn earnings từ DB -->
+        <mxCell id="arrow4" value="Truy vấn earnings từ DB" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="backend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 5. Backend trả kết quả (success/error) về frontend -->
+        <mxCell id="arrow5" value="Trả kết quả (success/error)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 6. Frontend hiển thị earnings hoặc thông báo lỗi cho teacher -->
+        <mxCell id="arrow6" value="Hiển thị earnings hoặc thông báo lỗi" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="teacher_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

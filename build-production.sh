@@ -6,9 +6,9 @@ echo "🚀 Building FitPass for Production Deployment"
 export NODE_ENV=production
 export IS_PRODUCTION=true
 
-# Production API URLs (replace with your actual domains)
-export EXPO_PUBLIC_API="https://your-backend-domain.vercel.app/api"
-export EXPO_PUBLIC_WS="wss://your-backend-domain.vercel.app/ws"
+# Production API URLs (replace with your actual Railway domains)
+export EXPO_PUBLIC_API="https://your-backend-domain.railway.app/api"
+export EXPO_PUBLIC_WS="wss://your-backend-domain.railway.app/ws"
 
 echo "📱 Building Expo App..."
 cd fitpass-app
@@ -44,7 +44,7 @@ echo "  • Mobile: Built via EAS"
 echo "  • Admin: fitpass-admin/.next"
 echo ""
 echo "🌐 Next Steps:"
-echo "  1. Deploy backend to Vercel/Railway/etc"
-echo "  2. Deploy admin to Vercel"
+echo "  1. Deploy backend to Railway"
+echo "  2. Deploy admin to Railway"
 echo "  3. Submit mobile app to stores"
 echo "  4. Update production environment variables"

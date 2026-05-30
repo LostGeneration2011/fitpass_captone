@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-12" version="21.0" type="device">
+  <diagram name="ER Diagram - FITPASS" id="er_diagram">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="FITPASS â€“ Entity Relationship Diagram (ERD)" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="10" y="10" width="1580" height="25" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ ENTITIES ============ -->
+        
+        <!-- USER Entity -->
+        <mxCell id="user" value="User&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;  email (VARCHAR, UNIQUE)&#xa;  fullName (VARCHAR)&#xa;  password (VARCHAR)&#xa;  role (ENUM)&#xa;  googleId (VARCHAR)&#xa;  hourlyRate (DECIMAL)&#xa;  createdAt (TIMESTAMP)&#xa;  updatedAt (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFCCCC;strokeColor=#B71C1C;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="50" y="70" width="160" height="160" as="geometry"/>
+        </mxCell>
+        
+        <!-- CLASS Entity -->
+        <mxCell id="class" value="Class&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;  name (VARCHAR)&#xa;  description (TEXT)&#xa;  status (ENUM)&#xa;  capacity (INT)&#xa;  minStudents (INT)&#xa;FK: teacherId (UUID)&#xa;FK: roomId (UUID)&#xa;  createdAt (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CCFFCC;strokeColor=#1B5E20;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="300" y="70" width="160" height="160" as="geometry"/>
+        </mxCell>
+        
+        <!-- SESSION Entity -->
+        <mxCell id="session" value="Session&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: classId (UUID)&#xa;FK: roomId (UUID)&#xa;  startTime (TIMESTAMP)&#xa;  endTime (TIMESTAMP)&#xa;  status (ENUM)&#xa;  capacity (INT)&#xa;  createdAt (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CCCCFF;strokeColor=#0D47A1;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="550" y="70" width="160" height="150" as="geometry"/>
+        </mxCell>
+        
+        <!-- ENROLLMENT Entity -->
+        <mxCell id="enrollment" value="Enrollment&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: userId (UUID)&#xa;FK: classId (UUID)&#xa;  status (ENUM)&#xa;  enrolledAt (TIMESTAMP)&#xa;  refundEligible (BOOLEAN)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFCC;strokeColor=#F57F17;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="800" y="70" width="160" height="130" as="geometry"/>
+        </mxCell>
+        
+        <!-- ATTENDANCE Entity -->
+        <mxCell id="attendance" value="Attendance&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: userId (UUID)&#xa;FK: sessionId (UUID)&#xa;  checkedInAt (TIMESTAMP)&#xa;  status (ENUM)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#512DA8;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="1050" y="70" width="160" height="120" as="geometry"/>
+        </mxCell>
+        
+        <!-- ROOM Entity -->
+        <mxCell id="room" value="Room&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;  name (VARCHAR)&#xa;  capacity (INT)&#xa;  location (VARCHAR)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="1300" y="70" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ SECOND ROW ENTITIES ============ -->
+        
+        <!-- SALARY_RECORD Entity -->
+        <mxCell id="salary" value="SalaryRecord&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: teacherId (UUID)&#xa;  month (INT)&#xa;  year (INT)&#xa;  totalHours (DECIMAL)&#xa;  amount (DECIMAL)&#xa;  status (ENUM)&#xa;  paidDate (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="50" y="350" width="160" height="140" as="geometry"/>
+        </mxCell>
+        
+        <!-- TRANSACTION Entity -->
+        <mxCell id="transaction" value="Transaction&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: userId (UUID)&#xa;  amount (DECIMAL)&#xa;  type (ENUM)&#xa;  reference (VARCHAR)&#xa;  status (ENUM)&#xa;  createdAt (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00838F;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="300" y="350" width="160" height="140" as="geometry"/>
+        </mxCell>
+        
+        <!-- USER_PACKAGE Entity -->
+        <mxCell id="package" value="UserPackage&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: userId (UUID)&#xa;  totalSessions (INT)&#xa;  remainingSessions (INT)&#xa;  purchasedAt (TIMESTAMP)&#xa;  expiryDate (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F8BBD0;strokeColor=#C2185B;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="550" y="350" width="160" height="140" as="geometry"/>
+        </mxCell>
+        
+        <!-- CHAT_THREAD Entity -->
+        <mxCell id="chat_thread" value="ChatThread&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: studentId (UUID)&#xa;FK: teacherId (UUID)&#xa;  subject (VARCHAR)&#xa;  createdAt (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="800" y="350" width="160" height="120" as="geometry"/>
+        </mxCell>
+        
+        <!-- CHAT_MESSAGE Entity -->
+        <mxCell id="chat_msg" value="ChatMessage&#xa;â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€&#xa;PK: id (UUID)&#xa;FK: threadId (UUID)&#xa;FK: senderId (UUID)&#xa;  content (TEXT)&#xa;  sentAt (TIMESTAMP)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;strokeWidth=3;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="1050" y="350" width="160" height="120" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ RELATIONSHIPS ============ -->
+        
+        <!-- User teaches Class (1:N) -->
+        <mxCell id="rel_user_class_teacher" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="user" target="class">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rel_label_teach" value="teaches (1:N)" style="edgeLabel;resizable=0;align=center;fontSize=12" connectable="0" vertex="1" parent="rel_user_class_teacher">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Class has Session (1:N) -->
+        <mxCell id="rel_class_session" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class" target="session">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rel_label_has_session" value="has (1:N)" style="edgeLabel;resizable=0;align=center;fontSize=12" connectable="0" vertex="1" parent="rel_class_session">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Room (1:N) with Class -->
+        <mxCell id="rel_room_class" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="room" target="class">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1370" y="140" as="sourcePoint"/>
+            <mxPoint x="460" y="140" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="rel_label_room_class" value="used by (1:N)" style="edgeLabel;resizable=0;align=center;fontSize=12" connectable="0" vertex="1" parent="rel_room_class">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Room (1:N) with Session -->
+        <mxCell id="rel_room_session" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="room" target="session">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1370" y="140" as="sourcePoint"/>
+            <mxPoint x="710" y="140" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User enrolls in Class (M:N via Enrollment) -->
+        <mxCell id="rel_user_enrollment" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="user" target="enrollment">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="150" as="sourcePoint"/>
+            <mxPoint x="800" y="135" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="rel_label_enroll" value="enrolls (1:N)" style="edgeLabel;resizable=0;align=center;fontSize=12" connectable="0" vertex="1" parent="rel_user_enrollment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Class and Enrollment (1:N) -->
+        <mxCell id="rel_class_enrollment" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class" target="enrollment">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="460" y="140" as="sourcePoint"/>
+            <mxPoint x="800" y="135" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- User has Attendance (1:N) -->
+        <mxCell id="rel_user_attendance" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="user" target="attendance">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="150" as="sourcePoint"/>
+            <mxPoint x="1050" y="130" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Session has Attendance (1:N) -->
+        <mxCell id="rel_session_attendance" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="session" target="attendance">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="710" y="140" as="sourcePoint"/>
+            <mxPoint x="1050" y="130" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Teacher has SalaryRecord (1:N) -->
+        <mxCell id="rel_user_salary" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="user" target="salary">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="130" y="230" as="sourcePoint"/>
+            <mxPoint x="130" y="350" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="rel_label_salary" value="receives (1:N)" style="edgeLabel;resizable=0;align=center;fontSize=12" connectable="0" vertex="1" parent="rel_user_salary">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

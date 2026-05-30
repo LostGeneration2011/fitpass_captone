@@ -1,0 +1,1231 @@
+ 
+ 
+ VTC ACADEMY OF INFORMATION TECHNOLOGY AND DESIGN  
+    
+CAPSTONE PROJECT  
+SOFTWARE DEVELOPMENT   
+SOCIABLE  
+Industry:      INFORMATION TECHNOLOGY  
+Specialized: SOFTW ARE PROGRAMMING  
+Instructor guides: Lê Thị Cẩm Thi  
+ Students perform      MSSV  
+ Nguyễn Minh Tấn   124010123004  
+ Nguyễn Trung Kiên  124010123070  
+ Nguyễn Thái Hào  124010123077  
+Class:   K23WD-02  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+TP. Hồ Chí Minh, 2025 
+ 
+
+
+ 
+ 
+ 
+   
+VTC ACADEMY OF INFORMATION TECHNOLOGY & DESIGN  
+  
+  
+  
+INSTRUCTOR'S COMMENTS  
+GRADUATION THESIS  
+(Supervisor submits this Review to the Department)  
+1. Full name of student assigned the topic  
+ Students:   MSHV:  
+Nguyễn Minh Tấn   124010123004  
+Nguyễn Trung Kiên  124010123070  
+Nguyễn Thái Hào  124010123077  
+ Class: K23WD-02   
+ Industry:  Information technology   
+2. Topic name     
+    
+3. Overview of KLTN:  
+ Page number:   Chapter number:     
+ Accompanying physical objects (products):     
+4. Comments  
+a) About the spirit and working attitude of students  
+.......................................................................................................................................  
+....................................................................................................................................... 
+.......................................................................................................................................  
+....................................................................................................................................... 
+  b) Results achieved by the topic  
+.......................................................................................................................................  
+....................................................................................................................................... 
+.......................................................................................................................................  
+....................................................................................................................................... 
+
+
+ 
+ 
+ 
+  c) Limitations of the topic    
+.......................................................................................................................................  
+....................................................................................................................................... 
+.......................................................................................................................................  
+....................................................................................................................................... 
+5.  Suggestion                ◻ Protected        ◻ 5. Not protected  
+  
+   Ho Chi Minh City, date october  month 31 year 2025  
+Instructor guides  
+(Sign and print full name)  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+INFORMER'S COMMENTS  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.......................................................................................................................................  
+.................................................................................................................................. 
+  
+
+ 
+ 
+VTC ACADEMY OF INFORMATION TECHNOLOGY & DESIGN   
+  
+   
+  
+REGISTRATION FORM  
+  
+CAPSTON PROJECT  
+  
+Courses:K23WD-02  
+  
+1. Full name of student/student group registering for the topic (group size: 3):   
+(1) Nguyễn Thái Hào   MSSV: 124010123077  Class: K23WD-02  
+(2) Nguyễn Minh Tấn   MSSV: 124010123004     Class: K23WD-02  
+(3) Nguyễn Trung Kiên  MSSV: 124010123070   Class: K23WD-02  
+ Industry  : Information technology  
+ Specialized  : Software Engineering  
+Name of registered topic:  
+Sociable Application Chat Real-Time  and build community.  
+  
+Students have clearly understood the requirements of the topic and are committed to 
+implementing the topic on schedule and completing it on time.  
+  
+  
+   Ho Chi Minh City, date october  month 31 year 2025 
+ Instructor   Student registration  
+(Sign and print full name)  (Sign and print full name)  
+Nguyễn Minh Tấn  
+ 
+    
+  
+   
+
+
+ 
+ 
+VTC ACADEMY OF INFORMATION TECHNOLOGY & DESIGN  
+  
+  
+  
+PROGRESS TRACKING FORM  
+CAPSTON PROJECT   
+  
+  
+Topic name: Sociable Application Chat Real-Time and build community  
+2. Instructor guides: Lê Thị Cẩm Thi  
+3. Students/groups of students carry out the project:   
+(1) Nguyễn Thái Hào   MSSV: 124010123077  Class: K23WD-02  
+(2) Nguyễn Minh Tấn    MSSV: 124010123004       Class: K23WD-02  
+(3) Nguyễn Trung Kiên  MSSV: 124010122070   Class: K23WD-02  
+  
+ Industry  : Information technology  
+ Specialized  : Software Engineering  
+  
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+1  21/06/2025 
+Arrive  
+22/06/2025  
+Overview Description,   
+Data Flow Diagram,   
+Usecase Diagram (All Member )  
+  
+Software Architecture   
+Design ( Nguyễn Minh Tấn )  
+   
+  
+ 
+ 
+ 
+ 
+ 
+
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+2  24/06/2025 
+Arrive  
+26/06/2025  
+Sequence Diagram,   
+Activity Diagram   
+( Nguyễn TRung Kiên )  
+  
+Application UI/UX Design,  
+Application Logo - Icon Design  
+( Nguyễn Thái Hào )  
+  
+Data Export Sample (NoSQL),  
+Usecase Diagram Update   
+( NGuyễn Minh Tấn )   
+    
+  
+3  25/06/2025 
+Arrive  
+27/06/2025  
+  
+Class Diagram  
+ ( Nguyễn Thái Hào )   
+   
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+4  29/06/2025  
+Arrive  
+30/06/2025  
+  
+Flutter Project Initialization,  
+Firebase Integration Setup   
+(Auth, Firestore, storage,..),  
+Project Cleanup & Git Hygiene,  
+Git Workflow Definition,  
+Branch Structure Implementation  
+ (main, dev, feature/*), 
+Repository Access Control,  
+Initial Version Commit &  
+ Push (v1.0.0),  
+Documentation: README &  
+ Getting Started  
+( Nguyễn Minh tấn )  
+  
+Commit Message   
+Convention (feat, fix,...),  
+Git Workflow Training,  
+Environment Setup  
+ (Flutter + Firebase),  
+( All Member )  
+  
+  
+ 
+ 
+ 
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+5  01/07/2025  
+Arrive  
+03/07/2025  
+  
+Register with Email,  
+Login with Email,  
+Forgot Password,  
+Verify With Email,  
+( Nguyễn Trung Kiên )  
+  
+Register with Phone (OTP),  
+Login with Phone (OTP),  
+Phone Number Formatting (+84) VN,  
+Firebase Firestore (User Data),  
+Username,  
+DateOfBirth  
+( NGuyễn Minh Tấn )  
+  
+Dark Theme UI,  
+Splash Screen,  
+Method Selector (Email/Phone),  
+Privacy Policy  
+( Nguyễn Thái Hào )  
+   
+  
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+6  07/07/2025  
+Arrive  
+03/08/2025  
+Create Server, Edit Server,  
+Delete Server (30 days),  
+Transfer ownership,  
+Create channel (text/voice),  
+Edit channel, Delete 
+channel, Assign role 
+(owner,  moderator, 
+member),  
+Role permissions logic,  
+Create category,  
+Sidebar server, Server 
+discovery  toggle 
+(public/private),  
+Search server,  
+Server tag + category filter,  
+Display member in server,  
+QR Join Server,  
+Server info page,  
+Server notification settings,  
+( Nguyễn Trung Kiên )  
+  
+  
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+7  07/07/2025  
+Arrive  
+03/08/2025  
+Chat text basic,chat with friend, 
+chat with channel,  
+Real-time stream message,  
+Send image   
+(image picker + upload),  
+Video upload,  
+Send emoji + reaction,  
+Send file, V oice chat  
+Message reply, Edit message,  
+Delete message, UI/UX  
+ Chat Form,  
+Channel join/leave logic, 
+Typing UX, Unread  
+message tracking, 
+Notification badge, call 
+with friend,  
+Create voice channel,  
+Join voice call channel (Hight),  
+UI voice/video,  
+Status Online/Offline,   
+( Nguyễn Minh Tấn )  
+  
+  
+   
+  
+ 
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+8  07/07/2025  
+Arrive  
+03/08/2025  
+show other people's profiles,  
+Show my profile, Edit 
+Avatar,Edit Info bio - 
+Email,  
+Change Password,  
+List Friends,, personalize 
+profile,  
+Status Online/Offline,  
+Toggle Premium profile (switch),  
+Turn channel notifications on or off,  
+Personal settings interface,  
+Notification setting per server,  
+QR add friend, Devices login,  
+Delete Account ,  
+Recovery Email  
+( Ngyễn Thái Hào )  
+   
+  
+9  05/08/2025  
+Arrive  
+20/08/2025  
+Premium Feature Development,  
+DefinePremiumProductModel,  
+BuildPremiumPackageScreen,  
+ImplementAvatarFrameSelector,  
+CreateProfileBannerPicker,  
+DevelopProfileIndustryStyler,  
+DisplayOwnedPremiumFeatures,  
+( Nguyễn Thái Hào )  
+  
+
+ 
+ 
+Session  Day  Content  Instructor's Comments  
+(Sign)  
+10  05/08/2025  
+Arrive  
+20/08/2025  
+Payment Flow Integration,  
+DefinePurchaseModel,  
+BuildPurchaseOptionScreen, 
+ntegrateMockMomoPaymentGateway,  
+DisplayOrderStatusScreen,  
+SavePurchaseToFirestore,  
+ShowPurchaseHistoryScreen,  
+ImplementMockRefundFunction,  
+AddServerBannerForPremium,  
+ImplementServerMemberLimitUpgrade,  
+( Nguyễn Trung Kiên )  
+  
+11  05/08/2025  
+Arrive  
+20/08/2025  
+PolishAllCoreUIs,  
+UnifyAppTheme,  
+ImproveScreenTransitions,  
+AuditComponentSpacing,  
+OptimizeTouchTargets,  
+FixInconsistentUXPatterns,  
+( Nguyễn Minh Tấn )  
+  
+   
+  
+   Ho Chi Minh City, date october  month 31 year 2025 
+  Instructor guides  
+(Sign and print full name)  
+  
+  
+ 
+  
+
+ 
+ 
+  
+ACKNOWLEDGEMENTS  
+  
+First of all, we would like to express our sincere gratitude to Ms. Cẩm Thi and all the teachers 
+during our time studying at the school. With the dedication to teaching, imparting knowledge 
+and valuable guidance from the teachers, we have had the opportunity to approach, practice 
+and improve many important skills, not only in the  professional field but also in thinking, 
+working methods and learning spirit. This is an extremely valuable asset for us to complete the 
+project as well as be more confident in our future career path.  
+We would like to express our special thanks to the instructor, who has always closely followed, 
+enthusiastically instructed, commented and guided the group throughout the implementation 
+process. The comments and dedicated guidance of the instructor helped the group realize its 
+shortcomings, and at the same time learn more knowledge and practical experience to perfect 
+the best product…  
+Besides, we would also like to express our deep gratitude to all members of the group. During 
+the working process, everyone has tried their best, shared work, supported each other and 
+overcome difficulties together. It is the spirit of solidarity, cooperat ion and responsibility of 
+each member that helped our group complete the project on schedule and achieve the expected 
+results.  
+Although the group has tried its best, the report certainly cannot avoid shortcomings. We look 
+forward to receiving comments, suggestions and guidance from teachers to continue to 
+improve in the future…  
+Once again, we thank you very much!  
+Nguyễn Thái Hào  
+  
+Nguyễn Minh Tấn  
+  
+Nguyễn Trung Kiên  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+   COMMITMENT  
+   
+We hereby commit that the project report with the topic "Building Sociable software" is the 
+result of a serious research, study and implementation process of the entire group, under the 
+dedicated guidance of lecturer Cẩm Thi.  
+During the project, we have made efforts to research and apply the knowledge we have learned 
+along with consulting related documents, data, and research works. All content in the report is 
+done by the group itself, not copied from any source. References and information sources used 
+are cited and clearly stated in the References section to ensure transparency and scientific.  
+We are fully aware that academic integrity and scientific research are extremely important. 
+Therefore, if any plagiarism, fraud, or copyright infringement is discovered in this report, we 
+will take full responsibility before the instructor and the school.  
+This report is the result of the cooperation, efforts and high sense of responsibility of each 
+member of the group. We believe that the project is not only an academic exercise, but also a 
+valuable opportunity to practice research skills, teamwork, and practical application.   
+  
+We respectfully commit and send our sincere thanks to the instructors as well as teachers who 
+have accompanied and created conditions for the group to complete the report in the best way.   
+  
+Nguyễn Thái Hào  
+  
+Nguyễn Minh Tấn  
+Nguyễn Trung Kiên  
+   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+
+ 
+ 
+ VTC ACADEMY - HCMC  SOCIALIST REPUBLIC OF VIETNAM  
+ PROGRAMMING DEPARTMENT  Independence - Freedom - Happiness  
+  
+ 
+PROJECT OVERVIEW  
+  
+  
+TOPIC NAME: Sociable Application Chat Real-Time and build community  
+Instructor guides: Lê Thị Cẩm Thi  
+Implementation time: 31/10/2025  
+Students perform: Nguyễn Minh Tấn - Nguyễn Thái Hào - Nguyễn Trung Kiên  
+Topic content: Mobile Application Chat Real Time & build community 
+Target  
+User-friendly functions  
+Object scope  
+Implementation 
+method  
+ Expected results  
+ Theoretical content  
+Application  
+Confirmation of Supervisor  
+(Sign and print full name)  
+Ho Chi Minh City, date october  month 31 
+year 2025 
+Students  
+Nguyễn Minh Tấn 
+Nguyễn Thái Hào 
+Nguyễn Trung Kiên 
+
+ 
+  1  
+INDEX  
+  
+PROJECT SUMMARY  .........................................................................................................  1  
+CHAPTER 1: OVERVIEW OF THE TOPICI .......................................................................  2  
+1.1. Ask the question  ....................................................................................................... 2  
+1.2. Solution  ...................................................................................................................  2  
+1.3. Topic objective  ........................................................................................................  3  
+1.4. Tools used  ...............................................................................................................  3  
+1.5. Research objects and methods  ................................................................................  3  
+1.5.1. Research object  ................................................................................................  3  
+1.5.2. Research methods  ............................................................................................  3  
+1.6. Report layout  ...........................................................................................................  4  
+CHAPTER 2: SYSTEM DESIGN ANALYSIS  ....................................................................  5  
+2.1. System requirements analysis  .................................................................................  5  
+2.1.1. Functionality requirements  ..............................................................................  5  
+2.1.2. Non-functional requirements ............................................................................  5  
+2.1.2.1. System requirements  ...............................................................................  5  
+2.1.2.2. Interface requirements  .............................................................................  6  
+2.2. Build a usecase diagram  .........................................................................................  7  
+2.2.1. Main usecase diagram  .....................................................................................  7  
+2.2.2. Usecase specification  .......................................................................................  8  
+2.2.2.1.   .................................................................................................................  8  
+2.2.2.2.   .................................................................................................................  9  
+2.2.2.3.   ...............................................................................................................  10  
+2.2.2.4. Function specification   ..........................................................................  12  
+2.3. Sequence Diagram and Class Diagram  .................................................................  12  
+2.3.1. Sequence diagram for each Usecase ..............................................................  12  
+2.3.1.1. Sequence diagram  .................................................................................  12 
+2.3.1.2.   ...............................................................................................................  13  
+2.3.1.3.   ...............................................................................................................  14  
+2.3.1.4.   ...............................................................................................................  15  
+2.3.1.5.   ...............................................................................................................  16  
+2.3.2. General class diagram of the system  .............................................................  17  
+2.4. Database design  ....................................................................................................  18  
+2.4.1. Relational database model  .............................................................................  19 
+
+ 
+  2  
+CHAPTER 3: SYSTEM IMPLEMENTATION AND DEPLOYMENT .............................  20  
+3.1. Setting  ...................................................................................................................  20  
+3.2. Application building results  ..................................................................................  20  
+3.2.1.  ............................................................................................................  20 
+3.2.2.  ........................................................................................................................  21 
+3.2.3.  ........................................................................................................................  23  
+3.2.4.  ........................................................................................................................  25  
+CHAPTER 4: CONCLUSION AND DEVELOPMENT DIRECTIONS  ...........................  28  
+4.1. App Conclusion Review  .......................................................................................  28  
+4.2. General conclusion ................................................................................................  28  
+4.2.1. Results achieved  ............................................................................................  28  
+4.2.2. Limit  ..............................................................................................................  28  
+4.3. Development direction  ..........................................................................................  28  
+LIST OF REFERENCES  .....................................................................................................  29  
+  
+  
+LIST OF TABLES  
+Table 2.1 Functional requirements description table  .............................................................  5  
+Table 2.2 Usecase specification table   ...................................................................................  8  
+Table 2.3 Usecase specification table  ....................................................................................  9  
+Table 2.4 Usecase specification table  ..................................................................................  10  
+Table 2.5 Usecase specification table   ..................................................................................  11  
+Table 2.6 Usecase specification table   .................................................................................  12  
+  
+  
+LIST OF PHOTOS  
+Figure 2-1 Main usecase diagram  ..........................................................................................  7  
+Figure 2-2 Sequence diagram  ...............................................................................................  12 
+Figure 2-3 Sequence diagram  ...............................................................................................  13  
+Figure 2-4 Sequence diagram  ..............................................................................................  14  
+Figure 2-5 Sequence diagram  ..............................................................................................  15  
+Figure 2-6 Sequence diagram  ..............................................................................................  16  
+Figure 2-7 General class diagram  ........................................................................................  17  
+Figure 2-8 Relational database model  .................................................................................  19  
+
+ 
+  3  
+Figure 3-1    ...........................................................................................................................  20 
+Figure 3-2    ...........................................................................................................................  21  
+Figure 3-3    ...........................................................................................................................  21  
+Figure 3-4    ...........................................................................................................................  22  
+Figure 3-5    ...........................................................................................................................  23  
+Figure 3-6    ...........................................................................................................................  24  
+  
+  
+  
+PROJECT SUMMARY  
+  
+The topic "Building Sociable software" includes 4 chapters:  
+Chapter 1: OVERVIEW OF THE TOPIC  
+The first part will introduce an overview of the research topic, the methods and 
+objects of research as well as the supporting tools to build the system..  
+Chapter 2: SYSTEM DESIGN ANALYSIS  
+This section focuses on system analysis and design, including contents such 
+as analysis of functional diagrams, context diagrams, data flow diagrams, etc.  
+Chapter 3: SYSTEM IMPLEMENTATION AND DEPLOYMENT  
+This section presents tables, databases and implements the functions in 
+chapter 2 through images from the built software system.  
+Chapter 4: CONCLUSION AND DEVELOPMENT DIRECTIONS  
+The final section provides conclusions, an overview of the system, limitations and 
+future development directions..  
+  
+  
+CHAPTER 1: OVERVIEW OF THE TOPIC  
+ 1.1.  Ask the question  
+As technology continues to evolve, the need for online connection and 
+interaction is constantly increasing, especially through chat and community-building 
+platforms. However, while current applications are powerful, they still present some 
+barriers for new users, such as complex interfaces, lack of initial orientation, and lack 
+of control over appropriate content in open communities.  
+
+ 
+  4  
+In addition, many platforms are not optimized for a smooth user experience, 
+making it difficult to build an accessible, flexible, and friendly community. Therefore, 
+a solution that focuses on user experience is needed.  
+The goal of the project is to develop a real-time chat application with strong 
+capabilities in user role delegation (Owner, moderator, member), supporting flexible 
+community organization, ensuring security factors, being friendly to new users, and 
+ensuring appropriate content control.  
+ 1.2.  Solution  
+  
+Sociable is designed with outstanding specifications and features:  
+• Clear interface, smooth experience (Material Design)  
+• Real-time messaging feature  
+• Send pictures, videos, files  
+• Personal profile management  
+• Optimize interface personalization  
+• Flexible authorization system: Owner, Moderator, Member  
+• Topic-based community recommendation system for new users  
+• Bot automatically sends welcome messages, community rules when joining  
+• Upload content warning and moderation (planned enhancement)  
+The application will be deployed using Flutter, Google's cross-platform framework, which allows for 
+the development of a single codebase that runs smoothly across:  
+Mobile app: iOS, Android  
+Website: Google Chrome, Safari, Firefox  
+Desktop: MacOs, Windows (expected to increase)  
+1.3. System architecture & development tools  
+ 1.3.1. Frontend  
+• Language: Dart  
+• Framework: Flutter  
+• UI Framework: Material Design  
+• Personalization: Dark/Light Mode, preferred theme  
+• Responsive UI: Suitable for Mobile, Web  
+• Responsive Optimization: MediaQuery, LayoutBuilder,  flutter_screenutil  
+
+ 
+  5  
+• Plugins supporting Web/Mobile: image_picker, firebase_messaging,  
+flutter_local_notifications  
+1.3.2. Backend  
+• Firebase Firestore: store and sync messages in real time  
+• Firebase Authentication: Sign up/Login/Authenticate users by email, 
+phone number, Google  
+• Firebase Cloud Storage: store images, videos, documents  
+• Firebase Cloud Functions: advanced event handling (moderation)  
+• Firebase Hosting: deploy website  
+1.3.3. Development support tools  
+• Git & GitHub: Source code management, branching  
+• VS Code: Main development environment  
+• Android Studio (Emulator – Android)  
+• Xcode (Simulator – iOS) • Postman: API testing  
+1.3.4. Equipment and testing  
+• MacBook M2: build/debug iOS, macOS 26  
+• Iphone: test real device iOS 26  
+• Android phone: test real device Android 13+  
+1.4. Main functional requirements  
+• Register/Login/Authentication: Email, phone number  
+• Manage personal profile: avatar, name, status, cover photo, bio  
+ 
+• Search for other users and make friends.  
+• Send and receive messages with friends in real time  
+• Create or search to join “servers” (servers)  
+• Each server has many categories, each category has many chat channels  
+• User permissions in the server: owner, moderator, member  
+• Send and receive text messages in real time chat channels  
+• Send and display photos, videos, files.  
+• V oice – video call with friend – channel.  
+
+ 
+  6  
+• Suggest servers by topic for new users  
+• Bot automatically welcomes and sends rules when new nembers enter the server 
+• Account management: change password, forgot password, log out, delete account 
+1.5. Non-functional requirements  
+• Low data synchronization speed under 1s (quasi real-time)  
+• Security: user authentication, access authorization  
+• Ensure smooth UX on all platforms  
+• Extend for advanced features such as voice call  
+• Easy to maintain with component architecture  
+• Responsive UI: suitable for each screen from Mobile → Website – Desktop  
+1.6. Interface requirements (UI/UX)  
+•    Uniform, modern, intuitive design  
+•    Interface suitable for each platform (mobile/web/desktop)  
+•    High contrast in dark/light mode, theme colors  
+•    Avatar, name, sending time clearly displayed in chat room  
+•    Easy navigation between server/channel/Profile  
+•    UX is easy to access and familiarize  
+  1.7. Hardware & Software Requirements  
+  1.7.1.    Client – User device  
+ Android devices:  
+• Android OS 8.0 or higher  
+• Minimum 3GB RAM  
+• Stable internet connection (Wi-Fi or 4G)  
+  iOS devices:  
+• iOS 12 or later  
+• Minimum 3GB RAM  
+• Stable internet connection  
+Web (browser):  
+• Computer with 4GB RAM or more  
+• Google Chrome, Safari, or Firefox browser latest version  
+• Stable internet connection  
+Desktop (Expected to be advanced):  
+
+ 
+  7  
+• Operating System: Windows 10+ or macOS 11+  
+• CPU Intel i5 or higher  
+• RAM 8GB or higher • Internet connection  
+1.7.2.      Client  
+• Latest updated browser (for Web)  
+• Allow access to photos, files, camera (for mobile)  
+• Allow push notifications (Firebase Cloud Messaging – mobile/web) • No heavy 
+installation required, just need internet connection to use  
+1.7.3. Developer – Hardware  
+       MacBook (Apple Silicon – M1/M2):  
+Used to build and debug iOS, macOS  
+Install Xcode 15 or higher  
+RAM from 8GB or higher  
+Windows (or Linux) Laptop:  
+Used to build Android, Web  
+Windows 10+ or Ubuntu 22.04 operating system  
+Minimum RAM 8GB  
+CPU from Intel i5 or higher  
+Actual test equipment:  
+iPhone with iOS 14 or later  
+Android phones with Android 8.0 or later  
+1.7.4. Developer – Software  
+Flutter SDK ≥ 3.22.0  
+Dart SDK ≥ 3.2  
+Android Studio + Flutter plugin  
+Xcode 15+ (for iOS/macOS)  
+Visual Studio Code  
+Git + GitHub CLI  
+Firebase Console (backend management)  
+Figma (UI design)  
+Discord (team management, documentation, ideas)  
+  Postman (API testing)   
+
+ 
+  8  
+ 1.8.   Report layout  
+In addition to the introduction and conclusion, the content of the thesis is 
+structured into 4 chapters as follows::  
+Chapter 1: OVERVIEW OF THE TOPIC  
+Chapter 2: APPLICATION DESIGN ANALYSIS  
+Chapter 3: SYSTEM IMPLEMENTATION AND DEPLOYMENT  
+ Chapter 4: CONCLUSION AND DEVELOPMENT  
+DIRECTIONS  
+  CHAPTER 2: SYSTEM DESIGN ANALYSIS  
+ 2.1.  System requirements analysis  
+2.1.1. Functionality requirements  
+  
+STT  Function name                        Describe  
+  
+1  
+  
+Sign In with Email  
+Users log in to their Email account in the App.  
+2  
+Sign In with Phone  Users log in to their Phone Number account in 
+the App.  
+ 
+3  
+Sign Up with email  Allow users to register new accounts using 
+email  
+4  
+Verify Email  Authenticate user account by sending 
+verification to email  
+5  
+Forgot password  Send a new password verification email when 
+the user submits a forgot password request  
+6  
+Change password  Allows users to change their password by 
+entering their old and new passwords.  
+
+ 
+  9  
+7  
+Sign Up with phone  Allow users to register new accounts using 
+phone number  
+8  
+Verify Phone  Authenticate user account by sending 
+verification to phone  
+9  Forgot password  Function to help users reset password when 
+they forget password login information by 
+sending verification to email  
+10  
+Change password  Function allows users to change to a new 
+password while still logged in  
+11  User profile  
+Show your friends' profiles  
+12  
+Make friends & mesage  The function allows users to make friends and 
+chat directly with each other in the system.  
+13  Create server (Owner)  Function allows users to create new servers, 
+become owners to manage members, channels  
+and settings of that server  
+14  Update server  The function allows the owner or administrator 
+to edit server information such as photos, 
+descriptions, or membership settings.  
+15  Delete server  The function allows the owner to completely 
+delete the server along with all data, channels 
+and members in it.  
+ 
+16  Server & room manament  Function to manage the entire server and chat 
+rooms inside, including creating, editing, 
+deleting and assigning permissions to each 
+room or member.  
+
+ 
+  10  
+17  Rights and roles  The ability to assign roles and permissions to 
+room members, defining who can send 
+messages, manage, or edit room settings  
+18  Customize the interface  The feature allows owners to customize the 
+server interface such as colors, icons, channel 
+layouts and display styles to create their own 
+identity.  
+19  Server boost  The feature allows users to upgrade their 
+servers to increase performance, unlock 
+additional premium features like sound quality, 
+animated icons, and larger upload capacity.  
+20  Premium   Paid upgrades give users more perks like 
+interface customization, increased upload 
+limits, and access to premium in-app features.  
+21  Notifications and search  The function helps users receive notifications 
+about new activities and quickly search for 
+friends or servers in the system.  
+22  Bot  The function allows adding automatic programs 
+to the server that will automatically greet  
+  
+23  Payment frames  Allows users to select and pay for frames in the 
+store, then the purchased frame is downloaded 
+to the user's profile and the transaction is 
+recorded in the database.  
+24  
+Message  The function of sending or receiving messages 
+between users or systems.  
+25  
+Channel message (server)  The message function is sent in a specific 
+channel of the server.  
+
+ 
+  11  
+26  
+V oice & call (with friends)  voice or video call function directly with  
+friends.  
+27  
+V oice & call (channel 
+server )  
+voice or video calling functionality within a 
+channel or server.  
+  
+2.1 Functional requirements description table  
+     
+2.1.2. Non-functional requirements  
+ 2.1.2.1.  System requirements  
+• Performance requirements: Fastest possible response time.  
+• Requirements for database logic: Data must be guaranteed to be complete 
+and consistent..  
+• Design constraints:  
+o The system is built on closed source code.. o The database 
+management system is SQL.. o Analysis and design are performed 
+according to UML standards..  
+o Non-copyrighted support tools, other support libraries must be is 
+open source.  
+o The system is designed to be able to develop in the future by adding 
+or removing modules, or integrating the system into another system 
+easily.  
+ 2.1.2.2.  Interface requirements  
+• Font: Tahoma 10  
+• Form Size: Always try to ensure a 16:9, 19.5:9 ratio to ensure symmetry 
+with the screen.  
+• The system meets the requirements: o Professional, aesthetic interface 
+o Unicode font 6909 o Minimum screen resolution: 360 x 640 pixels 
+(lowest standard for current Android/iOS smartphones),Multi-screen 
+compatibility: The interface must be responsive and display well on 
+different screen sizes (small smartphones, large screens, 
+tablets),Language:The entire system uses English as the default 
+language  
+
+ 
+  12  
+o The date format used in the system is: DD/MM/YYYY o 
+The number format used in the system is: 000.000.000  
+2.2.  Build a usecase diagram 2.2.1. 
+Main usecase diagram  
+  
+  
+   
+  
+Hình 2-1 Main usecase diagram  
+  
+  
+  
+  
+  
+  
+  
+
+
+ 
+  13  
+2.2.2. Data Flow Diagram  
+  
+  
+  
+2.2.3. Software Architecture Design  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+ 
+  14  
+2.2.4. Sign In with Email  
+ 
+ID and Name:  Sign In with Email  
+Main actors:  Client      
+Describe:  Users log in with their Email account via Firebase Auth to access access 
+resources and data.  
+  User is not logged in  
+  Success: User successfully registered account Failure: 
+The system displays an error message.  
+Main stream  Success: User is authenticated and redirected to the home page with resource 
+access  
+Failure: The system displays an error message.  
+ 
+2.2.5. Sign by phone number  
+  
+ID and Name:  Sign by phone number  
+Main actors:  Client      
+Describe:  Users log in with their phone number account via Firebase Auth to access 
+access resources and data.  
+  User is not logged in  
+  Success: User successfully registered account Failure: 
+The system displays an error message.  
+Main stream  Success: User is authenticated and redirected to the home page with resource 
+access  
+Failure: The system displays an error message.  
+ 
+ 
+ 
+ 
+
+ 
+  15  
+2.2.6. Sign up with email  
+ 
+ID and Name:  Sign up with Email  
+Main actors:  Client      
+Describe:  New user, no account yet, register for an account by 
+Email  
+  User has not registered an account  
+  Success: User successfully registered account Failure: 
+The system displays an error message.  
+Main stream  Success: User is authenticated and redirected to the home page with resource 
+access  
+Failure: The system displays an error message.  
+  
+2.2.7. Sign up by phone number  
+  
+ID and Name:  Sign up by phone number  
+Main actors:  Client      
+Describe:  New user, no account yet, register for an account by 
+phone number  
+  User has not registered an account  
+  Success: User successfully registered account Failure: 
+The system displays an error message.  
+Main stream  Success: User is authenticated and redirected to the home page with resource 
+access  
+Failure: The system displays an error message.  
+ 
+ 
+
+ 
+  16  
+2.2.8. verify email  
+ 
+ID and Name:  Verify email  
+Main actors:  Client      
+Describe:  User sends email verification request  
+  User has not verified email  
+  Success: User successfully verified email  
+Failure: The system displays an error message.  
+Main stream  My phone:  
+User enters email and password to log in.  
+The controller receives the login information and sends it to the component. 
+authenticate  
+The authentication component will check the login information, confirm with 
+database  
+If authentication is successful, it will notify and grant access to user  
+If authentication fails, an error message will be displayed to the user.  
+  
+2.2.9. verify phone number  
+  
+ID and Name:  verify phone number  
+Main actors:  Client      
+Describe:  User sends phone number verification request  
+  User has not verified phone number  
+  Success: User successfully verified phone number Failure: 
+The system displays an error message.  
+Main stream  My phone:  
+User enters phone number and password to log in.  
+The controller receives the login information and sends it to the component. 
+authenticate  
+The authentication component will check the login information, confirm with 
+database  
+If authentication is successful, it will notify and grant access to user  
+If authentication fails, an error message will be displayed to the user.  
+
+ 
+  17  
+ 2.2.10. Forgot Password  
+  
+ID and Name:  Forgot Password  
+Main actors:  Client      
+Describe:  Users interact with the system by entering email , phone number , sending 
+requests. Forgot password request, the system sends a forgotten password 
+email to the user. use reset password..  
+  User can't remember password  
+  Success: User is authenticated and redirected to Home 
+page with resource access.  
+Failure: The system displays an error message.  
+Main stream  My phone:  
+Users can enter their email and request a password reset.  
+Users can submit password reset requests.  
+The system will check the email, return the results and perform 
+the operations. relate to.  
+The system will send a verification code and display a success message.  
+The system will check the authentication code and update the new password.  
+ 
+2.2.11. change password  
+  
+ID and Name:  change password  
+Main actors:  Client      
+Describe:  The user interacts with the system by receiving the current password.  
+download, import  
+  User can't remember password  
+  Success: User is authenticated and redirected to Home page with resource 
+access.  
+Failure: The system displays an error message.  
+Main stream  My phone:  
+Users can enter their email and request a password reset.  
+Users can submit password reset requests.  
+The system will check the email, return the results and perform 
+the operations. relate to.  
+The system will send a verification code and display a success message.  
+The system will check the authentication code and update the new password.  
+
+ 
+  18  
+2.2.12. User Profile  
+  
+ID and Name:  User Profile  
+Main actors:  Client      
+Describe:  Users interact with the system by clicking on the person-shaped icon.   
+    
+    
+Main stream  User visits profile page  
+Click “Edit profile” to update information (name, description, avatar…)  
+Click “Save” to update  
+With profile upgrade (Prime): select plan → payment → update status  
+  
+  
+2.2.13. Make friends   
+  
+ID and Name:  Make friends   
+Main actors:  User(client) ⮂ Friends (client)      
+Describe:  Allows users to search and add friends to their Sociable Friends List, establish 
+relationships for messaging (DM), phone/video calling, or interact in shared 
+servers  
+    
+    
+Main stream  Access the Make Friends Feature: The "Add Friend" interface opens, allowing 
+the User to enter a name or tag to find the user.  
+Search and Send Friend Requests: Friend request sent, Friend receives friend 
+request in their notification  
+Accept or Reject Friend Requests: If accepted, User and Friend become 
+friends, opening up DM messaging, voice/video calling capabilities. If 
+declined, Request is cancelled.  
+Manage Your Friends List: Friends list is updated, User has control over  
+ relationships.  
+  
+
+ 
+  19  
+2.2.14. create server (Owner)  
+  
+ID and Name:  create server (Owner)  
+Main actors:  User(client ->Owner)      
+Describe:  Users interact with the system by creating servers.  
+  
+    
+    
+Main stream  Go to “Create Server” interface  
+Enter server name, description, choose avatar  
+Select privacy settings (public/private)  
+Click “Create” → the system saves and takes you to the new server interface  
+  
+  
+2.2.15. update server  
+  
+ID and Name:  update server  
+Main actors:  User(Owner->Moderator)      
+Describe:  Users interact with the system by editing the server  
+  
+    
+    
+Main stream  In the server interface → click “Server Settings” Maybe:  
+• Rename server  
+• Update description  
+• Change profile picture  
+Enable/disable features like moderation, user authentication,...  
+Click “Save changes” → the system updates new data  
+ 
+ 

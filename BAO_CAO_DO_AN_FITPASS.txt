@@ -1,0 +1,1420 @@
+================================================================================
+           HỌC VIỆN CÔNG NGHỆ THÔNG TIN & THIẾT KẾ VTC ACADEMY
+================================================================================
+                           BÁO CÁO ĐỒ ÁN TỐT NGHIỆP
+
+               ĐỀ TÀI: FITPASS – NỀN TẢNG QUẢN LÝ PHÒNG GYM THÔNG MINH
+                    Ứng dụng Web Admin Dashboard và Mobile App
+
+                         Sinh viên thực hiện: Anh Dinh
+                         Giảng viên hướng dẫn: [Tên GVHD]
+                         Niên khóa: 2024 – 2026
+
+================================================================================
+                              TRANG BÌA LÓT
+================================================================================
+
+HỌC VIỆN CÔNG NGHỆ THÔNG TIN & THIẾT KẾ VTC ACADEMY
+
+BÁO CÁO ĐỒ ÁN TỐT NGHIỆP
+
+ĐỀ TÀI: FITPASS – NỀN TẢNG QUẢN LÝ PHÒNG GYM THÔNG MINH
+Ứng dụng Web Admin Dashboard và Mobile App (iOS & Android)
+
+Sinh viên thực hiện : Anh Dinh
+Mã sinh viên        : [Mã SV]
+Giảng viên hướng dẫn: [Tên GVHD]
+Thời gian thực hiện : Học kỳ 2, Năm học 2025 – 2026
+
+TP. Hồ Chí Minh, tháng 5 năm 2026
+
+================================================================================
+                              LỜI CẢM ƠN
+================================================================================
+
+    Lời đầu tiên, tôi xin gửi lời cảm ơn chân thành và sâu sắc đến quý thầy cô
+tại Học viện VTC Academy đã tận tình truyền đạt kiến thức trong suốt khóa học.
+
+    Đặc biệt, tôi xin chân thành cảm ơn Giảng viên hướng dẫn [Tên GVHD] đã
+dành thời gian quý báu để hướng dẫn, góp ý và định hướng cho tôi trong suốt
+quá trình thực hiện đồ án.
+
+    Xin cảm ơn các bạn trong nhóm đồ án và bạn bè đã hỗ trợ, đóng góp ý kiến
+và cùng thảo luận để hoàn thiện sản phẩm.
+
+    Do kiến thức và kinh nghiệm còn hạn chế, báo cáo không tránh khỏi những
+thiếu sót. Tôi rất mong nhận được sự đóng góp ý kiến từ quý thầy cô và các bạn
+để đồ án được hoàn thiện hơn.
+
+    Xin chân thành cảm ơn!
+
+                                        TP. HCM, tháng 5 năm 2026
+                                              Sinh viên thực hiện
+                                                  Anh Dinh
+
+================================================================================
+                              LỜI CAM KẾT
+================================================================================
+
+    Tôi cam kết rằng đồ án này là công trình nghiên cứu của riêng tôi dưới sự
+hướng dẫn của Giảng viên [Tên GVHD]. Các số liệu, kết quả trình bày trong đồ
+án là trung thực và chưa từng được công bố trong bất kỳ công trình nào khác.
+
+    Nếu phát hiện có sự gian lận, tôi xin chịu hoàn toàn trách nhiệm trước Hội
+đồng.
+
+                                        TP. HCM, tháng 5 năm 2026
+                                              Sinh viên thực hiện
+                                                  Anh Dinh
+
+================================================================================
+                     NHẬN XÉT CỦA GIẢNG VIÊN HƯỚNG DẪN
+================================================================================
+
+Họ và tên sinh viên: Anh Dinh
+Đề tài: FITPASS – Nền tảng Quản lý Phòng Gym Thông Minh
+
+Nhận xét:
+...........................................................................
+...........................................................................
+...........................................................................
+...........................................................................
+...........................................................................
+
+Điểm đề nghị: .............
+
+                                        TP. HCM, ngày    tháng    năm 2026
+                                          Giảng viên hướng dẫn
+                                          (Ký và ghi rõ họ tên)
+
+================================================================================
+                     NHẬN XÉT CỦA GIẢNG VIÊN PHẢN BIỆN
+================================================================================
+
+Họ và tên sinh viên: Anh Dinh
+Đề tài: FITPASS – Nền tảng Quản lý Phòng Gym Thông Minh
+
+Nhận xét:
+...........................................................................
+...........................................................................
+...........................................................................
+...........................................................................
+...........................................................................
+
+Điểm đề nghị: .............
+
+                                        TP. HCM, ngày    tháng    năm 2026
+                                          Giảng viên phản biện
+                                          (Ký và ghi rõ họ tên)
+
+================================================================================
+                                  MỤC LỤC
+================================================================================
+
+Trang bìa
+Trang bìa lót
+Lời cảm ơn
+Lời cam kết
+Nhận xét của Giảng viên hướng dẫn
+Nhận xét của Giảng viên phản biện
+Mục lục .............................................................. 1
+Danh mục các ký hiệu, chữ viết tắt ................................... 2
+Danh mục các bảng ...................................................... 3
+Danh mục các hình vẽ, đồ thị .......................................... 4
+
+Chương 1. TỔNG QUAN ................................................... 6
+  1.1 Giới thiệu đề tài ................................................ 6
+      1.1.1 Lý do chọn đề tài ......................................... 6
+      1.1.2 Bối cảnh bài toán và khoảng trống nghiên cứu .............. 7
+      1.1.3 Mục tiêu nghiên cứu ........................................ 8
+      1.1.4 Đóng góp chính của đồ án ................................... 8
+      1.1.5 Ý nghĩa khoa học và thực tiễn .............................. 9
+  1.2 Phạm vi và đối tượng nghiên cứu .................................. 8
+      1.2.1 Đối tượng nghiên cứu ....................................... 8
+      1.2.2 Phạm vi giới hạn ........................................... 8
+      1.2.3 Giả định nghiên cứu ........................................ 9
+  1.3 Các nghiên cứu liên quan ......................................... 9
+      1.3.1 Nhóm nghiên cứu nền tảng gym .............................. 10
+      1.3.2 Nhóm kiến trúc API và hệ thống ............................ 10
+      1.3.3 Nhóm xác thực và bảo mật .................................. 10
+      1.3.4 Nhóm realtime và QR check-in .............................. 10
+      1.3.5 Kết luận khoảng trống nghiên cứu .......................... 11
+      1.3.6 Nhiệm vụ đồ án ............................................ 11
+  1.4 Cấu trúc đồ án ................................................... 10
+
+Chương 2. CƠ SỞ LÝ THUYẾT ............................................ 11
+    2.1 Phân tích yêu cầu hệ thống (System Requirements Analysis) ...... 11
+    2.2 Cơ sở công nghệ của hệ thống FITPASS ............................ 12
+            2.2.1 Backend: Node.js, Express.js, Prisma ORM ................. 12
+            2.2.2 Frontend Web: Next.js 14 (Admin Dashboard) ............... 14
+            2.2.3 Mobile App: React Native + Expo .......................... 15
+            2.2.4 Cơ sở dữ liệu: PostgreSQL ................................ 16
+            2.2.5 Bảo mật: JWT, OAuth, RBAC ................................ 17
+            2.2.6 Realtime: Socket.IO ...................................... 18
+    2.3 Ràng buộc hệ thống và mô hình toán nghiệp vụ .................... 19
+            2.3.1 Ràng buộc chức năng ...................................... 19
+            2.3.2 Ràng buộc phi chức năng .................................. 20
+            2.3.3 Mô hình toán quản lý lớp học ............................. 21
+            2.3.4 Mô hình toán điểm danh ................................... 22
+            2.3.5 Mô hình toán tính lương .................................. 23
+    2.4 Phân tích Use Case và bảng đặc tả đầy đủ ....................... 24
+            2.4.1 Danh sách lưu đồ Use Case ................................ 24
+            2.4.2 Bảng đặc tả Use Case chi tiết ............................ 25
+    2.5 Thiết kế kiến trúc phần mềm (Software Architecture) ............. 29
+    2.6 DFD Level 0 (Data Flow Diagram) ................................. 30
+    2.7 Class Diagram ................................................... 31
+    2.8 Sequence Diagram ................................................ 32
+    2.9 Thiết kế cơ sở dữ liệu và Database Export ....................... 34
+            2.9.1 Danh sách bảng dữ liệu chính ............................. 34
+            2.9.2 Quy trình export schema từ SQL software .................. 35
+            2.9.3 Trích đoạn SQL DDL minh họa .............................. 35
+    2.10 Tổng kết chương ................................................ 36
+
+Chương 3. CÀI ĐẶT VÀ THỰC NGHIỆM ................................... 37
+    3.1 Mục tiêu chương ................................................. 37
+    3.2 Môi trường và quy trình triển khai .............................. 38
+        3.2.1 Môi trường Local (Development) ........................... 38
+        3.2.2 Môi trường Production (Railway.app) ...................... 40
+    3.3 Kết quả triển khai theo nhóm chức năng .......................... 42
+        3.3.1 Admin Dashboard (Web) ..................................... 42
+        3.3.2 Teacher Interface ......................................... 44
+        3.3.3 Student Mobile App ........................................ 45
+    3.4 Kết quả kiểm thử ................................................ 46
+    3.5 Tổng kết chương ................................................. 47
+
+Chương 4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN ............................. 48
+    4.1 Kết luận ........................................................ 48
+    4.2 Hướng phát triển ................................................ 49
+
+TÀI LIỆU THAM KHẢO ................................................... 50
+PHỤ LỤC .............................................................. 51
+
+Phiếu đăng ký đề tài          (in ra, GV ký tên, đóng kèm quyển báo cáo)
+Phiếu theo dõi tiến độ        (in ra, GV ký tên, đóng kèm quyển báo cáo)
+
+================================================================================
+             DANH MỤC CÁC KÝ HIỆU, CHỮ VIẾT TẮT
+================================================================================
+
+API     Application Programming Interface – Giao diện lập trình ứng dụng
+CRUD    Create, Read, Update, Delete – Các thao tác cơ bản trên dữ liệu
+DFD     Data Flow Diagram – Sơ đồ luồng dữ liệu
+HTTP    HyperText Transfer Protocol – Giao thức truyền tải siêu văn bản
+HTTPS   HTTP Secure – HTTP có bảo mật
+JWT     JSON Web Token – Mã thông báo web JSON dùng cho xác thực
+ORM     Object-Relational Mapping – Ánh xạ đối tượng quan hệ
+QR      Quick Response – Mã phản hồi nhanh (dạng mã vạch 2D)
+RBAC    Role-Based Access Control – Kiểm soát truy cập theo vai trò
+REST    Representational State Transfer – Kiểu kiến trúc API
+UI/UX   User Interface / User Experience – Giao diện / Trải nghiệm người dùng
+UML     Unified Modeling Language – Ngôn ngữ mô hình hóa thống nhất
+URL     Uniform Resource Locator – Định vị tài nguyên
+UUID    Universally Unique Identifier – Mã định danh duy nhất
+WS      WebSocket – Giao thức truyền thông hai chiều thời gian thực
+
+================================================================================
+                         DANH MỤC CÁC BẢNG
+================================================================================
+
+Bảng 2.1  Đặc tả Use Case UC-01: Đăng nhập ........................... 25
+Bảng 2.2  Đặc tả Use Case UC-02: Đăng ký tài khoản ................... 25
+Bảng 2.3  Đặc tả Use Case UC-03: Duyệt và đăng ký lớp học ............ 26
+Bảng 2.4  Đặc tả Use Case UC-04: Điểm danh bằng mã QR ................ 26
+Bảng 2.5  Đặc tả Use Case UC-05: Xem lịch tập cá nhân ................ 26
+Bảng 2.6  Đặc tả Use Case UC-06: Quản lý hồ sơ cá nhân ............... 27
+Bảng 2.7  Đặc tả Use Case UC-07: Tạo lớp học (Teacher) ............... 27
+Bảng 2.8  Đặc tả Use Case UC-08: Quản lý session (Teacher) ........... 27
+Bảng 2.9  Đặc tả Use Case UC-09: Tạo QR điểm danh (Teacher) .......... 27
+Bảng 2.10 Đặc tả Use Case UC-10: Xem danh sách học viên .............. 28
+Bảng 2.11 Đặc tả Use Case UC-11: Xem lương giáo viên ................. 28
+Bảng 2.12 Đặc tả Use Case UC-12: Dashboard tổng quan (Admin) ......... 28
+Bảng 2.13 Đặc tả Use Case UC-13: Quản lý người dùng (Admin) .......... 28
+Bảng 2.14 Đặc tả Use Case UC-14: Duyệt lớp học (Admin) ............... 29
+Bảng 2.15 Đặc tả Use Case UC-15: Tính lương giáo viên (Admin) ........ 29
+Bảng 2.16 Đặc tả Use Case UC-16: Xem báo cáo thống kê (Admin) ........ 29
+Bảng 2.17 Đặc tả Use Case UC-17: Đăng xuất ........................... 29
+Bảng 2.18 Danh sách bảng dữ liệu lõi của hệ thống .................... 34
+Bảng 3.1  Môi trường cài đặt và phiên bản phần mềm .................... 37
+Bảng 3.2  Kết quả kiểm thử chức năng đăng nhập ....................... 46
+Bảng 3.3  Kết quả kiểm thử chức năng điểm danh QR .................... 47
+Bảng 3.4  Kết quả kiểm thử phân quyền RBAC ........................... 47
+
+================================================================================
+                   DANH MỤC CÁC HÌNH VẼ, ĐỒ THỊ
+================================================================================
+
+Hình 2.1  Sơ đồ Use Case tổng quan hệ thống FITPASS ................... 24
+Hình 2.2  Kiến trúc phần mềm (Software Architecture) .................. 29
+Hình 2.3  Sơ đồ DFD Level 0 – Luồng dữ liệu tổng quát ................ 30
+Hình 2.4  Class Diagram – Mô hình đối tượng chính ..................... 31
+Hình 2.5  Sequence Diagram – QR Check-in .............................. 32
+Hình 2.6  Sequence Diagram – Enrollment (Đăng ký lớp học) ............. 32
+Hình 2.7  Sequence Diagram – Student Registration ..................... 33
+Hình 2.8  Sequence Diagram – Class Approval ........................... 33
+Hình 2.9  Sequence Diagram – Payroll Calculation ...................... 33
+Hình 2.10 Sequence Diagram – Session Management ....................... 34
+Hình 2.11 Lược đồ Entity-Relationship (ER Diagram) .................... 34
+Hình 3.1  Giao diện trang Dashboard Admin ............................. 39
+Hình 3.2  Giao diện quản lý lớp học (Admin) ........................... 40
+Hình 3.3  Giao diện quản lý người dùng (Admin) ........................ 40
+Hình 3.4  Giao diện tính lương giáo viên (Admin) ...................... 41
+Hình 3.5  Giao diện quản lý session (Teacher) ......................... 41
+Hình 3.6  Giao diện tạo QR điểm danh (Teacher Mobile) ................ 42
+Hình 3.7  Giao diện trang chủ ứng dụng di động (Student) .............. 42
+Hình 3.8  Giao diện duyệt và đăng ký lớp học (Student Mobile) ........ 43
+Hình 3.9  Giao diện scan QR điểm danh (Student Mobile) ................ 43
+
+================================================================================
+                       Chương 1. TỔNG QUAN
+================================================================================
+
+1.1 Giới thiệu đề tài
+──────────────────────
+
+1.1.1 Lý do chọn đề tài
+
+    Nhu cầu số hóa vận hành phòng gym đang tăng rất nhanh. Nhiều phòng gym vừa
+và nhỏ vẫn quản lý bằng Excel, tin nhắn và thao tác thủ công nên dễ sai dữ liệu,
+chậm xử lý và khó theo dõi hiệu quả thực tế.
+
+    FITPASS được chọn làm đề tài vì giải quyết đúng bài toán này: gom toàn bộ
+nghiệp vụ quản lý lớp, điểm danh, báo cáo và tính lương vào một nền tảng thống
+nhất, chạy đồng thời trên web admin và mobile app.
+
+1.1.2 Bối cảnh bài toán và khoảng trống nghiên cứu
+
+    Bài toán cốt lõi của phòng gym là vận hành nhiều vai trò cùng lúc: Admin,
+Teacher, Student. Nếu mỗi khâu dùng một công cụ riêng, dữ liệu dễ rời rạc.
+
+    Các nền tảng quốc tế mạnh nhưng chi phí cao và khó tùy biến theo quy trình
+địa phương. Nhiều giải pháp nội địa dễ dùng nhưng chưa liên thông đầy đủ giữa
+lớp học, attendance, báo cáo và payroll. Đây là khoảng trống mà FITPASS hướng tới.
+
+1.1.3 Mục tiêu nghiên cứu
+
+    Mục tiêu tổng quát là xây dựng một nền tảng quản lý phòng gym có thể triển
+khai thực tế, dễ dùng và dễ mở rộng.
+
+    Mục tiêu cụ thể:
+    - Xây dựng backend API ổn định, dữ liệu nhất quán.
+    - Áp dụng phân quyền rõ theo 3 vai trò: ADMIN, TEACHER, STUDENT.
+    - Hoàn thiện admin dashboard cho quản trị tập trung.
+    - Hoàn thiện mobile app cho Teacher và Student.
+    - Tích hợp QR check-in realtime và payroll tự động.
+    - Đánh giá kết quả qua kiểm thử và dữ liệu thực nghiệm.
+
+1.1.4 Đóng góp chính của đồ án
+
+    Các đóng góp chính của đồ án:
+    - Xây dựng hệ thống quản lý gym end-to-end trên 3 thành phần: backend,
+      admin dashboard, mobile app.
+    - Tích hợp attendance QR realtime giúp giảm thao tác thủ công.
+    - Chuẩn hóa tài liệu thiết kế (Use Case, DFD, Class, Sequence, Database).
+    - Hoàn thiện luồng payroll theo dữ liệu session DONE.
+
+1.1.5 Ý nghĩa khoa học và thực tiễn
+
+    Ý nghĩa khoa học:
+    - Thể hiện quy trình làm phần mềm từ phân tích yêu cầu đến triển khai thực tế.
+    - Liên kết được mô hình thiết kế với sản phẩm chạy thật.
+
+    Ý nghĩa thực tiễn:
+    - Giảm sai sót vận hành và tăng tốc xử lý công việc hằng ngày.
+    - Tăng minh bạch attendance và payroll.
+    - Cải thiện trải nghiệm người dùng trên cả web và mobile.
+
+1.2 Phạm vi và đối tượng nghiên cứu
+────────────────────────────────────
+
+1.2.1 Đối tượng nghiên cứu
+
+    Đối tượng nghiên cứu gồm 3 nhóm:
+    - Nghiệp vụ: quản lý lớp, session, enrollment, attendance, payroll.
+    - Kỹ thuật: API, phân quyền RBAC, cơ sở dữ liệu, realtime Socket.IO.
+    - Đánh giá: tính đúng nghiệp vụ, độ ổn định và tính khả dụng.
+
+1.2.2 Phạm vi giới hạn
+
+    Trong phạm vi:
+    - Vai trò: ADMIN, TEACHER, STUDENT.
+    - Nền tảng: Web Admin Dashboard và Mobile App.
+    - Nghiệp vụ chính: user, class/session, enrollment, attendance, payroll, report.
+
+    Ngoài phạm vi:
+    - Chưa tích hợp thanh toán online thực tế.
+    - Chưa triển khai AI/ML cho gợi ý nâng cao.
+    - Chưa tối ưu cho quy mô cực lớn hoặc đa chi nhánh phức tạp.
+
+1.2.3 Giả định nghiên cứu
+
+    Đồ án sử dụng các giả định để triển khai đúng tiến độ:
+    - Mỗi lớp có 1 giáo viên phụ trách chính.
+    - Thiết bị người dùng có kết nối mạng ổn định mức cơ bản.
+    - Người dùng thao tác đúng theo quy trình hệ thống.
+    - Dịch vụ email/thông báo hoạt động bình thường.
+
+1.3 Các nghiên cứu liên quan
+──────────────────────────────
+
+    Phần này tóm tắt các giải pháp liên quan và khoảng trống mà FITPASS xử lý.
+
+1.3.1 Nhóm nghiên cứu về nền tảng quản lý phòng gym
+
+    Một số nền tảng như Mindbody, Glofox, Zen Planner cho thấy hướng đi đúng:
+quản trị bằng dữ liệu và ưu tiên mobile-first. Tuy nhiên, chi phí và mức độ
+tùy biến chưa thật sự phù hợp cho nhiều phòng gym quy mô vừa và nhỏ.
+
+1.3.2 Nhóm nghiên cứu về kiến trúc API và tổ chức hệ thống
+
+    Tài liệu về RESTful API và kiến trúc web hiện đại đều ủng hộ mô hình tách
+controller - service - data layer vì dễ bảo trì, dễ test và mở rộng tốt.
+
+1.3.3 Nhóm nghiên cứu về xác thực và bảo mật
+
+    JWT kết hợp RBAC là hướng triển khai phù hợp cho hệ thống đa vai trò và đa
+thiết bị. FITPASS áp dụng hướng này để kiểm soát truy cập theo từng endpoint.
+
+1.3.4 Nhóm nghiên cứu về realtime và điểm danh QR
+
+    WebSocket và QR check-in giúp cập nhật attendance ngay tại thời điểm diễn ra
+buổi học, giảm độ trễ và giảm thao tác kiểm tra thủ công.
+
+1.3.5 Kết luận khoảng trống nghiên cứu
+
+        Khoảng trống chính là thiếu một hệ thống tích hợp đầy đủ, dễ triển khai,
+và có luồng dữ liệu liên thông từ vận hành lớp học đến payroll. FITPASS tập trung
+giải quyết trực tiếp khoảng trống này.
+
+1.3.6 Nhiệm vụ đồ án (theo yêu cầu đồ án tổng hợp)
+
+    Nhiệm vụ đồ án gồm 3 nhóm:
+    - Phân tích yêu cầu và chuẩn hóa use case.
+    - Thiết kế kiến trúc, luồng dữ liệu và mô hình database.
+    - Triển khai hệ thống và kiểm thử các luồng chính.
+
+1.4 Cấu trúc đồ án
+───────────────────
+
+    Báo cáo gồm 4 chương:
+    - Chương 1: Tổng quan đề tài, mục tiêu, phạm vi và nhiệm vụ.
+    - Chương 2: Cơ sở lý thuyết, yêu cầu hệ thống, mô hình thiết kế và database.
+    - Chương 3: Cài đặt, triển khai và phần chèn hình minh họa kết quả.
+    - Chương 4: Kết luận và hướng phát triển ngắn gọn.
+
+================================================================================
+                   Chương 2. CƠ SỞ LÝ THUYẾT
+================================================================================
+
+2.1 Phân tích yêu cầu hệ thống (System Requirements Analysis)
+──────────────────────────────────────────────────────────────
+
+    Mục tiêu của phần này là xác định rõ hệ thống cần làm gì, chạy như thế nào
+và phục vụ ai. Cách trình bày bám theo hướng ngắn gọn, dễ kiểm tra khi triển khai.
+
+2.1.1 Yêu cầu chức năng (Functional Requirements)
+
+    Hệ thống cần đáp ứng các nhóm chức năng chính:
+    - Quản lý tài khoản và đăng nhập theo vai trò.
+    - Quản lý lớp học, session và đăng ký lớp.
+    - Điểm danh bằng QR và cập nhật realtime.
+    - Quản trị vận hành trên dashboard admin.
+    - Tính lương giáo viên theo session DONE.
+    - Báo cáo nhanh cho nhu cầu vận hành.
+
+2.1.2 Yêu cầu phi chức năng (Non-functional Requirements)
+
+    - Dễ sử dụng: thao tác ngắn, rõ ràng trên web và mobile.
+    - Bảo mật: xác thực JWT, mã hóa mật khẩu, phân quyền theo role.
+    - Ổn định: xử lý đúng với dữ liệu đồng thời ở các luồng chính.
+    - Khả năng mở rộng: thêm tính năng mới mà không phải đổi kiến trúc lõi.
+
+2.1.3 Yêu cầu hệ thống (System Requirements)
+
+    - Backend: Node.js + Express + Prisma.
+    - Database: PostgreSQL.
+    - Admin: Next.js.
+    - Mobile: React Native + Expo.
+    - Realtime: Socket.IO.
+
+2.1.4 Yêu cầu giao diện và tích hợp (Interface Requirements)
+
+    - Giao diện admin ưu tiên thông tin tổng quan và thao tác quản trị nhanh.
+    - Giao diện mobile ưu tiên thao tác một chạm cho attendance và lịch học.
+    - API response nhất quán để dễ tích hợp giữa backend, web và mobile.
+
+2.2 Cơ sở công nghệ của hệ thống FITPASS
+────────────────────────────────────────
+
+2.2.1 Backend: Node.js, Express.js, Prisma ORM
+
+    Node.js là môi trường thực thi JavaScript phía server, sử dụng event loop
+và mô hình I/O bất đồng bộ để đạt hiệu năng cao khi xử lý nhiều kết nối đồng
+thời. Đây là nền tảng phù hợp cho hệ thống quản lý lớp học thời gian thực như
+FITPASS vì số lượng request ngắn, tần suất cao (check-in, cập nhật trạng thái,
+thông báo socket).
+
+    Express.js được chọn vì kiến trúc nhẹ, dễ tổ chức theo mô hình middleware
+chain. Mỗi request đi qua chuỗi xử lý: parse body, xác thực JWT, kiểm tra role,
+validate dữ liệu đầu vào, thực thi nghiệp vụ, chuẩn hóa response.
+
+    Prisma ORM cung cấp:
+    - Type-safe query, giảm lỗi truy vấn runtime.
+    - Khả năng mô tả schema tập trung trong schema.prisma.
+    - Migration nhất quán giữa môi trường development và production.
+    - Dễ kiểm soát quan hệ dữ liệu phức tạp (User-Class-Session-Attendance).
+
+    Kiến trúc backend được chuẩn hóa theo ba tầng:
+    - Controller Layer: tiếp nhận request, gọi service, trả response.
+    - Service Layer: hiện thực toàn bộ quy tắc nghiệp vụ.
+    - Data Access Layer: Prisma Client tương tác với PostgreSQL.
+
+    Cách tách lớp này đảm bảo khả năng kiểm thử đơn vị (unit test) và giảm
+phụ thuộc trực tiếp giữa route HTTP và logic dữ liệu.
+
+2.2.2 Frontend Web: Next.js 14 (Admin Dashboard)
+
+    Admin Dashboard được phát triển bằng Next.js 14 theo App Router. Việc chọn
+Next.js giúp đồng thời đáp ứng:
+    - SSR cho các trang báo cáo/tổng quan cần tải nhanh.
+    - Routing rõ ràng theo cấu trúc thư mục app/.
+    - Khả năng kiểm soát middleware xác thực ở tầng biên.
+
+    Dashboard quản trị tập trung các nhóm chức năng:
+    - Quản lý người dùng: phê duyệt, phân vai trò, khóa/mở tài khoản.
+    - Quản lý lớp học: duyệt lớp, theo dõi sĩ số, trạng thái lớp.
+    - Quản lý vận hành: lịch session, attendance, cảnh báo lớp yếu sĩ số.
+    - Quản lý tài chính: tính lương giáo viên theo tháng, xuất báo cáo.
+
+2.2.3 Mobile App: React Native + Expo
+
+    FITPASS mobile được xây dựng bằng React Native để dùng chung codebase cho
+iOS/Android. Expo được sử dụng để rút ngắn vòng đời phát triển và tích hợp các
+tính năng nền tảng:
+    - Camera/QR scanner cho điểm danh.
+    - Push notification để nhắc lịch học.
+    - Secure storage để lưu token an toàn.
+    - Expo Router để quản lý điều hướng theo vai trò người dùng.
+
+    Về UX, ứng dụng có hai nhánh chính:
+    - Student flow: đăng ký lớp, xem lịch, check-in, theo dõi lịch sử học.
+    - Teacher flow: quản lý session, tạo QR, theo dõi attendance theo thời gian
+      thực, xem lương và thống kê giảng dạy.
+
+2.2.4 Cơ sở dữ liệu: PostgreSQL
+
+    PostgreSQL được chọn nhờ tính ổn định, ACID-compliant, hỗ trợ khóa giao
+dịch tốt và khả năng mở rộng. Trong bối cảnh nghiệp vụ phòng gym, các thao tác
+đăng ký lớp, check-in và tính lương cần tính nhất quán cao, vì vậy hệ quản trị
+quan hệ là lựa chọn phù hợp hơn so với NoSQL.
+
+    Dữ liệu được chuẩn hóa theo quan hệ:
+    - 1-n: Teacher -> Class, Class -> Session.
+    - n-n: Student <-> Class qua Enrollment.
+    - Event log: Attendance, Transaction, Notification.
+
+    Chỉ mục được dùng cho các truy vấn tần suất cao:
+    - Lookup người dùng theo email.
+    - Truy vấn session theo classId và startTime.
+    - Truy vấn attendance theo sessionId, userId.
+    - Tổng hợp lương theo teacherId, month, year.
+
+2.2.5 Bảo mật và xác thực: JWT, OAuth, RBAC
+
+    Xác thực của hệ thống sử dụng JWT với payload rút gọn:
+    { id, email, role, fullName }.
+
+    Cơ chế hoạt động:
+    - Login thành công -> backend ký token bằng secret key.
+    - Client gửi token qua Authorization: Bearer <token>.
+    - Middleware xác minh token và gắn thông tin user vào request context.
+
+    RBAC (Role-Based Access Control) áp dụng ba vai trò:
+    - ADMIN: toàn quyền nghiệp vụ và cấu hình.
+    - TEACHER: quản lý lớp của chính mình và session liên quan.
+    - STUDENT: thao tác học tập cá nhân, không truy cập khu vực quản trị.
+
+    OAuth Google được tích hợp để rút ngắn thao tác đăng nhập, đồng thời tăng
+khả năng xác thực danh tính người dùng cuối.
+
+2.2.6 Realtime architecture: Socket.IO
+
+    FITPASS dùng Socket.IO cho nghiệp vụ cần độ trễ thấp:
+    - Cập nhật danh sách điểm danh tức thời trên thiết bị giáo viên.
+    - Đẩy thông báo thay đổi trạng thái session.
+    - Đồng bộ sự kiện lớp học giữa nhiều client.
+
+    Mô hình realtime giúp giảm polling HTTP lặp lại, cải thiện hiệu năng tổng
+thể và trải nghiệm sử dụng trong lớp học đông học viên.
+
+2.3 Ràng buộc hệ thống và mô hình toán nghiệp vụ
+──────────────────────────────────────────────────
+
+2.3.1 Nhóm ràng buộc chức năng
+
+    Ràng buộc 1: Một học viên không được đăng ký trùng một lớp học đang hoạt
+động (status = ACTIVE/APPROVED).
+
+    Ràng buộc 2: Session chỉ được tạo khi class đã được duyệt và không vi phạm
+trùng lịch phòng hoặc trùng lịch giáo viên.
+
+    Ràng buộc 3: Điểm danh QR chỉ hợp lệ trong cửa sổ thời gian cho phép
+(TTL token, ví dụ 15 phút) và chỉ chấp nhận một lần cho mỗi học viên/phiên.
+
+    Ràng buộc 4: Lương giáo viên chỉ tính trên các session trạng thái DONE,
+không tính session bị hủy hoặc chưa hoàn tất.
+
+2.3.2 Nhóm ràng buộc phi chức năng
+
+    - Khả dụng: hệ thống có thể phục vụ đồng thời web admin và mobile app.
+    - Bảo mật: không lưu mật khẩu thô, toàn bộ mật khẩu được hash bằng bcrypt.
+    - Toàn vẹn dữ liệu: giao dịch cập nhật enrollment và userPackage phải đồng
+      bộ trong cùng transaction để tránh trạng thái dở dang.
+    - Khả năng quan sát: ghi log cho các sự kiện nghiệp vụ quan trọng.
+
+2.3.3 Mô hình toán cho bài toán quản lý lớp học
+
+    Ký hiệu:
+    - C: một lớp học.
+    - cap(C): sức chứa tối đa của lớp C.
+    - e(C): số học viên đã đăng ký lớp C.
+    - min(C): số học viên tối thiểu để lớp có thể mở.
+
+    Điều kiện khả dụng chỗ học:
+    e(C) < cap(C)
+
+    Điều kiện lớp đạt ngưỡng mở lớp:
+    e(C) >= min(C)
+
+    Nếu e(C) < min(C) tại thời điểm chốt lớp thì lớp chuyển trạng thái không
+đủ điều kiện vận hành; hệ thống kích hoạt quy trình xử lý hoàn/đổi lịch.
+
+2.3.4 Mô hình toán cho bài toán điểm danh
+
+    Ký hiệu:
+    - S: một session.
+    - A(S): tập bản ghi điểm danh của session S.
+    - E(S): tập học viên có quyền tham gia session S.
+
+    Tỷ lệ điểm danh của session S:
+    attendance_rate(S) = |A(S)| / |E(S)|
+
+    Điều kiện check-in hợp lệ:
+    - user thuộc E(S)
+    - token QR chưa hết hạn
+    - chưa tồn tại attendance(user, S)
+
+2.3.5 Mô hình toán cho bài toán tính lương giáo viên
+
+    Ký hiệu:
+    - T: giáo viên.
+    - D(T): tập session DONE của giáo viên T trong kỳ lương.
+    - h(d): thời lượng (giờ) của session d.
+    - r(T): đơn giá giờ dạy của giáo viên T.
+    - p(T): tổng khấu trừ/phạt (nếu có).
+
+    Tổng giờ dạy:
+    H(T) = SUM(h(d)), với d thuộc D(T)
+
+    Lương trước khấu trừ:
+    G(T) = H(T) * r(T)
+
+    Lương thực nhận:
+    Salary(T) = max(0, G(T) - p(T))
+
+    Công thức này đảm bảo minh bạch và dễ kiểm toán qua bảng SalaryRecord.
+
+2.4 Phân tích Use Case và bảng đặc tả đầy đủ
+─────────────────────────────────────────────
+
+2.4.1 Danh sách lưu đồ Use Case
+
+    [Xem Hình 2.1 – Use Case Diagram: diagrams/fitpass_usecase.drawio.xml]
+
+    Sơ đồ Use Case dùng để xác định actor và chức năng chính trước khi đặc tả chi tiết.
+
+    Ba actor chính:
+    - Student
+    - Teacher
+    - Admin
+
+    Danh sách Use Case chuẩn hóa trong đồ án:
+    ┌────────┬──────────────────────────────────────────────┬──────────────────┐
+    │ Mã UC  │ Tên Use Case                                 │ Nhóm Actor       │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-01  │ Đăng nhập                                    │ Student/Teacher/ │
+    │        │                                              │ Admin            │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-02  │ Đăng ký tài khoản                            │ Student          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-03  │ Duyệt và đăng ký lớp học                     │ Student          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-04  │ Điểm danh bằng mã QR                         │ Student          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-05  │ Xem lịch tập cá nhân                         │ Student          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-06  │ Quản lý hồ sơ cá nhân                        │ Student/Teacher  │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-07  │ Tạo lớp học                                  │ Teacher          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-08  │ Quản lý session                              │ Teacher          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-09  │ Tạo QR điểm danh                             │ Teacher          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-10  │ Xem danh sách học viên theo lớp              │ Teacher          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-11  │ Xem lương giáo viên                          │ Teacher          │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-12  │ Xem tổng quan dashboard                      │ Admin            │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-13  │ Quản lý người dùng                           │ Admin            │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-14  │ Duyệt lớp học / quản lý lớp học              │ Admin            │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-15  │ Tính lương giáo viên                         │ Admin            │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-16  │ Xem báo cáo thống kê                         │ Admin            │
+    ├────────┼──────────────────────────────────────────────┼──────────────────┤
+    │ UC-17  │ Đăng xuất                                    │ Student/Teacher/ │
+    │        │                                              │ Admin            │
+    └────────┴──────────────────────────────────────────────┴──────────────────┘
+
+2.4.2 Bảng đặc tả Use Case chi tiết
+
+    Bảng 2.1 - UC-01: Đăng nhập
+    Actor: Student, Teacher, Admin
+    Tiền điều kiện: Có tài khoản hợp lệ.
+    Hậu điều kiện: Nhận JWT và truy cập đúng giao diện theo role.
+    Luồng chính:
+    1) Nhập email/password.
+    2) Hệ thống kiểm tra thông tin.
+    3) Sinh token JWT.
+    4) Trả thông tin user + token.
+    Luồng thay thế: Sai thông tin -> 401 Unauthorized.
+
+    Bảng 2.2 - UC-02: Đăng ký tài khoản
+    Actor: Student
+    Tiền điều kiện: Email chưa tồn tại.
+    Hậu điều kiện: Tạo user mới với role STUDENT.
+    Luồng chính:
+    1) Nhập fullName, email, password.
+    2) Validate dữ liệu đầu vào.
+    3) Kiểm tra trùng email.
+    4) Hash mật khẩu và lưu user.
+    5) Gửi thông báo xác nhận.
+    Luồng thay thế: Email đã tồn tại -> 409 Conflict.
+
+    Bảng 2.3 - UC-03: Duyệt và đăng ký lớp học
+    Actor: Student
+    Tiền điều kiện: Đã đăng nhập; lớp ở trạng thái APPROVED.
+    Hậu điều kiện: Tạo Enrollment hợp lệ.
+    Luồng chính:
+    1) Xem danh sách lớp khả dụng.
+    2) Chọn lớp và xác nhận đăng ký.
+    3) Hệ thống kiểm tra capacity và điều kiện gói tập.
+    4) Tạo Enrollment.
+    5) Trả kết quả thành công.
+    Luồng thay thế: Lớp đầy, hoặc gói tập không đủ.
+
+    Bảng 2.4 - UC-04: Điểm danh bằng QR
+    Actor: Student (phối hợp Teacher)
+    Tiền điều kiện: Session đang ONGOING, user đã có enrollment.
+    Hậu điều kiện: Tạo bản ghi Attendance.
+    Luồng chính:
+    1) Học viên quét QR.
+    2) App gửi token về server.
+    3) Server verify token, kiểm tra trùng check-in.
+    4) Ghi Attendance.
+    5) Phát sự kiện realtime cập nhật danh sách.
+    Luồng thay thế: QR hết hạn; check-in trùng.
+
+    Bảng 2.5 - UC-05: Xem lịch tập cá nhân
+    Actor: Student
+    Tiền điều kiện: Đã đăng nhập.
+    Hậu điều kiện: Hiển thị danh sách session tương lai và lịch sử.
+    Luồng chính:
+    1) Người dùng mở màn hình lịch.
+    2) Hệ thống truy vấn session theo enrollment.
+    3) Trả dữ liệu theo tuần/tháng.
+    Luồng thay thế: Không có session -> hiển thị trạng thái rỗng.
+
+    Bảng 2.6 - UC-06: Quản lý hồ sơ cá nhân
+    Actor: Student, Teacher
+    Tiền điều kiện: Đăng nhập hợp lệ.
+    Hậu điều kiện: Cập nhật thông tin thành công.
+    Luồng chính:
+    1) Mở trang profile.
+    2) Chỉnh sửa thông tin cho phép.
+    3) Submit cập nhật.
+    4) Hệ thống validate và lưu.
+    Luồng thay thế: Dữ liệu sai định dạng -> báo lỗi 400.
+
+    Bảng 2.7 - UC-07: Tạo lớp học (Teacher)
+    Actor: Teacher
+    Tiền điều kiện: Tài khoản role TEACHER.
+    Hậu điều kiện: Lớp mới ở trạng thái PENDING.
+    Luồng chính:
+    1) Teacher nhập thông tin lớp.
+    2) Hệ thống validate.
+    3) Lưu lớp với status PENDING.
+    4) Gửi thông báo cho Admin.
+    Luồng thay thế: Dữ liệu không hợp lệ hoặc trùng lịch cơ bản.
+
+    Bảng 2.8 - UC-08: Quản lý session (Teacher)
+    Actor: Teacher
+    Tiền điều kiện: Lớp đã APPROVED.
+    Hậu điều kiện: Session được tạo/cập nhật/trạng thái thay đổi.
+    Luồng chính:
+    1) Tạo session mới.
+    2) Kiểm tra xung đột lịch phòng/lịch giáo viên.
+    3) Lưu session UPCOMING.
+    4) Bắt đầu session -> ONGOING.
+    5) Kết thúc session -> DONE.
+    Luồng thay thế: Trùng lịch -> từ chối.
+
+    Bảng 2.9 - UC-09: Tạo QR điểm danh (Teacher)
+    Actor: Teacher
+    Tiền điều kiện: Session ONGOING và teacher sở hữu session.
+    Hậu điều kiện: QR token hợp lệ được phát sinh.
+    Luồng chính:
+    1) Chọn session.
+    2) Tạo token chứa sessionId + expiry.
+    3) Trả dữ liệu QR cho app.
+    Luồng thay thế: Session không đúng trạng thái.
+
+    Bảng 2.10 - UC-10: Xem danh sách học viên theo lớp
+    Actor: Teacher
+    Tiền điều kiện: Giáo viên là chủ lớp.
+    Hậu điều kiện: Hiển thị danh sách enrollment và attendance.
+    Luồng chính:
+    1) Chọn lớp.
+    2) Hệ thống trả danh sách học viên.
+    3) Teacher theo dõi trạng thái điểm danh.
+    Luồng thay thế: Lớp chưa có học viên.
+
+    Bảng 2.11 - UC-11: Xem lương giáo viên
+    Actor: Teacher
+    Tiền điều kiện: Có bản ghi SalaryRecord.
+    Hậu điều kiện: Hiển thị chi tiết giờ dạy, mức lương, trạng thái chi trả.
+    Luồng chính:
+    1) Chọn tháng cần xem.
+    2) Truy vấn SalaryRecord.
+    3) Trả kết quả chi tiết.
+    Luồng thay thế: Chưa có dữ liệu kỳ lương.
+
+    Bảng 2.12 - UC-12: Xem dashboard tổng quan (Admin)
+    Actor: Admin
+    Tiền điều kiện: Đăng nhập role ADMIN.
+    Hậu điều kiện: Hiển thị KPI tổng quan hệ thống.
+    Luồng chính:
+    1) Mở dashboard.
+    2) Hệ thống tổng hợp số lượng user, lớp, session, attendance.
+    3) Hiển thị biểu đồ và số liệu.
+    Luồng thay thế: Dữ liệu thiếu cục bộ -> hiển thị cảnh báo.
+
+    Bảng 2.13 - UC-13: Quản lý người dùng (Admin)
+    Actor: Admin
+    Tiền điều kiện: Có quyền quản trị.
+    Hậu điều kiện: Tài khoản được cập nhật trạng thái/role theo chính sách.
+    Luồng chính:
+    1) Xem danh sách user.
+    2) Lọc theo role/trạng thái.
+    3) Cập nhật role hoặc khóa/mở user.
+    Luồng thay thế: Không cho phép hạ quyền admin cuối cùng.
+
+    Bảng 2.14 - UC-14: Duyệt lớp học / quản lý lớp học (Admin)
+    Actor: Admin
+    Tiền điều kiện: Có lớp ở trạng thái PENDING.
+    Hậu điều kiện: Lớp chuyển APPROVED hoặc REJECTED.
+    Luồng chính:
+    1) Mở danh sách lớp chờ duyệt.
+    2) Xem thông tin lớp và giáo viên.
+    3) Phê duyệt hoặc từ chối (kèm ghi chú).
+    4) Gửi thông báo đến teacher.
+    Luồng thay thế: Thiếu thông tin bắt buộc -> yêu cầu bổ sung.
+
+    Bảng 2.15 - UC-15: Tính lương giáo viên (Admin)
+    Actor: Admin
+    Tiền điều kiện: Có session DONE trong kỳ.
+    Hậu điều kiện: Tạo SalaryRecord theo giáo viên, trạng thái PENDING/PAID.
+    Luồng chính:
+    1) Chọn kỳ lương.
+    2) Hệ thống tổng hợp giờ dạy.
+    3) Áp dụng đơn giá và khấu trừ.
+    4) Lưu bảng lương.
+    5) Admin xác nhận chi trả.
+    Luồng thay thế: Không có giờ dạy -> lương bằng 0.
+
+    Bảng 2.16 - UC-16: Xem báo cáo thống kê (Admin)
+    Actor: Admin
+    Tiền điều kiện: Dữ liệu hoạt động tồn tại.
+    Hậu điều kiện: Xuất báo cáo theo khoảng thời gian.
+    Luồng chính:
+    1) Chọn bộ lọc thời gian.
+    2) Tổng hợp dữ liệu KPI.
+    3) Hiển thị bảng và biểu đồ.
+    4) Xuất file (CSV/PDF tùy cấu hình).
+    Luồng thay thế: Kỳ dữ liệu rỗng.
+
+    Bảng 2.17 - UC-17: Đăng xuất
+    Actor: Student, Teacher, Admin
+    Tiền điều kiện: Đang có phiên đăng nhập.
+    Hậu điều kiện: Xóa token client, kết thúc phiên làm việc.
+    Luồng chính:
+    1) Người dùng chọn đăng xuất.
+    2) Client xóa token.
+    3) Điều hướng về màn hình đăng nhập.
+
+2.5 Thiết kế kiến trúc phần mềm (Software Architectural Design)
+──────────────────────────────────────────────────────────────────
+
+    [Xem Hình 2.2 – Software Architecture: diagrams/fitpass_architecture.drawio.xml]
+
+    Sơ đồ kiến trúc mô tả 3 lớp chính: Client, Application, Data.
+
+    FITPASS xây dựng theo mô hình monorepo để đồng bộ phát triển backend,
+admin dashboard và mobile app. Cấu trúc này giúp dùng chung convention, chia sẻ
+kiểu dữ liệu, thống nhất quy trình build/deploy.
+
+    Kiến trúc logic gồm ba lớp:
+
+    1) Client Layer
+    - Admin Web (Next.js, cổng 3001)
+    - Mobile App (React Native/Expo)
+    Nhiệm vụ: hiển thị giao diện, tương tác người dùng, gọi API.
+
+    2) Application Layer
+    - Express REST API (cổng 3000)
+    - Auth middleware, RBAC middleware
+    - Business services
+    - Socket.IO gateway
+    Nhiệm vụ: điều phối quy trình nghiệp vụ và kiểm soát truy cập.
+
+    3) Data Layer
+    - PostgreSQL
+    - Prisma ORM
+    Nhiệm vụ: lưu trữ lâu dài, toàn vẹn dữ liệu, hỗ trợ truy vấn phân tích.
+
+    Kiến trúc này phù hợp vì dễ bảo trì, dễ mở rộng và thuận tiện triển khai.
+
+2.6 DFD Level 0 (Data Flow Diagram)
+────────────────────────────────────
+
+    [Xem Hình 2.3 – DFD Level 0: diagrams/fitpass_dfd_level0.drawio.xml]
+
+    DFD Level 0 mô tả luồng dữ liệu giữa actor, tiến trình nghiệp vụ và kho dữ liệu.
+
+    Thành phần trong Level 0:
+    - External Entity: Student, Teacher, Admin.
+    - Process lõi: Quản lý tài khoản, Quản lý lớp/session, Điểm danh, Tính lương,
+      Báo cáo.
+    - Data Store: User, Class, Session, Enrollment, Attendance, SalaryRecord,
+      Transaction, Notification.
+
+    Luồng dữ liệu quan trọng:
+    - Student -> Đăng ký/Đăng nhập -> User Store.
+    - Student -> Đăng ký lớp -> Enrollment Store + Transaction Store.
+    - Student -> QR Check-in -> Attendance Store.
+    - Teacher -> Quản lý session -> Session Store.
+    - Teacher -> Tạo QR -> Attendance process.
+    - Admin -> Duyệt lớp -> Class Store.
+    - Admin -> Tính lương -> SalaryRecord Store.
+    - Admin -> Báo cáo -> Tổng hợp từ nhiều data store.
+
+    Phần này dùng để đối chiếu nhanh giữa yêu cầu nghiệp vụ và luồng xử lý thực tế.
+
+2.7 Class Diagram
+─────────────────
+
+    [Xem Hình 2.4 – Class Diagram: diagrams/fitpass_class_diagram.drawio.xml]
+
+    Class Diagram thể hiện thực thể chính và quan hệ dữ liệu trước khi ánh xạ DB.
+
+    Các thực thể trung tâm:
+    - User: quản lý thông tin định danh, vai trò, thông tin giáo viên/học viên.
+    - Class: mô tả lớp học, giáo viên phụ trách, trạng thái phê duyệt.
+    - Session: buổi học cụ thể theo thời gian, liên kết lớp và phòng.
+    - Enrollment: quan hệ đăng ký giữa học viên và lớp.
+    - Attendance: bản ghi điểm danh theo session.
+    - SalaryRecord: dữ liệu lương giáo viên theo kỳ.
+    - Transaction: lịch sử giao dịch liên quan gói tập/học phí.
+
+    Quan hệ lớp tiêu biểu:
+    - User(Teacher) 1-n Class
+    - Class 1-n Session
+    - User(Student) n-n Class qua Enrollment
+    - Session 1-n Attendance
+    - User(Teacher) 1-n SalaryRecord
+
+    Các enum nghiệp vụ chính:
+    - UserRole = ADMIN | TEACHER | STUDENT
+    - ClassStatus = PENDING | APPROVED | REJECTED
+    - SessionStatus = UPCOMING | ONGOING | DONE | CANCELLED
+    - SalaryStatus = PENDING | PAID
+
+    Sơ đồ này được dùng để đảm bảo thiết kế dữ liệu nhất quán với phần triển khai.
+
+2.8 Sequence Diagram
+────────────────────
+
+    Hệ thống dùng 6 sequence diagram cho các luồng nghiệp vụ trọng yếu.
+
+    - Seq-01: QR Check-in
+      File: diagrams/fitpass_sequence_qr_checkin.drawio.xml
+      Mô tả: Teacher tạo QR -> Student scan -> Backend verify -> ghi Attendance
+      -> đẩy realtime về Teacher app.
+
+    - Seq-02: Enrollment (Đăng ký lớp)
+      File: diagrams/fitpass_sequence_enrollment.drawio.xml
+      Mô tả: Student chọn lớp -> backend kiểm tra điều kiện -> tạo Enrollment
+      -> thông báo thành công.
+
+    - Seq-03: Student Registration (Bổ sung)
+      File: diagrams/fitpass_sequence_student_registration.drawio.xml
+      Mô tả: Đăng ký tài khoản -> kiểm tra email trùng -> hash mật khẩu ->
+      tạo user -> xác minh email -> trả token.
+
+    - Seq-04: Class Approval (Bổ sung)
+      File: diagrams/fitpass_sequence_class_approval.drawio.xml
+      Mô tả: Teacher tạo lớp PENDING -> Admin duyệt/từ chối -> cập nhật trạng
+      thái lớp -> gửi thông báo.
+
+    - Seq-05: Payroll Calculation (Bổ sung)
+      File: diagrams/fitpass_sequence_payroll_calculation.drawio.xml
+      Mô tả: Admin kích hoạt tính lương -> payroll service tổng hợp session DONE
+      -> tính tổng giờ và tiền -> tạo SalaryRecord -> xác nhận chi trả.
+
+    - Seq-06: Session Management (Bổ sung)
+      File: diagrams/fitpass_sequence_session_management.drawio.xml
+      Mô tả: Teacher tạo session -> kiểm tra trùng lịch -> thông báo học viên ->
+      start/end session -> cập nhật báo cáo cuối phiên.
+
+    Mỗi sơ đồ thể hiện thứ tự xử lý chính, tập trung vào điểm kiểm tra và kết quả đầu ra.
+
+2.9 Thiết kế cơ sở dữ liệu và Database Export từ SQL Software
+───────────────────────────────────────────────────────────────
+
+    [Xem Hình 2.11 – ER Diagram: diagrams/fitpass_er_diagram.drawio.xml]
+
+    Phần này trình bày lược đồ dữ liệu cốt lõi của FITPASS và file export schema.
+    Trọng tâm là cấu trúc bảng, quan hệ chính và khả năng truy vết nghiệp vụ.
+
+2.9.1 Danh sách bảng dữ liệu chính
+
+    Bảng 2.18 - Danh sách bảng lõi
+    ┌──────────┬────────────────────┬──────────────────────────────────────┐
+    │ Nhóm     │ Tên bảng           │ Mô tả                                │
+    ├──────────┼────────────────────┼──────────────────────────────────────┤
+    │ Core     │ User               │ Hồ sơ người dùng, vai trò, xác thực  │
+    │ Core     │ Class              │ Thông tin lớp học và trạng thái      │
+    │ Core     │ Session            │ Buổi học theo lớp, phòng, thời gian  │
+    │ Core     │ Enrollment         │ Quan hệ đăng ký giữa Student-Class   │
+    │ Core     │ Attendance         │ Bản ghi check-in QR theo Session     │
+    │ Finance  │ SalaryRecord       │ Bản ghi lương giáo viên theo tháng   │
+    │ Finance  │ Transaction        │ Dữ liệu giao dịch tài chính          │
+    │ Resource │ Room               │ Danh mục phòng tập                   │
+    │ Resource │ UserPackage        │ Gói tập còn lại của học viên         │
+    │ Notify   │ Notification       │ Lưu lịch sử thông báo                │
+    │ Social   │ ChatThread         │ Luồng hội thoại                      │
+    │ Social   │ ChatMessage        │ Tin nhắn trong luồng chat            │
+    │ Social   │ ClassReview        │ Đánh giá lớp học                     │
+    │ Social   │ ForumPost          │ Bài đăng cộng đồng                   │
+    └──────────┴────────────────────┴──────────────────────────────────────┘
+
+2.9.2 Quy trình export lược đồ database từ SQL software
+
+    Quy trình export schema:
+    1) Đồng bộ schema bằng Prisma.
+    2) Kiểm tra migration status.
+    3) Export schema SQL và lưu vào phụ lục.
+    4) Dùng file export để đối chiếu khi kiểm thử và bàn giao.
+
+2.9.3 Nhận xét thiết kế dữ liệu
+
+    Thiết kế database đáp ứng 3 yêu cầu chính:
+    - Quản lý đúng quan hệ User - Class - Session - Enrollment - Attendance.
+    - Hỗ trợ tổng hợp báo cáo và payroll theo kỳ.
+    - Dễ mở rộng cho thông báo, giao dịch và các tính năng cộng đồng.
+
+2.10 Tổng kết chương
+────────────────────
+
+    Chương 2 đã trình bày hệ thống cơ sở lý thuyết đầy đủ cho FITPASS theo yêu
+cầu đồ án tổng hợp, bao gồm:
+    1) Danh sách Use Case và bảng đặc tả chi tiết cho từng Use Case.
+    2) Thiết kế kiến trúc phần mềm (Software Architectural Design).
+    3) DFD Level 0 mô tả luồng dữ liệu chính.
+    4) Class Diagram phản ánh mô hình dữ liệu và quan hệ đối tượng.
+    5) Bộ 6 Sequence Diagram cho các quy trình cốt lõi và mở rộng.
+    6) Thiết kế cơ sở dữ liệu và quy trình export schema từ SQL software.
+
+    Nền tảng lý thuyết này là cơ sở trực tiếp cho Chương 3 (cài đặt và thực
+nghiệm), đồng thời đảm bảo tính liên kết giữa phân tích, thiết kế và hiện thực
+hệ thống.
+
+================================================================================
+              Chương 3. CÀI ĐẶT VÀ THỰC NGHIỆM
+================================================================================
+
+3.1 Mục tiêu chương
+────────────────────
+
+    Chương này trình bày phần triển khai thực tế của FITPASS theo format ngắn gọn:
+    - Môi trường và cách chạy hệ thống.
+    - Kết quả giao diện theo từng nhóm người dùng.
+    - Kết quả kiểm thử các chức năng chính.
+
+3.2 Môi trường và quy trình triển khai
+───────────────────────────────────────
+
+    Bảng 3.1 – Môi trường và phiên bản phần mềm
+    ┌──────────────────────┬──────────────────────────────────────────────┐
+    │ Thành phần           │ Phiên bản / Chi tiết                         │
+    ├──────────────────────┼──────────────────────────────────────────────┤
+    │ Node.js              │ v20.x LTS                                    │
+    │ npm                  │ v10.x                                        │
+    │ TypeScript           │ v5.x                                         │
+    │ Express.js           │ v4.x                                         │
+    │ Prisma ORM           │ v5.x                                         │
+    │ PostgreSQL           │ v15.x (Railway.app hoặc local)               │
+    │ Next.js              │ v14.x                                        │
+    │ React Native         │ v0.74.x                                      │
+    │ Expo SDK             │ ~54                                          │
+    │ Socket.IO            │ v4.x                                         │
+    └──────────────────────┴──────────────────────────────────────────────┘
+
+    3.2.1 Môi trường Local (Development)
+
+    - Cài dependencies toàn monorepo.
+    - Cấu hình .env cho backend.
+    - Đồng bộ schema Prisma và chạy hệ thống.
+
+    3.2.2 Môi trường Production (Railway.app)
+
+    - Deploy backend + admin + PostgreSQL trên Railway.
+    - Cấu hình biến môi trường cho API, JWT, OAuth.
+    - Build mobile bằng Expo EAS theo profile preview/production.
+
+3.3 Kết quả triển khai theo nhóm chức năng
+────────────────────────────────────────────
+
+3.3.1 Admin Dashboard (Web)
+
+    [Chèn Hình 3.1] Dashboard tổng quan.
+    [Chèn Hình 3.2] Quản lý lớp học.
+    [Chèn Hình 3.3] Quản lý người dùng.
+    [Chèn Hình 3.4] Quản lý payroll.
+
+    Mô tả ngắn: Admin theo dõi KPI, duyệt lớp, quản lý người dùng và xác nhận lương.
+
+3.3.2 Teacher Interface (Mobile & Admin)
+
+    [Chèn Hình 3.5] Quản lý session.
+    [Chèn Hình 3.6] Tạo QR điểm danh.
+
+    Mô tả ngắn: Teacher quản lý buổi học, tạo QR và theo dõi attendance realtime.
+
+3.3.3 Student Mobile App
+
+    [Chèn Hình 3.7] Trang chủ student.
+    [Chèn Hình 3.8] Duyệt và đăng ký lớp.
+    [Chèn Hình 3.9] Quét QR điểm danh.
+
+    Mô tả ngắn: Student đăng ký lớp, xem lịch và điểm danh nhanh bằng QR.
+
+3.4 Kết quả kiểm thử
+────────────────────
+
+    Hệ thống được kiểm thử bằng script API, Postman và kiểm thử giao diện.
+    Tổng cộng 14 test case chính, tập trung vào:
+    - Đăng nhập và xác thực.
+    - Attendance QR realtime.
+    - Phân quyền RBAC.
+
+    Bảng 3.2 – Kết quả kiểm thử chức năng đăng nhập
+    ┌──────┬──────────────────────────────┬──────────────────┬────────────┐
+    │ STT  │ Trường hợp kiểm thử          │ Kết quả mong đợi │ Kết quả TT │
+    ├──────┼──────────────────────────────┼──────────────────┼────────────┤
+    │ TC01 │ Đăng nhập đúng thông tin     │ 200 + JWT token  │ ✓ Đạt      │
+    │ TC02 │ Sai mật khẩu                 │ 401 Unauthorized │ ✓ Đạt      │
+    │ TC03 │ Email không tồn tại          │ 401 Unauthorized │ ✓ Đạt      │
+    │ TC04 │ Đăng nhập Google OAuth       │ 200 + JWT token  │ ✓ Đạt      │
+    │ TC05 │ Token hết hạn                │ 401 + thông báo  │ ✓ Đạt      │
+    └──────┴──────────────────────────────┴──────────────────┴────────────┘
+
+    Bảng 3.3 – Kết quả kiểm thử điểm danh QR
+    ┌──────┬──────────────────────────────┬──────────────────┬────────────┐
+    │ STT  │ Trường hợp kiểm thử          │ Kết quả mong đợi │ Kết quả TT │
+    ├──────┼──────────────────────────────┼──────────────────┼────────────┤
+    │ TC01 │ Scan QR hợp lệ               │ Ghi Attendance   │ ✓ Đạt      │
+    │ TC02 │ QR đã hết hạn (>15 phút)     │ 400 + thông báo  │ ✓ Đạt      │
+    │ TC03 │ Scan QR lần 2 (trùng)        │ 409 Đã điểm danh │ ✓ Đạt      │
+    │ TC04 │ Cập nhật realtime Socket.IO  │ DS ĐD cập nhật   │ ✓ Đạt      │
+    │ TC05 │ Học viên không đăng ký lớp   │ 403 Forbidden    │ ✓ Đạt      │
+    └──────┴──────────────────────────────┴──────────────────┴────────────┘
+
+    Bảng 3.4 – Kết quả kiểm thử phân quyền RBAC
+    ┌──────┬──────────────────────────────┬──────────────────┬────────────┐
+    │ STT  │ Trường hợp kiểm thử          │ Kết quả mong đợi │ Kết quả TT │
+    ├──────┼──────────────────────────────┼──────────────────┼────────────┤
+    │ TC01 │ Student truy cập /admin      │ 403 Forbidden    │ ✓ Đạt      │
+    │ TC02 │ Teacher tính lương Admin     │ 403 Forbidden    │ ✓ Đạt      │
+    │ TC03 │ Admin truy cập toàn bộ       │ 200 OK           │ ✓ Đạt      │
+    │ TC04 │ Không có token               │ 401 Unauthorized │ ✓ Đạt      │
+    └──────┴──────────────────────────────┴──────────────────┴────────────┘
+
+3.5 Tổng kết chương
+───────────────────
+
+    Chương 3 đã trình bày môi trường triển khai, kết quả giao diện theo từng
+nhóm người dùng và kết quả kiểm thử chính. Các vị trí hình ảnh đã được để sẵn
+để bổ sung minh họa thực tế khi hoàn thiện bản in.
+
+================================================================================
+            Chương 4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+================================================================================
+
+4.1 Kết luận
+─────────────
+
+     FITPASS đã hoàn thành mục tiêu chính của đồ án: xây dựng nền tảng quản lý
+phòng gym đa vai trò với backend, admin dashboard và mobile app hoạt động đồng bộ.
+Các luồng cốt lõi (đăng ký lớp, điểm danh QR realtime, phân quyền, payroll) đã
+được triển khai và kiểm thử đạt yêu cầu.
+
+4.2 Hướng phát triển
+─────────────────────
+
+     Hướng phát triển tiếp theo:
+     1. Tích hợp thanh toán online (VNPay/Stripe).
+     2. Bổ sung thông báo đẩy nhắc lịch và nhắc check-in.
+     3. Mở rộng dashboard analytics cho vận hành đa chi nhánh.
+     4. Tăng cường bảo mật với xác thực nhiều lớp.
+
+================================================================================
+                         TÀI LIỆU THAM KHẢO
+================================================================================
+
+[1]  Brown, E. (2019). Web Development with Node and Express: Leveraging the
+    JavaScript Stack. O'Reilly Media.
+
+[2]  Expo (2024). Expo Documentation – SDK 54.
+    <https://docs.expo.dev>, truy cập ngày 01/05/2026.
+
+[3]  Glofox (2024). Glofox – Gym Management Software.
+    <https://www.glofox.com>, truy cập ngày 01/05/2026.
+
+[4]  Jones, M., Bradley, J., & Sakimura, N. (2015). JSON Web Token (JWT).
+    RFC 7519. Internet Engineering Task Force (IETF).
+    <https://datatracker.ietf.org/doc/html/rfc7519>, truy cập 01/05/2026.
+
+[5]  Meta Open Source (2024). React Native Documentation.
+    <https://reactnative.dev/docs/getting-started>, truy cập ngày 01/05/2026.
+
+[6]  Mindbody Inc. (2024). Mindbody – Business Management Software for Wellness
+    Industries. <https://www.mindbodyonline.com>, truy cập ngày 01/05/2026.
+
+[7]  Newman, S. (2021). Building Microservices: Designing Fine-Grained Systems,
+    2nd Edition. O'Reilly Media.
+
+[8]  OWASP Foundation (2023). OWASP Top Ten – Web Application Security Risks.
+    <https://owasp.org/www-project-top-ten/>, truy cập ngày 01/05/2026.
+
+[9]  PostgreSQL Global Development Group (2024). PostgreSQL 15 Documentation.
+    <https://www.postgresql.org/docs/15/>, truy cập ngày 01/05/2026.
+
+[10] Prisma (2024). Prisma – Next-generation ORM for Node.js and TypeScript.
+    <https://www.prisma.io/docs>, truy cập ngày 01/05/2026.
+
+[11] Socket.IO Documentation (2024). Introduction – Socket.IO.
+    <https://socket.io/docs/v4/>, truy cập ngày 01/05/2026.
+
+[12] Next.js Documentation (2024).
+    <https://nextjs.org/docs>, truy cập ngày 01/05/2026.
+
+[13] Zen Planner (2024). Zen Planner – Fitness Business Management Software.
+    <https://zenplanner.com>, truy cập ngày 01/05/2026.
+
+================================================================================
+                              PHỤ LỤC
+================================================================================
+
+PHỤ LỤC A – Cấu trúc thư mục dự án
+─────────────────────────────────────
+
+fitpass/
+├── fitpass-captone/backend/        # Node.js/Express API
+│   ├── prisma/
+│   │   └── schema.prisma           # Prisma schema (nguồn sự thật DB)
+│   ├── src/
+│   │   ├── controllers/            # Request handlers
+│   │   ├── services/               # Business logic
+│   │   ├── middlewares/            # auth.ts, errorHandler.ts
+│   │   ├── routes/                 # Express route definitions
+│   │   ├── config/                 # passport.ts (Google OAuth)
+│   │   └── ws/                     # Socket.IO server
+│   └── package.json
+│
+├── fitpass-admin/                  # Next.js 14 Admin Dashboard
+│   ├── app/                        # App Router pages
+│   ├── components/                 # Reusable React components
+│   ├── lib/                        # API client (axios)
+│   └── middleware.ts               # JWT auth middleware
+│
+├── fitpass-app/                    # React Native + Expo Mobile App
+│   ├── app/                        # Expo Router file-based navigation
+│   ├── components/                 # UI components
+│   └── app.config.js
+│
+└── diagrams/                       # UML & Architecture diagrams
+    └── fitpass_usecase.drawio.xml
+
+PHỤ LỤC B – Một số đoạn code minh hoạ
+───────────────────────────────────────
+
+B.1 – Middleware xác thực JWT (backend/src/middlewares/auth.ts)
+
+    export const authenticate = async (req, res, next) => {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) return res.status(401).json({ message: 'No token provided' });
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+      } catch {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+    };
+
+B.2 – Tạo QR điểm danh (session QR token)
+
+    export const generateSessionQR = async (sessionId, teacherId) => {
+      const session = await prisma.session.findUnique({ where: { id: sessionId } });
+      if (session.status !== 'ONGOING') throw new Error('Session not ongoing');
+      const qrToken = jwt.sign(
+        { sessionId, type: 'attendance' },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' }
+      );
+      return qrToken;
+    };
+
+B.3 – Xử lý điểm danh khi học viên scan QR
+
+    export const checkIn = async (userId, qrToken) => {
+      const payload = jwt.verify(qrToken, process.env.JWT_SECRET);
+      const existing = await prisma.attendance.findFirst({
+        where: { userId, sessionId: payload.sessionId }
+      });
+      if (existing) throw new Error('Already checked in');
+      const attendance = await prisma.attendance.create({
+        data: { userId, sessionId: payload.sessionId, checkedInAt: new Date() }
+      });
+      // Emit real-time update
+      (global as any).io.emit('attendance_update', { sessionId: payload.sessionId });
+      return attendance;
+    };
+
+================================================================================
+PHỤ LỤC C – DATABASE SCHEMA EXPORT (PostgreSQL DDL)
+================================================================================
+
+    Toàn bộ cấu trúc database FITPASS được xác định bởi Prisma schema, gồm
+14 migrations và 17 bảng chính cộng các bảng phụ trợ. Dưới đây là tóm tắt
+các bảng và mối quan hệ chính:
+
+    ├── User (Người dùng: Student/Teacher/Admin)
+    │   ├── 1:N → Class (Teacher creates classes)
+    │   ├── 1:N → Enrollment (Student enrolls)
+    │   ├── 1:N → Attendance (Student check-in)
+    │   ├── 1:N → SalaryRecord (Teacher earnings)
+    │   ├── 1:N → Transaction (Payment history)
+    │   ├── 1:N → UserPackage (Memberships)
+    │   └── 1:N → ChatThread (Messaging)
+    │
+    ├── Class (Lớp học)
+    │   ├── 1:N → Session (Buổi học)
+    │   ├── 1:N → Enrollment (Danh sách học viên)
+    │   ├── 1:N → ClassReview (Đánh giá)
+    │   ├── 1:N → ClassReaction (Phản ứng)
+    │   ├── 1:N → ClassImage (Ảnh galery)
+    │   └── 1:N → ChatThread (Thảo luận lớp)
+    │
+    ├── Session (Buổi học cụ thể)
+    │   ├── 1:N → Attendance (Điểm danh)
+    │   ├── 1:N → Booking (Đặt chỗ)
+    │   └── FK: Room (Phòng học)
+    │
+    ├── Package & UserPackage (Gói tập & Thẻ thành viên)
+    │   ├── 1:N → Transaction (Thanh toán)
+    │   └── 1:N → Booking (Sử dụng credits)
+    │
+    ├── SalaryRecord (Lương giáo viên)
+    │   ├── Được tính: totalAmount = totalHours × hourlyRate
+    │   └── Status: PENDING → PAID
+    │
+    ├── ChatThread & ChatMessage (Hệ thống nhắn tin)
+    │   ├── Type: SUPPORT, CLASS, CLASS_GROUP
+    │   └── Real-time updates via Socket.IO
+    │
+    └── ForumPost, ForumComment, ForumReaction (Diễn đàn cộng đồng)
+        └── Moderation: PENDING → APPROVED / REJECTED
+
+    Các ENUM Type chính:
+    • UserRole: ADMIN | TEACHER | STUDENT
+    • ClassStatus: PENDING | APPROVED | REJECTED
+    • SessionStatus: UPCOMING | ACTIVE | DONE | CANCELLED
+    • AttendanceStatus: PRESENT | ABSENT | LATE
+    • EnrollmentStatus: ACTIVE | CANCELLED | TRANSFERRED | COMPLETED | SUSPENDED
+    • PackageStatus: ACTIVE | EXPIRED | SUSPENDED
+    • TransactionStatus: PENDING | COMPLETED | FAILED
+    • PaymentMethod: PAYPAL | MOMO | ZALOPAY
+
+    Chi tiết SQL DDL (CREATE TABLE...) có sẵn trong file:
+    📄 DATABASE_SCHEMA_EXPORT.sql (tại gốc project)
+
+================================================================================
+         PHIẾU ĐĂNG KÝ ĐỀ TÀI ĐỒ ÁN
+         (In ra, nộp bản có chữ ký GVHD, đóng kèm quyển báo cáo)
+================================================================================
+
+Họ tên sinh viên : Anh Dinh              Mã SV: ................
+Lớp              : ................       Khóa: ..................
+Tên đề tài       : FITPASS – Nền tảng Quản lý Phòng Gym Thông Minh
+GVHD             : ................................................
+Thời gian thực hiện: Học kỳ 2, Năm học 2025 – 2026
+
+Mô tả tóm tắt:
+    Xây dựng hệ thống quản lý phòng gym tích hợp gồm: Backend RESTful API
+(Node.js/Express/Prisma/PostgreSQL), Admin Dashboard (Next.js 14), ứng dụng
+di động iOS & Android (React Native/Expo) với điểm danh QR real-time,
+phân quyền RBAC và tính lương tự động.
+
+    TP. HCM, ngày    tháng    năm 2026
+    Sinh viên ký tên                        GVHD ký tên
+    ......................                  ......................
+
+================================================================================
+         PHIẾU THEO DÕI TIẾN ĐỘ ĐỒ ÁN
+         (In ra, nộp bản có chữ ký GVHD, đóng kèm quyển báo cáo)
+================================================================================
+
+Họ tên sinh viên : Anh Dinh
+Tên đề tài       : FITPASS – Nền tảng Quản lý Phòng Gym Thông Minh
+
+┌──────┬────────────────────────────────────────────────┬────────────┬──────────┐
+│ Buổi │ Nội dung thực hiện                             │ Ngày       │ GV ký    │
+├──────┼────────────────────────────────────────────────┼────────────┼──────────┤
+│  1   │ Thống nhất đề tài, phạm vi, công nghệ          │            │          │
+│  2   │ Phân tích yêu cầu, vẽ Use Case                 │            │          │
+│  3   │ Thiết kế CSDL (schema.prisma), API design      │            │          │
+│  4   │ Xây dựng Backend API (auth, class, session)    │            │          │
+│  5   │ Tích hợp Socket.IO, hệ thống QR điểm danh      │            │          │
+│  6   │ Xây dựng Admin Dashboard (Next.js 14)          │            │          │
+│  7   │ Xây dựng Mobile App (React Native/Expo)        │            │          │
+│  8   │ Kiểm thử, sửa lỗi, deploy Railway              │            │          │
+│  9   │ Hoàn thiện báo cáo, chuẩn bị bảo vệ           │            │          │
+└──────┴────────────────────────────────────────────────┴────────────┴──────────┘
+
+================================================================================
+                           ─── Hết ───
+================================================================================

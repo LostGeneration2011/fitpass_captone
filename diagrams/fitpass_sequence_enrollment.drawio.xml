@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-12" version="21.0" type="device">
+  <diagram name="Sequence: Class Enrollment" id="seq_enroll">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="Sequence Diagram: Class Enrollment Flow" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="1200" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- Actors -->
+        <mxCell id="student" value="Student App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#1B5E20;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="api" value="Backend API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="60" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="650" y="60" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="email_svc" value="Email Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCCCC;strokeColor=#B71C1C;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="60" width="80" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- Lifelines -->
+        <mxCell id="l1" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="100" width="0" height="730" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="l2" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="390" y="100" width="0" height="730" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="l3" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="690" y="100" width="0" height="730" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="l4" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="990" y="100" width="0" height="730" as="geometry"/>
+        </mxCell>
+        
+        <!-- Messages -->
+        
+        <!-- 1. GET /classes -->
+        <mxCell id="m1" value="1. GET /classes (filter)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="90" y="140" as="sourcePoint"/>
+            <mxPoint x="390" y="140" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 2. Query classes -->
+        <mxCell id="m2" value="2. SELECT * FROM Class WHERE status='APPROVED'" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="170" as="sourcePoint"/>
+            <mxPoint x="690" y="170" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 3. Return class list -->
+        <mxCell id="m3" value="3. classList" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="690" y="200" as="sourcePoint"/>
+            <mxPoint x="390" y="200" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 4. Return class list to student -->
+        <mxCell id="m4" value="4. 200 [classList]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="230" as="sourcePoint"/>
+            <mxPoint x="90" y="230" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note -->
+        <mxCell id="note1" value="[Student views class list and selects a class]" style="text;html=1;align=center;fontSize=12;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="250" width="200" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- 5. POST /enrollments -->
+        <mxCell id="m5" value="5. POST /enrollments {classId, userId}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="90" y="290" as="sourcePoint"/>
+            <mxPoint x="390" y="290" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 6. Verify JWT & role -->
+        <mxCell id="m6" value="6. Verify JWT (STUDENT role)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="310" as="sourcePoint"/>
+            <mxPoint x="390" y="330" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 7. Check capacity & enrollment status -->
+        <mxCell id="m7" value="7. SELECT Class WHERE id=classId" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="360" as="sourcePoint"/>
+            <mxPoint x="690" y="360" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 8. Return class info -->
+        <mxCell id="m8" value="8. class data (capacity, enrolled count)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=12;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="690" y="390" as="sourcePoint"/>
+            <mxPoint x="390" y="390" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 9. Backend kiểm tra capacity, đã đăng ký chưa, business rule -->
+        <mxCell id="m9" value="Validate: còn slot, chưa đăng ký, đủ điều kiện" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3;dashed=1" edge="1" parent="1" source="api" target="api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 10. Nếu hợp lệ: INSERT vào bảng Enrollment -->
+        <mxCell id="m10" value="INSERT INTO Enrollment (userId, classId, ...)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3" edge="1" parent="1" source="api" target="db">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 11. DB xác nhận -->
+        <mxCell id="m11" value="Enrollment saved" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=12;strokeWidth=3" edge="1" parent="1" source="db" target="api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 12. Gửi email xác nhận (nếu thành công) -->
+        <mxCell id="m12" value="Gửi email xác nhận enrollment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3;dashed=1" edge="1" parent="1" source="api" target="email_svc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 13. Email Service gửi email -->
+        <mxCell id="m13" value="Email sent (async)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=12;strokeWidth=3;dashed=1" edge="1" parent="1" source="email_svc" target="api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 14. Backend trả kết quả (success/error) về Student App -->
+        <mxCell id="m14" value="201 Created (success) hoặc 4xx (error)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=12;strokeWidth=3" edge="1" parent="1" source="api" target="student">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 15. Student App hiển thị thông báo (success/error) -->
+        <mxCell id="m15" value="Hiển thị thông báo (success/error)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=12;strokeWidth=3;dashed=1" edge="1" parent="1" source="student" target="student">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

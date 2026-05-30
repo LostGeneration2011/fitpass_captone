@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" agent="FitPass Activity Diagram" version="21.0" type="device">
+  <diagram name="Activity Diagram - Student Enrollment & Attendance" id="fitpass_activity_student_enrollment">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Start -->
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <!-- Browse classes -->
+        <mxCell id="browse" value="Student: Duyệt danh sách lớp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="120" y="50" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow1" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="start" target="browse">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Enroll -->
+        <mxCell id="enroll" value="Student: Chọn lớp, gửi request đăng ký" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="350" y="50" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow2" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="browse" target="enroll">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Payment decision -->
+        <mxCell id="decision1" value="System: Lớp yêu cầu thanh toán?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F9E79F;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="570" y="60" width="80" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow3" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="enroll" target="decision1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Payment branch -->
+        <mxCell id="payment" value="Student: Thanh toán học phí (nếu có)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="670" y="30" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow4" value="Yes" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="decision1" target="payment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow5" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="payment" target="decision1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="100"/>
+          </mxGeometry>
+        </mxCell>
+        <!-- No payment branch -->
+        <mxCell id="arrow6" value="No" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="decision1" target="decision1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Enrollment confirmed -->
+        <mxCell id="enrolled" value="System: Xác nhận đăng ký thành công" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#229954;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="800" y="80" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow7" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="decision1" target="enrolled">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Wait for session -->
+        <mxCell id="wait_session" value="Student: Chờ đến ngày học" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1000" y="80" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow8" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="enrolled" target="wait_session">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- QR check-in -->
+        <mxCell id="qr_checkin" value="Student: Check-in bằng QR code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1200" y="80" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow9" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="wait_session" target="qr_checkin">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Attendance recorded -->
+        <mxCell id="attendance" value="System: Ghi nhận điểm danh, cập nhật trạng thái" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#229954;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1400" y="80" width="220" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow10" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="qr_checkin" target="attendance">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- End -->
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1600" y="90" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow11" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="attendance" target="end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Cancel enrollment branch -->
+        <mxCell id="cancel" value="Student: Hủy đăng ký (nếu chưa đến ngày học)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5B7B1;strokeColor=#922B21;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1000" y="180" width="240" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow12" value="Cancel before session" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="wait_session" target="cancel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="end_cancel" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1230" y="190" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow13" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="cancel" target="end_cancel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

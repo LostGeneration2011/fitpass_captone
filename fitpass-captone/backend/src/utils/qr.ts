@@ -4,17 +4,12 @@ const QR_SECRET = process.env.QR_SECRET || 'fitpass_qr_secret_key_2024';
 
 export interface QRPayload {
   sessionId: string;
-  exp: number;
 }
 
 export class QRUtils {
   // Generate QR token for session (5 minutes expiry)
   static generateQRToken(sessionId: string): string {
-    const payload: QRPayload = {
-      sessionId,
-      exp: Math.floor(Date.now() / 1000) + (5 * 60) // 5 minutes
-    };
-
+    const payload: QRPayload = { sessionId };
     return jwt.sign(payload, QR_SECRET, { expiresIn: '5m' });
   }
 

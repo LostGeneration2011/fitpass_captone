@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" agent="FitPass Activity Diagram" version="21.0" type="device">
+  <diagram name="Activity Diagram - Teacher Class & Session Management" id="fitpass_activity_teacher_class_session">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Start -->
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <!-- Create class -->
+        <mxCell id="create_class" value="Teacher: Tạo lớp mới, nhập thông tin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="120" y="50" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow1" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="start" target="create_class">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Create session -->
+        <mxCell id="create_session" value="Teacher: Tạo buổi học, gửi request lên hệ thống" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="320" y="50" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow2" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="create_class" target="create_session">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Manage students -->
+        <mxCell id="manage_students" value="System: Nhận request, xác thực, lưu lớp & buổi học" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="570" y="50" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow3" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="create_session" target="manage_students">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Take attendance -->
+        <mxCell id="attendance" value="Teacher: Quản lý học viên, điểm danh QR cho từng buổi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="870" y="50" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow4" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="manage_students" target="attendance">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- End -->
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="950" y="60" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow5" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="attendance" target="end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

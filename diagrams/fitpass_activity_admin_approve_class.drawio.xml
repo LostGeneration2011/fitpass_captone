@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" agent="FitPass Activity Diagram" version="21.0" type="device">
+  <diagram name="Activity Diagram - Admin Approve Class" id="fitpass_activity_admin_approve_class">
+    <mxGraphModel dx="900" dy="400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="900" pageHeight="400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <!-- Admin mở trang duyệt lớp học -->
+        <mxCell id="open" value="Admin: Mở trang duyệt lớp học" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="100" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow1" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="start" target="open">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System trả về danh sách lớp học chờ duyệt -->
+        <mxCell id="fetch" value="System: Trả về danh sách lớp học chờ duyệt (status=PENDING)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="350" y="30" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow2" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="open" target="fetch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Admin xem danh sách lớp học -->
+        <mxCell id="display" value="Admin: Xem danh sách lớp học chờ duyệt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="650" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow3" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="fetch" target="display">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Admin chọn lớp và thao tác -->
+        <mxCell id="choose" value="Admin: Chọn lớp cần xử lý" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="900" y="30" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow4" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="display" target="choose">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="action" value="Admin: Nhấn 'Phê duyệt' hoặc 'Từ chối'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FADBD8;strokeColor=#CB4335;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1100" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow5" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="choose" target="action">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System xác thực và cập nhật trạng thái -->
+        <mxCell id="update" value="System: Xác thực quyền, cập nhật status lớp học ('APPROVED'/'REJECTED')" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1350" y="30" width="320" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow6" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="action" target="update">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System trả kết quả về frontend -->
+        <mxCell id="result" value="System: Trả kết quả cập nhật về frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1700" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow7" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="update" target="result">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Admin nhận thông báo, reload danh sách -->
+        <mxCell id="reload" value="Admin: Nhận thông báo, reload lại danh sách" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1950" y="30" width="240" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow8" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="result" target="reload">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="2220" y="40" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow9" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="reload" target="end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -156,6 +156,6 @@
 - Server-side rendering
 
 ### Deployment:
-- Backend: Vercel/Railway
+- Backend: Railway
 - Database: PostgreSQL cloud
 - Mobile: Expo Build Service

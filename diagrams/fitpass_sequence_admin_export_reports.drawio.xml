@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" version="21.0" type="device">
+  <diagram name="Sequence: Admin Export Reports" id="seq_admin_export_reports">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1400" height="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="title" value="Sequence Diagram: Admin Export Reports" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="1400" height="20" as="geometry"/>
+        </mxCell>
+        <!-- Actors -->
+        <mxCell id="admin_box" value="Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFB74D;strokeColor=#E65100;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="frontend_box" value="Admin Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="250" y="60" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="backend_box" value="Backend API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD54F;strokeColor=#F57C00;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="60" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Sequence steps (bám sát codebase) -->
+        <!-- 1. Admin chọn loại báo cáo & nhấn Export -->
+        <mxCell id="arrow1" value="Chọn loại báo cáo & nhấn Export" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#E65100;strokeWidth=2" edge="1" parent="1" source="admin_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 2. Frontend fetch dữ liệu báo cáo qua API (GET /api/classes, /api/sessions, ...) -->
+        <mxCell id="arrow2" value="Fetch dữ liệu báo cáo (classesAPI, sessionsAPI, ... )" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="backend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 3. Backend trả về dữ liệu JSON (không trả file) -->
+        <mxCell id="arrow3" value="Trả về dữ liệu JSON (classList, sessionList, ...)" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#F57C00;strokeWidth=2" edge="1" parent="1" source="backend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 4. Frontend sinh file CSV từ dữ liệu -->
+        <mxCell id="arrow4" value="Sinh file CSV từ dữ liệu" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="frontend_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- 5. Hiển thị nút tải file cho Admin -->
+        <mxCell id="arrow5" value="Hiển thị nút tải file cho Admin" style="edgeStyle=elbowEdgeStyle;endArrow=block;html=1;strokeColor=#0D47A1;strokeWidth=2" edge="1" parent="1" source="frontend_box" target="admin_box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

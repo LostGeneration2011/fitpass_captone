@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" agent="FitPass Activity Diagram" version="21.0" type="device">
+  <diagram name="Activity Diagram - Logout" id="fitpass_activity_logout">
+    <mxGraphModel dx="600" dy="300" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="600" pageHeight="300" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <!-- User click nút Đăng xuất -->
+        <mxCell id="logout" value="User: Click nút Đăng xuất" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="100" y="30" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow1" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="start" target="logout">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- User gửi request logout -->
+        <mxCell id="send" value="User: Gửi request logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="300" y="30" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow2" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="logout" target="send">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System nhận request, xóa session/token -->
+        <mxCell id="clear_session" value="System: Nhận request, xóa session/token" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="500" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow3" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="send" target="clear_session">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System trả kết quả, frontend chuyển hướng về trang đăng nhập -->
+        <mxCell id="redirect" value="System: Trả kết quả, frontend chuyển hướng về trang đăng nhập" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#229954;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="750" y="30" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow4" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="clear_session" target="redirect">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1050" y="40" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow5" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="redirect" target="end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

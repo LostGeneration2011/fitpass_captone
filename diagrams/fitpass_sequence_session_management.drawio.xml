@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-13" version="21.0" type="device">
+  <diagram name="Sequence: Session Management" id="seq_session">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="Sequence Diagram: Session Management" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="1800" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- Actors -->
+        <mxCell id="teacher_box" value="Teacher App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFB74D;strokeColor=#E65100;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="backend_box" value="Backend API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="database_box" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="650" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="student_box" value="Student App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#1B5E20;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- Lifelines -->
+        <mxCell id="teacher_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="0" height="1050" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="backend_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="0" height="1050" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="database_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="700" y="100" width="0" height="1050" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="student_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="1000" y="100" width="0" height="1050" as="geometry"/>
+        </mxCell>
+        
+        <!-- Messages -->
+        
+        <!-- 1. Teacher creates session -->
+        <mxCell id="msg1" value="1. POST /sessions (teacher fills form)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="140" as="sourcePoint"/>
+            <mxPoint x="400" y="140" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 2. Backend xác thực JWT, kiểm tra quyền TEACHER -->
+        <mxCell id="msg2" value="2. Xác thực JWT, kiểm tra quyền TEACHER" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="170" as="sourcePoint"/>
+            <mxPoint x="400" y="190" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <!-- 2b. Nếu không hợp lệ: trả lỗi 401/403 -->
+        <mxCell id="msg2b" value="2b. Nếu không hợp lệ: trả lỗi 401/403" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3;strokeColor=#D32F2F" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="195" as="sourcePoint"/>
+            <mxPoint x="100" y="195" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 3. Backend kiểm tra dữ liệu: class tồn tại, không trùng lịch, capacity hợp lệ -->
+        <mxCell id="msg3" value="3. Kiểm tra dữ liệu: class tồn tại, không trùng lịch, capacity hợp lệ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="220" as="sourcePoint"/>
+            <mxPoint x="700" y="220" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <!-- 3b. Nếu dữ liệu không hợp lệ: trả lỗi 400/409 -->
+        <mxCell id="msg3b" value="3b. Nếu dữ liệu không hợp lệ: trả lỗi 400/409" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3;strokeColor=#D32F2F" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="225" as="sourcePoint"/>
+            <mxPoint x="100" y="225" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 4. Check session conflicts -->
+        <mxCell id="msg4" value="4. SELECT sessions WHERE conflicts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="250" as="sourcePoint"/>
+            <mxPoint x="700" y="270" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 5. Validation passed -->
+        <mxCell id="msg5" value="5. No conflicts found" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="300" as="sourcePoint"/>
+            <mxPoint x="400" y="300" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 6. INSERT Session (status=UPCOMING) -->
+        <mxCell id="msg6" value="6. INSERT Session (classId, startTime, endTime, status='UPCOMING')" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="330" as="sourcePoint"/>
+            <mxPoint x="700" y="330" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 7. Session created -->
+        <mxCell id="msg7" value="7. Session saved (sessionId)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="360" as="sourcePoint"/>
+            <mxPoint x="400" y="360" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 8. Get enrolled students -->
+        <mxCell id="msg8" value="8. SELECT enrollments WHERE classId" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="390" as="sourcePoint"/>
+            <mxPoint x="700" y="390" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 9. Enrolled students list -->
+        <mxCell id="msg9" value="9. [{student1}, {student2}, ...]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="420" as="sourcePoint"/>
+            <mxPoint x="400" y="420" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 10. Notify students -->
+        <mxCell id="msg10" value="10. Emit 'new_session_created' event to students" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint"/>
+            <mxPoint x="1000" y="450" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 11. Trả kết quả: 201 {sessionId, status: 'UPCOMING'} hoặc lỗi nếu có -->
+        <mxCell id="msg11" value="11. 201 {sessionId, status: 'UPCOMING'} hoặc lỗi nếu có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="480" as="sourcePoint"/>
+            <mxPoint x="100" y="480" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Session active phase -->
+        <mxCell id="note1" value="[Session scheduled, students notified]&#xa;[Students see session in calendar]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="510" width="250" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- 12. Teacher starts session -->
+        <mxCell id="msg12" value="12. PUT /sessions/{sessionId}/start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="570" as="sourcePoint"/>
+            <mxPoint x="400" y="570" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 13. UPDATE Session status -->
+        <mxCell id="msg13" value="13. UPDATE Session SET status='ONGOING'" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="600" as="sourcePoint"/>
+            <mxPoint x="700" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 14. Status updated -->
+        <mxCell id="msg14" value="14. OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="630" as="sourcePoint"/>
+            <mxPoint x="400" y="630" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 15. Notify students -->
+        <mxCell id="msg15" value="15. Emit 'session_started' event" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="660" as="sourcePoint"/>
+            <mxPoint x="1000" y="660" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 16. Return success -->
+        <mxCell id="msg16" value="16. 200 {status: 'ONGOING', startedAt}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="690" as="sourcePoint"/>
+            <mxPoint x="100" y="690" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Session in progress -->
+        <mxCell id="note2" value="[Session active - students can check in]&#xa;[Teacher can view real-time attendance]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="720" width="250" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- 17. Teacher ends session -->
+        <mxCell id="msg17" value="17. PUT /sessions/{sessionId}/end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="780" as="sourcePoint"/>
+            <mxPoint x="400" y="780" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 18. Get final attendance count -->
+        <mxCell id="msg18" value="18. SELECT COUNT(attendances) WHERE sessionId" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="810" as="sourcePoint"/>
+            <mxPoint x="700" y="810" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 19. Return attendance count -->
+        <mxCell id="msg19" value="19. Attendance count: {count}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="840" as="sourcePoint"/>
+            <mxPoint x="400" y="840" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 20. UPDATE Session to DONE -->
+        <mxCell id="msg20" value="20. UPDATE Session SET status='DONE', endedAt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="870" as="sourcePoint"/>
+            <mxPoint x="700" y="870" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 21. Session completed -->
+        <mxCell id="msg21" value="21. OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="900" as="sourcePoint"/>
+            <mxPoint x="400" y="900" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 22. Generate session report -->
+        <mxCell id="msg22" value="22. Generate session report (duration, attendance count)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="930" as="sourcePoint"/>
+            <mxPoint x="400" y="950" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 23. Return success -->
+        <mxCell id="msg23" value="23. 200 {status: 'DONE', attendanceCount, endedAt}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="980" as="sourcePoint"/>
+            <mxPoint x="100" y="980" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Final state -->
+        <mxCell id="note3" value="[Session completed and archived]&#xa;[Teacher views session report]&#xa;[Students can view completion certificate]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="1010" width="300" height="50" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-13" version="21.0" type="device">
+  <diagram name="Sequence: Payroll Calculation" id="seq_payroll">
+    <mxGraphModel dx="1800" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1800" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="Sequence Diagram: Payroll Calculation" style="text;html=1;align=center;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="1800" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- Actors -->
+        <mxCell id="admin_box" value="Admin Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5C6BC0;strokeColor=#1A237E;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="payroll_box" value="Payroll Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9575CD;strokeColor=#4A148C;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="backend_box" value="Backend API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="650" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="database_box" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=3;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="60" width="100" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- Lifelines -->
+        <mxCell id="admin_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="0" height="1250" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="payroll_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="0" height="1250" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="backend_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="700" y="100" width="0" height="1250" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="database_line" value="" style="line;strokeWidth=3;html=1" vertex="1" parent="1">
+          <mxGeometry x="1000" y="100" width="0" height="1250" as="geometry"/>
+        </mxCell>
+        
+        <!-- Messages -->
+        
+        <!-- 1. Admin triggers payroll (POST /admin/payroll/generate) -->
+        <mxCell id="msg1" value="1. POST /admin/payroll/generate (monthYear)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="140" as="sourcePoint"/>
+            <mxPoint x="700" y="140" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <!-- 2. Backend xác thực JWT, kiểm tra role ADMIN -->
+        <mxCell id="msg2a" value="2. Xác thực JWT, kiểm tra role ADMIN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="170" as="sourcePoint"/>
+            <mxPoint x="700" y="190" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <!-- 2b. Nếu không hợp lệ: trả lỗi 401/403 -->
+        <mxCell id="msg2b" value="2b. Nếu không hợp lệ: trả lỗi 401/403" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3;strokeColor=#D32F2F" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="200" as="sourcePoint"/>
+            <mxPoint x="100" y="200" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <!-- 2c. Nếu hợp lệ: tiếp tục -->
+        <mxCell id="msg2c" value="2c. Nếu hợp lệ: tiếp tục" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=2;dashed=1;strokeColor=#388E3C" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="210" as="sourcePoint"/>
+            <mxPoint x="700" y="220" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 3. Call PayrollService.calculateMonthlyPayroll() (nếu hợp lệ) -->
+        <mxCell id="msg3" value="3. Call PayrollService.calculateMonthlyPayroll()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="230" as="sourcePoint"/>
+            <mxPoint x="400" y="230" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Payroll service begins -->
+        <mxCell id="note1" value="[Payroll Service Processing...]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="350" y="245" width="200" height="25" as="geometry"/>
+        </mxCell>
+        
+        <!-- 4. Query all teachers -->
+        <mxCell id="msg4" value="4. SELECT users WHERE role='TEACHER'" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="290" as="sourcePoint"/>
+            <mxPoint x="1000" y="290" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 5. List of teachers -->
+        <mxCell id="msg5" value="5. [{teacher1}, {teacher2}, ...]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="320" as="sourcePoint"/>
+            <mxPoint x="400" y="320" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 6. For each teacher: query sessions -->
+        <mxCell id="msg6" value="6. For each teacher:" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="350" as="sourcePoint"/>
+            <mxPoint x="400" y="370" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 7. Query completed sessions -->
+        <mxCell id="msg7" value="7. SELECT sessions WHERE teacherId AND status='DONE'" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="400" as="sourcePoint"/>
+            <mxPoint x="1000" y="400" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 8. Return sessions for this month -->
+        <mxCell id="msg8" value="8. Sessions for month [{session1}, {session2}]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="430" as="sourcePoint"/>
+            <mxPoint x="400" y="430" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 9. Query attendance for each session -->
+        <mxCell id="msg9" value="9. SELECT attendances WHERE sessionId" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="460" as="sourcePoint"/>
+            <mxPoint x="1000" y="460" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 10. Return attendance records -->
+        <mxCell id="msg10" value="10. Attendance count per session" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="490" as="sourcePoint"/>
+            <mxPoint x="400" y="490" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Calculation note -->
+        <mxCell id="note2" value="[Calculate total hours, multiply by hourly_rate]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="350" y="515" width="200" height="25" as="geometry"/>
+        </mxCell>
+        
+        <!-- 11. Calculate total salary -->
+        <mxCell id="msg11" value="11. totalHours * hourlyRate - penalties" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="560" as="sourcePoint"/>
+            <mxPoint x="400" y="580" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 12. Create SalaryRecord for each teacher -->
+        <mxCell id="msg12" value="12. INSERT SalaryRecord (teacherId, month, totalSalary)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="610" as="sourcePoint"/>
+            <mxPoint x="1000" y="610" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 13. Records saved -->
+        <mxCell id="msg13" value="13. SalaryRecords created for all teachers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="640" as="sourcePoint"/>
+            <mxPoint x="400" y="640" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 14. Generate payroll report -->
+        <mxCell id="msg14" value="14. Generate payroll report (summary, details)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="670" as="sourcePoint"/>
+            <mxPoint x="400" y="690" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 15. Return payroll report to backend -->
+        <mxCell id="msg15" value="15. {payrollReport}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="720" as="sourcePoint"/>
+            <mxPoint x="700" y="720" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 16. Trả kết quả về admin: 200 {report: {teachers, totalAmount, date}} hoặc lỗi nếu có -->
+        <mxCell id="msg16" value="16. 200 {report: {teachers, totalAmount, date}} hoặc lỗi nếu có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="750" as="sourcePoint"/>
+            <mxPoint x="100" y="750" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Admin reviews -->
+        <mxCell id="note3" value="[Admin reviews payroll on dashboard]&#xa;[Can approve, modify, or reject]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="780" width="200" height="40" as="geometry"/>
+        </mxCell>
+        
+        <!-- 17. Admin confirms payment -->
+        <mxCell id="msg17" value="17. PUT /admin/payroll/{reportId}/confirm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="840" as="sourcePoint"/>
+            <mxPoint x="700" y="840" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 18. Process payment (bank transfer) -->
+        <mxCell id="msg18" value="18. Process payment via bank transfer/gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="870" as="sourcePoint"/>
+            <mxPoint x="700" y="890" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 19. UPDATE SalaryRecord status -->
+        <mxCell id="msg19" value="19. UPDATE SalaryRecord SET status='PAID'" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="920" as="sourcePoint"/>
+            <mxPoint x="1000" y="920" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 20. Status updated -->
+        <mxCell id="msg20" value="20. OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="950" as="sourcePoint"/>
+            <mxPoint x="700" y="950" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 21. Emit notification -->
+        <mxCell id="msg21" value="21. Emit 'payroll_paid' event to teachers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=classic;fontSize=14;strokeWidth=3;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="980" as="sourcePoint"/>
+            <mxPoint x="700" y="1000" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 22. Return success -->
+        <mxCell id="msg22" value="22. 200 {status: 'PAID', transactionDate}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=none;fontSize=14;strokeWidth=3" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="1030" as="sourcePoint"/>
+            <mxPoint x="100" y="1030" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Note: Final state -->
+        <mxCell id="note4" value="[Teachers notified of payment]&#xa;[Teachers can view salary details in app]" style="text;html=1;align=center;fontSize=14;fontStyle=2;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="1060" width="250" height="40" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

@@ -218,5 +218,5 @@ const JWT_SECRET =
   });
 }
 
-// For Vercel
+// Export app for hosting/runtime integrations
 module.exports = app;

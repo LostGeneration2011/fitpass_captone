@@ -163,7 +163,7 @@ cd fitpass-app && npm test
 - Configure environment variables
 
 ### Admin Dashboard
-- Deploy to Vercel, Netlify, or similar
+- Deploy to Railway or similar Node.js hosting
 - Set up CI/CD pipeline
 - Configure environment variables
 

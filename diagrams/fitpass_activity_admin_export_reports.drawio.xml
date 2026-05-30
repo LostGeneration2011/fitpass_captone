@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-29" agent="FitPass Activity Diagram" version="21.0" type="device">
+  <diagram name="Activity Diagram - Admin Export Reports" id="fitpass_activity_admin_export_reports">
+    <mxGraphModel dx="900" dy="400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="900" pageHeight="400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <!-- Admin mở trang export -->
+        <mxCell id="open" value="Admin: Mở trang Export Reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="100" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow1" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="start" target="open">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Admin chọn loại báo cáo và tham số lọc -->
+        <mxCell id="select" value="Admin: Chọn loại báo cáo và tham số lọc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="350" y="30" width="260" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow2" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="open" target="select">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Admin nhấn Export -->
+        <mxCell id="export" value="Admin: Nhấn Export" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="650" y="30" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow3" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="select" target="export">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System nhận request, xác thực, truy vấn, sinh file -->
+        <mxCell id="backend" value="System: Nhận request, xác thực quyền, truy vấn dữ liệu, sinh file báo cáo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="850" y="30" width="320" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow4" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="export" target="backend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- System trả file về frontend -->
+        <mxCell id="return" value="System: Trả file báo cáo về frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2874A6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1200" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow5" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="backend" target="return">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- Admin nhận file -->
+        <mxCell id="download" value="Admin: Nhận file báo cáo, tải về máy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#B7950B;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1450" y="30" width="220" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow6" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="return" target="download">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000;strokeColor=#000;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="1700" y="40" width="30" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow7" style="endArrow=block;html=1;strokeColor=#000;strokeWidth=2" edge="1" parent="1" source="download" target="end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

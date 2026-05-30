@@ -1,0 +1,91 @@
+SLIDE 1
+SLIDE 1
+Chúng tôi biết trải nghiệm của bạn là quan trọng.
+Little Squad - Đội ngũ phát triển:
+Nguyễn Minh Tấn - Team Leader
+Nguyễn Thái Hào - Developer
+Nguyễn Trung Kiên -Developer
+SLIDE 2
+SLIDE 2
+Flutter - Firebase
+Trải Nghiệm Gốc, Một Mã Nguồn
+Tận dụng Flutter 3.24+ để tạo ra ứng dụng hiệu suất cao, được biên dịch chính trên iOS và Android
+Hệ sinh thái tuyệt vời từ Google
+Kết hợp hoàn hảo mạnh mẽ Flutter - Firebase. tăng tốc trực quan hoá. giảm thiếu lệch hướng
+Kiểm Soát Giao Diện Hoàn Hảo Từng Pixel
+Sử dụng widget phong phú của Flutter để tạo ra giao diện người dùng tùy chỉnh, hiện đại và có khả năng phản hồi cao, nhất quán trên tất cả các nền tảng.
+SLIDE 3
+SLIDE 3
+Sociable: Trung Tâm Tương Tác Chất Lượng Cao
+Tin Nhắn Trực Tiếp (DM)
+Giao tiếp văn bản độ trễ thấp dưới 0,5 giây. Message types đa dạng, acction tiện lợi, đảm bảo trải nghiệm liền mạch hoàn mỹ dễ tiếp cận.
+Cuộc Gọi Thoại & Video
+Được hỗ trợ bởi công nghệ Agora tích hợp để truyền âm thanh và video thời gian thực an toàn, chất lượng cao. Hỗ trợ cả cuộc gọi 1-1 và nhóm với tối ưu hóa băng thông động.
+SLIDE 4
+SLIDE 4
+Xây Dựng và Mở Rộng Cộng Đồng Số
+Kiến trúc của Sociable được thiết kế xung quanh tính đồng thời cao, cho phép giao tiếp nhóm quy mô lớn và tạo lập cộng đồng.
+Cấu Trúc 'Server'
+Người dùng có thể tạo và tham gia các 'Server' tùy chỉnh, cung cấp không gian riêng tư, chỉ theo lời mời để tương tác nhóm tập trung và lưu trữ nội dung bền vững.
+Tổ Chức Kênh
+Trong mỗi Server, nội dung được phân đoạn logic thành các kênh văn bản và thoại, cho phép các cuộc trò chuyện có cấu trúc cao và tập trung.
+Quản Lý Vai Trò Nâng Cao
+Hệ thống quyền chi tiết cho phép quản trị viên server định nghĩa các vai trò tùy chỉnh, cấp quyền kiểm duyệt và truy cập cụ thể.
+SLIDE 5
+SLIDE 5
+Kiến Trúc: Hiệu Suất Thời Gian Thực & Khả Năng Mở Rộng
+Giao Diện Flutter
+Quản Lý Trạng Thái
+Cổng API
+Microservices & Thời Gian Thực
+SLIDE 6
+SLIDE 6
+Điểm Mạnh Kỹ Thuật: Điều Khiến Chúng Tôi Khác Biệt
+Bảo Mật & Quyền Riêng Tư
+Triển khai các Rules thắt chặt bảo mật dữ liệu cho tất cả tin nhắn trực tiếp và cuộc gọi thoại/video, ưu tiên quyền riêng tư người dùng và tính toàn vẹn dữ liệu.
+Độ Trễ Được Tối Ưu
+Giảm thiểu độ trễ địa lý, đảm bảo trải nghiệm thời gian thực gần như tức thời.
+Bộ Nhớ Đệm Dữ Liệu Hiệu Quả
+Các chiến lược bộ nhớ đệm phía client, được tối ưu cho Flutter, giảm các cuộc gọi API lặp lại, cải thiện thời gian tải và hỗ trợ khả năng offline cho nội dung cốt lõi.
+SLIDE 7
+SLIDE 7
+Các Cột Mốc Kỹ Thuật Sắp Tới
+Trọng tâm trước mắt của chúng tôi là mở rộng tính tương tác và độ trưởng thành của nền tảng.
+1
+Triển Khai Q4
+Giới thiệu khả năng Phát Trực Tiếp Trong Ứng Dụng cho các buổi phát sóng và sự kiện cộng đồng. Tích hợp các công cụ kiểm duyệt được hỗ trợ bởi AI.
+2
+Tối Ưu Hóa Q1
+Kiểm toán hiệu suất tập trung vào giảm dung lượng bộ nhớ và hiệu quả CPU trên các thiết bị Android cấp thấp. Hoàn thiện tính đa nền tảng.
+3
+Mở Rộng Q2
+Phát triển Sociable Bot API để hỗ trợ việc quản lý "Server" mang tính chuyên nghiệp cộng đồng lớn.
+SLIDE 8
+SLIDE 8
+Lợi Thế Của Sociable: Hiện Đại, Tương Tác, Lấy Cộng Đồng Làm Trung Tâm
+Phát Triển Thống Nhất: Tận dụng Flutter để có tính nhất quán và tốc độ vượt trội trên nhiều nền tảng.
+Lõi Thời Gian Thực: Tích hợp mạnh mẽ cho thoại, video và tin nhắn hàng đầu.
+Quy Mô Cộng Đồng: Kiến trúc hỗ trợ các cộng đồng rộng lớn, tương tác cao.
+Tập Trung Nhà Phát Triển: Ưu tiên kiến trúc sạch, dễ bảo trì, khả năng kiểm thử.
+Quyền Riêng Tư Người Dùng: Cam kết mã hóa và các giao thức xử lý dữ liệu an toàn.
+Sociable không chỉ là một ứng dụng; nó là một nền tảng có thể mở rộng được xây dựng cho tương lai của tương tác xã hội số.
+SLIDE 9
+SLIDE 9
+Theo dõi hiệu suất và quản lý nợ kỹ thuật của chúng tôi.
+99.99%
+Mục Tiêu Thời Gian Hoạt Động API
+Cam kết của chúng tôi về độ tin cậy tối đa cho các dịch vụ thời gian thực.
+85%
+Độ Bao Phủ Kiểm Thử
+Duy trì chất lượng cao thông qua kiểm thử tự động nghiêm ngặt.
+90%
+Giữ Chân Người Dùng (D7)
+Thước đo thành công tương tác dài hạn dựa trên chất lượng tương tác.
+100ms
+Độ Trễ Tin Nhắn Tối Đa
+Mục tiêu của chúng tôi cho thời gian gửi tin nhắn trong điều kiện tải thông thường.
+SLIDE 10
+SLIDE 10
+Sẵn Sàng Xây Dựng Tương Lai
+Chúng tôi mong muốn vượt qua những ranh giới của những gì có thể. Can't stop, we won't stop!
+website

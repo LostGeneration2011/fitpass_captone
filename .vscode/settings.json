@@ -2,20 +2,62 @@
     "java.configuration.updateBuildConfiguration": "interactive",
     "java.compile.nullAnalysis.mode": "automatic",
     "java.import.exclusions": [
-        "**/node_modules/**"
+        "**/node_modules/**",
+        "**/.next/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/out/**"
     ],
     "files.exclude": {
-        "**/node_modules/**": true
+        "**/node_modules/**": true,
+        "**/.next/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/out/**": true,
+        "**/.expo/**": true,
+        "**/.turbo/**": true,
+        "**/coverage/**": true,
+        "**/android/.gradle/**": true,
+        "**/android/app/build/**": true,
+        "**/ios/build/**": true
     },
     "java.project.sourcePaths": [
         "fitpass-app/android"
     ],
     "java.configuration.workspaceCacheLimit": 90,
     "files.watcherExclude": {
-        "**/node_modules/**": true
+        "**/node_modules/**": true,
+        "**/.next/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/out/**": true,
+        "**/.expo/**": true,
+        "**/.turbo/**": true,
+        "**/coverage/**": true,
+        "**/android/.gradle/**": true,
+        "**/android/app/build/**": true,
+        "**/ios/build/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true
     },
     "search.exclude": {
-        "**/node_modules/**": true
+        "**/node_modules/**": true,
+        "**/.next/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/out/**": true,
+        "**/.expo/**": true,
+        "**/.turbo/**": true,
+        "**/coverage/**": true,
+        "**/android/.gradle/**": true,
+        "**/android/app/build/**": true,
+        "**/ios/build/**": true
+    },
+    "js/ts.tsserver.automaticTypeAcquisition.enabled": false,
+    "js/ts.tsserver.watchOptions": {
+        "watchFile": "useFsEventsOnParentDirectory",
+        "watchDirectory": "useFsEvents",
+        "fallbackPolling": "dynamicPriorityPolling"
     },
     "java.import.gradle.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.4.7-hotspot"
 }

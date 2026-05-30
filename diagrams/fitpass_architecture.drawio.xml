@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-12" agent="FitPass Architecture" version="21.0" type="device">
+  <diagram name="FitPass Software Architecture" id="fitpass_arch">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="FITPASS - Software Architecture (3-Layer Pattern)" style="text;html=1;align=center;verticalAlign=top;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="10" y="10" width="1380" height="30" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ CLIENT LAYER ============ -->
+        <mxCell id="client_layer" value="CLIENT LAYER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=4;fontSize=16;fontStyle=1;align=center;verticalAlign=top;spacingTop=15" vertex="1" parent="1">
+          <mxGeometry x="20" y="60" width="1360" height="220" as="geometry"/>
+        </mxCell>
+        
+        <!-- Admin Web Dashboard -->
+        <mxCell id="admin_box" value="Next.js Admin Web Dashboard&#xa;(Port 3001)&#xa;TypeScript + Tailwind CSS&#xa;RBAC: ADMIN role only" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#0D47A1;strokeWidth=3;fontSize=14;align=center;fontColor=#000" vertex="1" parent="1">
+          <mxGeometry x="50" y="90" width="180" height="120" as="geometry"/>
+        </mxCell>
+        
+        <!-- Mobile App -->
+        <mxCell id="mobile_box" value="React Native Mobile App&#xa;(iOS 13+ &amp; Android 8+)&#xa;Expo SDK ~54&#xa;NativeWind Styling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#1B5E20;strokeWidth=3;fontSize=14;align=center;fontColor=#fff" vertex="1" parent="1">
+          <mxGeometry x="280" y="90" width="180" height="120" as="geometry"/>
+        </mxCell>
+        
+        <!-- Admin Features -->
+        <mxCell id="admin_features" value="Features:&#xa;- Dashboard Stats&#xa;- User Management&#xa;- Class Approval&#xa;- Payroll Calc" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#1976D2;strokeWidth=2;fontSize=12;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="50" y="155" width="180" height="50" as="geometry"/>
+        </mxCell>
+        
+        <!-- Mobile Features -->
+        <mxCell id="mobile_features" value="Features:&#xa;- Browse Classes&#xa;- QR Check-in&#xa;- Enrollment Mgmt&#xa;- View Attendance" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#1B5E20;strokeWidth=2;fontSize=12;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="280" y="155" width="180" height="50" as="geometry"/>
+        </mxCell>
+        
+        <!-- Communication Protocols -->
+        <mxCell id="http_rest_label" value="HTTP/REST + JWT in Authorization Header" style="text;html=1;align=center;fontSize=14;fontStyle=1;fontColor=#D32F2F" vertex="1" parent="1">
+          <mxGeometry x="100" y="205" width="300" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- WebSocket Label -->
+        <mxCell id="websocket_label" value="WebSocket (Socket.IO) - Real-time Events" style="text;html=1;align=center;fontSize=14;fontStyle=1;fontColor=#F57C00;strokeColor=#F57C00;strokeWidth=3;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="600" y="205" width="280" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ API LAYER ============ -->
+        <mxCell id="api_layer" value="API LAYER - Express.js RESTful Server (Port 3000)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;strokeWidth=4;fontSize=16;fontStyle=1;align=center;verticalAlign=top;spacingTop=15" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="1360" height="320" as="geometry"/>
+        </mxCell>
+        
+        <!-- Auth Middleware -->
+        <mxCell id="auth" value="Auth Middleware&#xa;JWT Verify&#xa;Role Check&#xa;Passport OAuth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#512DA8;strokeWidth=3;fontSize=14;align=center;fontColor=#fff" vertex="1" parent="1">
+          <mxGeometry x="50" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- Controllers -->
+        <mxCell id="controllers" value="Controllers&#xa;Request Handlers&#xa;Input Validation&#xa;Response Formatting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A5D6A7;strokeColor=#2E7D32;strokeWidth=3;fontSize=14;align=center;fontColor=#fff" vertex="1" parent="1">
+          <mxGeometry x="220" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- Services -->
+        <mxCell id="services" value="Services Layer&#xa;Business Logic&#xa;ClassService&#xa;SessionService&#xa;PayrollService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57F17;strokeWidth=3;fontSize=14;align=center;fontColor=#000" vertex="1" parent="1">
+          <mxGeometry x="390" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- Prisma ORM -->
+        <mxCell id="prisma" value="Prisma ORM&#xa;Type-Safe Queries&#xa;Schema Definition&#xa;Migrations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EF9A9A;strokeColor=#C62828;strokeWidth=3;fontSize=14;align=center;fontColor=#fff" vertex="1" parent="1">
+          <mxGeometry x="560" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- WebSocket Handler -->
+        <mxCell id="websocket_handler" value="WebSocket (Socket.IO)&#xa;Real-time Namespaces&#xa;Attendance Updates&#xa;Chat &amp; Notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;strokeWidth=3;fontSize=14;align=center;fontColor=#000" vertex="1" parent="1">
+          <mxGeometry x="730" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- Error Handler -->
+        <mxCell id="error_handler" value="Error Handler&#xa;Global Middleware&#xa;Status Mapping&#xa;Log Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#B71C1C;strokeWidth=3;fontSize=14;align=center;fontColor=#fff" vertex="1" parent="1">
+          <mxGeometry x="900" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- Config/Utils -->
+        <mxCell id="config" value="Config &amp; Utils&#xa;passport.ts&#xa;Environment Setup&#xa;Utilities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B3E5FC;strokeColor=#0277BD;strokeWidth=3;fontSize=14;align=center;fontColor=#000" vertex="1" parent="1">
+          <mxGeometry x="1070" y="330" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <!-- Flow Arrows (Request Pipeline) -->
+        <mxCell id="flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;dashed=0;startArrow=none;endArrow=classic" edge="1" parent="1" source="auth" target="controllers">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="flow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;dashed=0;startArrow=none;endArrow=classic" edge="1" parent="1" source="controllers" target="services">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="flow3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000;strokeWidth=3;dashed=0;startArrow=none;endArrow=classic" edge="1" parent="1" source="services" target="prisma">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="flow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#F57C00;strokeWidth=3;dashed=1;startArrow=none;endArrow=classic" edge="1" parent="1" source="services" target="websocket_handler">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="flow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#B71C1C;strokeWidth=3;dashed=0;startArrow=none;endArrow=classic" edge="1" parent="1" source="controllers" target="error_handler">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Legend for flow -->
+        <mxCell id="legend" value="Request Flow: -> | Real-time: -> (dashed)" style="text;html=1;align=left;fontSize=12;fontStyle=0;fontColor=#666" vertex="1" parent="1">
+          <mxGeometry x="50" y="445" width="300" height="15" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ DATA LAYER ============ -->
+        <mxCell id="data_layer" value="DATA LAYER - PostgreSQL 15 Database (Railway.app)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F2F1;strokeColor=#00695C;strokeWidth=4;fontSize=16;fontStyle=1;align=center;verticalAlign=top;spacingTop=15" vertex="1" parent="1">
+          <mxGeometry x="20" y="640" width="1360" height="230" as="geometry"/>
+        </mxCell>
+        
+        <!-- Database Tables -->
+        <mxCell id="db_user" value="User Table&#xa;id, email, role&#xa;fullName, hourlyRate&#xa;googleId, password" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="50" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db_class" value="Class Table&#xa;id, name, status&#xa;teacherId, minStudents&#xa;capacity, description" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="175" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db_session" value="Session Table&#xa;id, classId, roomId&#xa;startTime, endTime&#xa;status (UPCOMING/ONGOING)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="300" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db_enrollment" value="Enrollment Table&#xa;id, userId, classId&#xa;status, createdAt&#xa;transactionRef" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="425" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db_attendance" value="Attendance Table&#xa;id, userId, sessionId&#xa;checkedInAt (QR scan)&#xa;status" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="550" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db_salary" value="SalaryRecord Table&#xa;id, teacherId, month/year&#xa;totalHours, amount&#xa;status (PENDING/PAID)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="675" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="db_other" value="Other Tables&#xa;Transaction, Room&#xa;ChatThread, ChatMsg&#xa;Notification, ForumPost" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2DFDB;strokeColor=#004D40;strokeWidth=2;fontSize=12;align=center" vertex="1" parent="1">
+          <mxGeometry x="800" y="670" width="110" height="80" as="geometry"/>
+        </mxCell>
+        
+        <!-- Database Connection Info -->
+        <mxCell id="db_info" value="PostgreSQL 15 Connection&#xa;- Local Dev: sqlite:dev.db or postgresql://localhost:5432/fitpass&#xa;- Production: DATABASE_URL (Railway auto-injected)&#xa;- Connection Pooling: Prisma managed" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F57F17;strokeWidth=2;fontSize=12;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="50" y="760" width="760" height="70" as="geometry"/>
+        </mxCell>
+        
+        <!-- Security Info -->
+        <mxCell id="security_info" value="Security Measures&#xa;- JWT Expiry: 30min (configurable) | - RBAC: ADMIN/TEACHER/STUDENT | - CORS: Whitelist origins&#xa;- Password Hash: bcrypt | - Google OAuth via Passport.js | - Token in Authorization: Bearer &lt;token&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F0F4C3;strokeColor=#9CCC65;strokeWidth=2;fontSize=12;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="50" y="840" width="1310" height="50" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

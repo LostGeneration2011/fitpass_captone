@@ -1,0 +1,40 @@
+SLIDE 1
+— COVER
+Project Name: FITPASS
+Subtitle: Smart Gym Management System
+SLIDE 2
+— OBJECTIVES
+Mục tiêu dự án FitPass
+Số hóa quy trình quản lý phòng gym — thay thế quản lý thủ công bằng hệ thống đa nền tảng
+SLIDE 3
+— INTRODUCTION TO PROJECT
+Giới thiệu dự án
+Bối cảnh:
+SLIDE 4
+— CUSTOMER REQUIREMENTS
+Yêu cầu từ khách hàng / người dùng
+# | Vai trò: Yêu cầu
+SLIDE 5
+— USE CASE
+Sơ đồ Use Case — 3 Actor chính
+STUDENT:
+SLIDE 6
+— ACTIVITY DIAGRAM
+Sơ đồ hoạt động — Luồng QR Check-in (luồng tiêu biểu)
+Luồng duyệt lớp (Class Approval):
+SLIDE 7
+— UI DESIGN
+Thiết kế giao diện
+Admin Dashboard (Next.js Web)
+SLIDE 8
+— CLASS DIAGRAM
+Sơ đồ lớp — Các thực thể cốt lõi
+Service Classes (Business Logic):
+SLIDE 9
+— SEQUENCE DIAGRAM
+Sơ đồ tuần tự — QR Check-in (luồng quan trọng nhất)
+Sequence Diagram — Teacher tạo lớp & Admin duyệt:
+SLIDE 10
+— EXPERIENCE LEARNED
+Kinh nghiệm rút ra từ dự án
+Kỹ thuật

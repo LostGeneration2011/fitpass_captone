@@ -1,0 +1,298 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-12" agent="FitPass Class Diagram" version="21.0" type="device">
+  <diagram name="Class Diagram - FITPASS" id="fitpass_class_diagram">
+    <mxGraphModel dx="2000" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1.2" pageWidth="2000" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="FITPASS - Class Diagram (UML)" style="text;html=1;align=center;verticalAlign=top;fontSize=20;fontStyle=1;fontColor=#000" vertex="1" parent="1">
+          <mxGeometry x="10" y="10" width="1980" height="30" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ USER CLASS (Row 1) ============ -->
+        <mxCell id="class_user" value="User&#xa;----------------&#xa;- id: UUID&#xa;- email: String&#xa;- fullName: String&#xa;- password: String (hashed)&#xa;- role: UserRole [ADMIN|TEACHER|STUDENT]&#xa;- googleId: String?&#xa;- hourlyRate: Float?&#xa;- createdAt: DateTime&#xa;----------------&#xa;+ login(email, pwd): JWT&#xa;+ register(data): User&#xa;+ updateProfile(data): User&#xa;+ changePassword(old, new): bool" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFCCCC;strokeColor=#B71C1C;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="220" height="200" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ CLASS CLASS (Row 1) ============ -->
+        <mxCell id="class_class" value="Class&#xa;----------------&#xa;- id: UUID&#xa;- name: String&#xa;- description: String&#xa;- status: ClassStatus [PENDING|APPROVED|REJECTED]&#xa;- capacity: Int&#xa;- minStudents: Int&#xa;- teacherId: UUID&#xa;- createdAt: DateTime&#xa;----------------&#xa;+ approve(): void&#xa;+ reject(): void&#xa;+ updateCapacity(cap): void&#xa;+ getEnrollments(): Enrollment[]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CCFFCC;strokeColor=#1B5E20;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="370" y="60" width="220" height="200" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ SESSION CLASS (Row 1) ============ -->
+        <mxCell id="class_session" value="Session&#xa;----------------&#xa;- id: UUID&#xa;- classId: UUID&#xa;- roomId: UUID&#xa;- startTime: DateTime&#xa;- endTime: DateTime&#xa;- status: SessionStatus [UPCOMING|ONGOING|DONE|CANCELLED]&#xa;- createdAt: DateTime&#xa;----------------&#xa;+ startSession(): void&#xa;+ endSession(): void&#xa;+ getAttendees(): User[]&#xa;+ cancelSession(): void" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#CCCCFF;strokeColor=#0D47A1;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="680" y="60" width="220" height="200" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ ENROLLMENT CLASS (Row 2) ============ -->
+        <mxCell id="class_enrollment" value="Enrollment&#xa;----------------&#xa;- id: UUID&#xa;- userId: UUID&#xa;- classId: UUID&#xa;- status: Enum [ACTIVE|COMPLETED|CANCELLED]&#xa;- enrolledAt: DateTime&#xa;- refundEligible: bool&#xa;----------------&#xa;+ cancel(): bool&#xa;+ complete(): void&#xa;+ isRefundable(): bool" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFCC;strokeColor=#F57F17;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="60" y="350" width="220" height="180" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ ATTENDANCE CLASS (Row 2) ============ -->
+        <mxCell id="class_attendance" value="Attendance&#xa;----------------&#xa;- id: UUID&#xa;- userId: UUID&#xa;- sessionId: UUID&#xa;- checkedInAt: DateTime&#xa;- status: Enum [PRESENT|ABSENT|LATE]&#xa;----------------&#xa;+ markPresent(): void&#xa;+ markAbsent(): void&#xa;+ getCheckInTime(): DateTime" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#512DA8;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="370" y="350" width="220" height="180" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ SALARY RECORD CLASS (Row 3) ============ -->
+        <mxCell id="class_salary" value="SalaryRecord&#xa;----------------&#xa;- id: UUID&#xa;- teacherId: UUID&#xa;- month: Int&#xa;- year: Int&#xa;- totalHours: Float&#xa;- amount: Float&#xa;- status: Enum [PENDING|PAID]&#xa;- paidDate: DateTime?&#xa;----------------&#xa;+ calculate(): Float&#xa;+ markAsPaid(): void&#xa;+ getDetails(): obj" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="680" y="350" width="220" height="180" as="geometry"/>
+        </mxCell>
+        
+        <!-- ============ TRANSACTION CLASS (Row 3) ============ -->
+        <mxCell id="class_transaction" value="Transaction&#xa;----------------&#xa;- id: UUID&#xa;- userId: UUID&#xa;- amount: Float&#xa;- type: Enum [PURCHASE|REFUND|PAYMENT]&#xa;- reference: String (enrollmentId)&#xa;- status: Enum [PENDING|COMPLETED|FAILED]&#xa;- createdAt: DateTime&#xa;----------------&#xa;+ complete(): void&#xa;+ refund(): void" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00838F;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+          <mxGeometry x="1000" y="350" width="220" height="180" as="geometry"/>
+        </mxCell>
+
+          <!-- ============ ROOM CLASS (Row 4) ============ -->
+          <mxCell id="class_room" value="Room&#xa;----------------&#xa;- id: UUID&#xa;- name: String&#xa;- description: String?&#xa;- capacity: Int&#xa;- equipment: String?&#xa;- status: RoomStatus&#xa;- createdAt: DateTime&#xa;- updatedAt: DateTime" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#B3E5FC;strokeColor=#0288D1;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+            <mxGeometry x="1250" y="60" width="220" height="160" as="geometry"/>
+          </mxCell>
+
+          <!-- ============ PACKAGE CLASS (Row 4) ============ -->
+          <mxCell id="class_package" value="Package&#xa;----------------&#xa;- id: UUID&#xa;- name: String&#xa;- description: String?&#xa;- price: Float&#xa;- credits: Int&#xa;- validDays: Int&#xa;- isActive: Boolean&#xa;- refundRate: Float&#xa;- penaltyRate: Float&#xa;- createdAt: DateTime&#xa;- updatedAt: DateTime" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#FBC02D;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+            <mxGeometry x="1250" y="250" width="220" height="180" as="geometry"/>
+          </mxCell>
+
+          <!-- ============ USERPACKAGE CLASS (Row 4) ============ -->
+          <mxCell id="class_userpackage" value="UserPackage&#xa;----------------&#xa;- id: UUID&#xa;- userId: UUID&#xa;- packageId: UUID&#xa;- creditsLeft: Int&#xa;- usedCredits: Int&#xa;- status: PackageStatus&#xa;- purchasedAt: DateTime&#xa;- expiresAt: DateTime&#xa;- createdAt: DateTime&#xa;- updatedAt: DateTime" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F2F1;strokeColor=#00796B;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+            <mxGeometry x="1250" y="450" width="220" height="180" as="geometry"/>
+          </mxCell>
+
+          <!-- ============ BOOKING CLASS (Row 4) ============ -->
+          <mxCell id="class_booking" value="Booking&#xa;----------------&#xa;- id: UUID&#xa;- userId: UUID&#xa;- sessionId: UUID&#xa;- userPackageId: UUID?&#xa;- creditsUsed: Int&#xa;- createdAt: DateTime" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F8BBD0;strokeColor=#C2185B;strokeWidth=3;fontSize=14;align=left;spacing=3" vertex="1" parent="1">
+            <mxGeometry x="1250" y="650" width="220" height="140" as="geometry"/>
+          </mxCell>
+
+          <!-- ============ RELATIONSHIPS BỔ SUNG ============ -->
+          <!-- Room 1-N Session -->
+          <mxCell id="rel_room_session" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_room" target="class_session">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1370" y="220"/>
+                <mxPoint x="790" y="220"/>
+              </Array>
+            </mxGeometry>
+          </mxCell>
+          <mxCell id="label_room_session" value="has sessions&#xa;1      N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_room_session">
+            <mxGeometry relative="1" as="geometry"/>
+          </mxCell>
+
+          <!-- Package 1-N UserPackage -->
+          <mxCell id="rel_package_userpackage" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_package" target="class_userpackage">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1370" y="430"/>
+                <mxPoint x="1370" y="450"/>
+              </Array>
+            </mxGeometry>
+          </mxCell>
+          <mxCell id="label_package_userpackage" value="is bought&#xa;1      N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_package_userpackage">
+            <mxGeometry relative="1" as="geometry"/>
+          </mxCell>
+
+          <!-- User 1-N UserPackage -->
+          <mxCell id="rel_user_userpackage" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_userpackage">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="170" y="240"/>
+                <mxPoint x="1370" y="540"/>
+              </Array>
+            </mxGeometry>
+          </mxCell>
+          <mxCell id="label_user_userpackage" value="owns&#xa;1      N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_userpackage">
+            <mxGeometry relative="1" as="geometry"/>
+          </mxCell>
+
+          <!-- UserPackage 1-N Booking -->
+          <mxCell id="rel_userpackage_booking" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_userpackage" target="class_booking">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1370" y="630"/>
+                <mxPoint x="1370" y="650"/>
+              </Array>
+            </mxGeometry>
+          </mxCell>
+          <mxCell id="label_userpackage_booking" value="books&#xa;1      N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_userpackage_booking">
+            <mxGeometry relative="1" as="geometry"/>
+          </mxCell>
+
+          <!-- User 1-N Booking -->
+          <mxCell id="rel_user_booking" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_booking">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="170" y="240"/>
+                <mxPoint x="1370" y="720"/>
+              </Array>
+            </mxGeometry>
+          </mxCell>
+          <mxCell id="label_user_booking" value="books&#xa;1      N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_booking">
+            <mxGeometry relative="1" as="geometry"/>
+          </mxCell>
+
+          <!-- Session 1-N Booking -->
+          <mxCell id="rel_session_booking" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_session" target="class_booking">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="790" y="260"/>
+                <mxPoint x="1370" y="720"/>
+              </Array>
+            </mxGeometry>
+          </mxCell>
+          <mxCell id="label_session_booking" value="has bookings&#xa;1      N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_session_booking">
+            <mxGeometry relative="1" as="geometry"/>
+          </mxCell>
+        
+        <!-- ============ RELATIONSHIPS ============ -->
+        
+        <!-- User 1-N Class (Teacher) -->
+        <mxCell id="rel_user_class" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_class">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="160"/>
+              <mxPoint x="370" y="160"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_user_class" value="teaches&#xa;1       N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_class">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Class 1-N Session -->
+        <mxCell id="rel_class_session" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_class" target="class_session">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="160"/>
+              <mxPoint x="680" y="160"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_class_session" value="has&#xa;1    N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_class_session">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- User 1-N Enrollment -->
+        <mxCell id="rel_user_enrollment" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_enrollment">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="170" y="260"/>
+              <mxPoint x="170" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_user_enrollment" value="enrolls in&#xa;1          N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_enrollment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Class 1-N Enrollment -->
+        <mxCell id="rel_class_enrollment" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_class" target="class_enrollment">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="260"/>
+              <mxPoint x="480" y="320"/>
+              <mxPoint x="280" y="320"/>
+              <mxPoint x="280" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_class_enrollment" value="has students&#xa;1            N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_class_enrollment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- User 1-N Attendance -->
+        <mxCell id="rel_user_attendance" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_attendance">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="170" y="280"/>
+              <mxPoint x="170" y="320"/>
+              <mxPoint x="480" y="320"/>
+              <mxPoint x="480" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_user_attendance" value="has records&#xa;1           N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_attendance">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Session 1-N Attendance -->
+        <mxCell id="rel_session_attendance" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_session" target="class_attendance">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="260"/>
+              <mxPoint x="790" y="320"/>
+              <mxPoint x="480" y="320"/>
+              <mxPoint x="480" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_session_attendance" value="tracks&#xa;1     N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_session_attendance">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- User 1-N SalaryRecord (Teacher) -->
+        <mxCell id="rel_user_salary" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_salary">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="170" y="300"/>
+              <mxPoint x="560" y="300"/>
+              <mxPoint x="790" y="300"/>
+              <mxPoint x="790" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_user_salary" value="earns&#xa;1    N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_salary">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- User 1-N Transaction -->
+        <mxCell id="rel_user_transaction" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#333;strokeWidth=3;endArrow=ERoneToMany;startArrow=none" edge="1" parent="1" source="class_user" target="class_transaction">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="170" y="310"/>
+              <mxPoint x="880" y="310"/>
+              <mxPoint x="1110" y="310"/>
+              <mxPoint x="1110" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="label_user_transaction" value="initiates&#xa;1         N" style="edgeLabel;resizable=0;align=center;fontSize=14;fontStyle=1" connectable="0" vertex="1" parent="rel_user_transaction">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend: 1..N = One-to-Many relationship | + public method | - private attribute" style="text;html=1;align=left;fontSize=14;fontStyle=0;fontColor=#333" vertex="1" parent="1">
+          <mxGeometry x="60" y="620" width="700" height="25" as="geometry"/>
+        </mxCell>
+        
+        <!-- Enums -->
+        <mxCell id="enum_user_role" value="UserRole enum&#xa;- ADMIN&#xa;- TEACHER&#xa;- STUDENT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999;strokeWidth=2;fontSize=14;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="60" y="700" width="140" height="100" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="enum_class_status" value="ClassStatus enum&#xa;- PENDING&#xa;- APPROVED&#xa;- REJECTED" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999;strokeWidth=2;fontSize=14;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="240" y="700" width="160" height="100" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="enum_session_status" value="SessionStatus enum&#xa;- UPCOMING&#xa;- ONGOING&#xa;- DONE&#xa;- CANCELLED" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999;strokeWidth=2;fontSize=14;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="440" y="700" width="180" height="120" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="enum_transaction_type" value="TransactionType enum&#xa;- PURCHASE&#xa;- REFUND&#xa;- PAYMENT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999;strokeWidth=2;fontSize=14;align=left;spacing=2" vertex="1" parent="1">
+          <mxGeometry x="660" y="700" width="160" height="100" as="geometry"/>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

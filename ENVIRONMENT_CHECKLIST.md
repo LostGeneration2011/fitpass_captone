@@ -28,8 +28,8 @@ NEXT_PUBLIC_API=https://onagraceous-unblenchingly-ebony.ngrok-free.dev/api
 ### 4. Mobile App Production URLs (.env)
 ```bash
 # Add to fitpass-app/.env for production:
-EXPO_PUBLIC_API=https://your-backend.vercel.app/api
-EXPO_PUBLIC_WS=wss://your-backend.vercel.app/ws
+EXPO_PUBLIC_API=https://your-backend.railway.app/api
+EXPO_PUBLIC_WS=wss://your-backend.railway.app/ws
 ```
 
 ## ✅ ĐÃ THIẾT LẬP TỐT
@@ -38,15 +38,15 @@ EXPO_PUBLIC_WS=wss://your-backend.vercel.app/ws
 - ✅ Cloudinary (Image uploads)  
 - ✅ JWT & QR secrets
 - ✅ CORS origins
-- ✅ Vercel deploy config
+- ✅ Railway deploy config
 - ✅ Prisma ORM
 - ✅ Socket.io WebSocket
 
 ## 🚀 PRODUCTION READY STEPS
 
-### 1. Vercel Deployment
+### 1. Railway Deployment
 ```bash
-# Set these in Vercel dashboard:
+# Set these in Railway dashboard:
 DATABASE_URL=postgresql://production-url
 JWT_SECRET=production-jwt-secret
 MAILTRAP_USER=production-email-user
@@ -54,8 +54,8 @@ PAYPAL_CLIENT_ID=production-paypal-id
 ```
 
 ### 2. Domain Setup
-- Admin: `https://fitpass-admin.vercel.app`
-- Backend: `https://fitpass-api.vercel.app` 
+- Admin: `https://fitpass-admin.railway.app`
+- Backend: `https://fitpass-api.railway.app` 
 - Update ALLOWED_ORIGINS with real domains
 
 ### 3. App Store Deployment

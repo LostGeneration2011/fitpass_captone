@@ -52,7 +52,7 @@ export class URLConfig {
     const env = getEnvironment();
     
     if (env === 'production') {
-      return process.env.PRODUCTION_API_URL || 'https://your-api.vercel.app/api';
+      return process.env.PRODUCTION_API_URL || 'https://your-api.railway.app/api';
     }
     
     if (env === 'test') {
@@ -69,7 +69,7 @@ export class URLConfig {
     const env = getEnvironment();
     
     if (env === 'production') {
-      return process.env.PRODUCTION_WS_URL || 'wss://your-api.vercel.app/ws';
+      return process.env.PRODUCTION_WS_URL || 'wss://your-api.railway.app/ws';
     }
     
     if (env === 'test') {
@@ -86,7 +86,7 @@ export class URLConfig {
     const env = getEnvironment();
     
     if (env === 'production') {
-      return process.env.PRODUCTION_FRONTEND_URL || 'https://your-admin.vercel.app';
+      return process.env.PRODUCTION_FRONTEND_URL || 'https://your-admin.railway.app';
     }
     
     // Development: Use dynamic IP
