@@ -14,6 +14,10 @@ export const createSession = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "classId, startTime, and endTime are required" });
     }
 
+    if (user && user.role === 'TEACHER' && !roomId) {
+      return res.status(400).json({ error: "roomId is required for teacher-created sessions" });
+    }
+
     // If user is TEACHER, verify they own the class (ADMIN can do anything)
     if (user && user.role === 'TEACHER') {
       const classData = await prisma.class.findUnique({

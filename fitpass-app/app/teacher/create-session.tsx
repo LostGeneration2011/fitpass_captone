@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUser } from '../../lib/auth';
-import { sessionsAPI } from '../../lib/api';
+import { sessionsAPI, roomAPI } from '../../lib/api';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useThemeClasses } from '../../lib/theme';
@@ -51,26 +50,50 @@ export default function CreateSession() {
   const {
     isDark,
     screenClass,
-    cardClass,
     textPrimary,
     textSecondary,
     textMuted,
   } = useThemeClasses();
 
   const [loading, setLoading] = useState(false);
+  const [loadingRooms, setLoadingRooms] = useState(true);
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [showRoomDropdown, setShowRoomDropdown] = useState(false);
   const [formData, setFormData] = useState({
     date: getTodayViDateString(),
     startTime: '',
     endTime: '',
+    roomId: '',
   });
 
-  const handleCreateSession = async () => {
-    // Validation
-    if (!formData.date || !formData.startTime || !formData.endTime) {
+  useEffect(() => {
+    loadRooms();
+  }, []);
+
+  const loadRooms = async () => {
+    try {
+      setLoadingRooms(true);
+      const allRooms = await roomAPI.getAll();
+      setRooms(Array.isArray(allRooms) ? allRooms : []);
+    } catch (error) {
+      console.error('Error loading rooms:', error);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
-        text2: 'Vui lòng nhập đầy đủ thông tin',
+        text2: 'Không thể tải danh sách phòng',
+      });
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  const handleCreateSession = async () => {
+    // Validation
+    if (!formData.date || !formData.startTime || !formData.endTime || !formData.roomId) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Vui lòng nhập đầy đủ thông tin và chọn phòng học',
       });
       return;
     }
@@ -121,10 +144,26 @@ export default function CreateSession() {
         return;
       }
 
+      const availability = await roomAPI.checkAvailability(
+        formData.roomId,
+        startDateTime.toISOString(),
+        endDateTime.toISOString()
+      );
+
+      if (!availability?.available) {
+        Toast.show({
+          type: 'error',
+          text1: 'Phòng đã kín lịch',
+          text2: availability?.error || availability?.message || 'Vui lòng chọn khung giờ hoặc phòng khác',
+        });
+        return;
+      }
+
       const sessionData = {
         classId: classId,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
+        roomId: formData.roomId,
       };
 
       await sessionsAPI.create(sessionData);
@@ -236,6 +275,83 @@ export default function CreateSession() {
               </Text>
             </View>
 
+            {/* Room */}
+            <View>
+              <Text className={`${textPrimary} text-base font-medium mb-3`}>
+                Phòng học *
+              </Text>
+
+              {loadingRooms ? (
+                <View
+                  style={{
+                    backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                    borderColor: isDark ? '#475569' : '#e2e8f0',
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 12,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <ActivityIndicator size="small" color="#3b82f6" />
+                  <Text className={`${textSecondary} ml-3`}>Đang tải phòng học...</Text>
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                      borderColor: isDark ? '#475569' : '#e2e8f0',
+                      borderWidth: 1,
+                    }}
+                    className="rounded-lg px-4 py-3 flex-row justify-between items-center"
+                    onPress={() => setShowRoomDropdown((prev) => !prev)}
+                  >
+                    <Text className={textPrimary}>
+                      {rooms.find((r: any) => r.id === formData.roomId)?.name || 'Chọn phòng học'}
+                    </Text>
+                    <Text className={textMuted}>{showRoomDropdown ? '▲' : '▼'}</Text>
+                  </TouchableOpacity>
+
+                  {showRoomDropdown && (
+                    <View
+                      style={{
+                        backgroundColor: isDark ? '#334155' : '#f1f5f9',
+                        borderColor: isDark ? '#475569' : '#e2e8f0',
+                        borderWidth: 1,
+                      }}
+                      className="rounded-lg mt-1 overflow-hidden"
+                    >
+                      {rooms.length === 0 ? (
+                        <Text className={`${textSecondary} px-4 py-3`}>Chưa có phòng. Nhờ admin tạo phòng trước.</Text>
+                      ) : (
+                        rooms.map((room: any) => (
+                          <TouchableOpacity
+                            key={room.id}
+                            style={{ borderBottomColor: isDark ? '#475569' : '#e2e8f0', borderBottomWidth: 1 }}
+                            className="px-4 py-3"
+                            onPress={() => {
+                              setFormData({ ...formData, roomId: room.id });
+                              setShowRoomDropdown(false);
+                            }}
+                          >
+                            <Text className={`text-base ${formData.roomId === room.id ? 'text-blue-400 font-bold' : textPrimary}`}>
+                              {room.name} ({room.capacity} chỗ)
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </View>
+                  )}
+
+                  <Text className={`${textMuted} text-sm mt-2`}>
+                    Cần chọn phòng để học viên có thể đặt buổi học.
+                  </Text>
+                </>
+              )}
+            </View>
+
             {/* Info Card */}
             <View style={{
               backgroundColor: isDark ? '#1e3a8a' : '#dbeafe',
@@ -259,6 +375,7 @@ export default function CreateSession() {
               <Text className={`${textMuted} text-sm`}>📅 Ngày: 10/12/2025</Text>
               <Text className={`${textMuted} text-sm`}>🕘 Bắt đầu: 09:00</Text>
               <Text className={`${textMuted} text-sm`}>🕙 Kết thúc: 10:30</Text>
+              <Text className={`${textMuted} text-sm`}>🏢 Phòng: Phòng A</Text>
             </View>
           </View>
         </ScrollView>

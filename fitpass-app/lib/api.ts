@@ -450,6 +450,17 @@ export const sessionsAPI = {
   delete: (id) => apiDelete(`/sessions/${id}`)
 };
 
+// Rooms
+export const roomAPI = {
+  getAll: () =>
+    apiGet('/rooms').then((res) => {
+      const items = Array.isArray(res) ? res : (res?.rooms ?? []);
+      return items;
+    }),
+  checkAvailability: (roomId: string, startTime: string, endTime: string, excludeSessionId?: string) =>
+    apiPost('/rooms/check-availability', { roomId, startTime, endTime, excludeSessionId }),
+};
+
 // Attendance
 export const attendanceAPI = {
   getBySession: (sessionId) => apiGet(`/attendance/session/${sessionId}`),

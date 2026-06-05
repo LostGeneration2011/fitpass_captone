@@ -48,6 +48,11 @@ interface UserPackage {
   };
 }
 
+interface EnrolledClassOption {
+  id: string;
+  name: string;
+}
+
 export default function BookSessionsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -65,6 +70,7 @@ export default function BookSessionsScreen() {
   const [viewMode, setViewMode] = useState<'enrolled' | 'all'>('enrolled');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+  const [enrolledClasses, setEnrolledClasses] = useState<EnrolledClassOption[]>([]);
 
   useEffect(() => {
     setForceUpdate(prev => prev + 1);
@@ -81,13 +87,17 @@ export default function BookSessionsScreen() {
         const start = new Date();
         start.setHours(0, 0, 0, 0);
         const end = new Date(start);
-        end.setDate(end.getDate() + 30);
+        end.setDate(end.getDate() + 90);
         const sessionsQuery = `/user-packages/sessions?startDate=${encodeURIComponent(start.toISOString())}&endDate=${encodeURIComponent(end.toISOString())}&limit=300`;
 
-        const [sessionsRes, packagesRes, enrollmentsRes] = await Promise.all([
+        const [sessionsRes, packagesRes, enrollmentsRes, studentSessionsRes] = await Promise.all([
           apiGet(sessionsQuery).catch(e => {
             console.error('❌ Sessions API error:', e);
             return { data: [] };
+          }),
+          apiGet('/sessions').catch(e => {
+            console.error('❌ Student Sessions API error:', e);
+            return { sessions: [] };
           }),
           apiGet('/user-packages').catch(e => {
             console.error('❌ Packages API error:', e);
@@ -99,7 +109,8 @@ export default function BookSessionsScreen() {
           }),
         ]);
         
-        console.log('📊 BookSessions - Sessions response:', sessionsRes);
+        console.log('📊 BookSessions - Sessions response (package scope):', sessionsRes);
+        console.log('📊 BookSessions - Sessions response (student scope):', studentSessionsRes);
         console.log('📊 BookSessions - Packages response:', packagesRes);
         console.log('📊 BookSessions - Sessions data:', sessionsRes?.data);
         console.log('📊 BookSessions - Sessions count:', sessionsRes?.data?.length || 0);
@@ -113,12 +124,80 @@ export default function BookSessionsScreen() {
               .map((e: any) => e?.class?.id)
               .filter((id: any): id is string => typeof id === 'string' && id.length > 0)
           : [];
+
+        const enrolledClassInfo = Array.isArray(enrollmentsRes)
+          ? enrollmentsRes
+              .map((e: any) => ({
+                id: e?.class?.id,
+                name: e?.class?.name,
+              }))
+              .filter((item: any) => typeof item?.id === 'string' && item.id)
+          : [];
+
+        const uniqueEnrolledClasses: EnrolledClassOption[] = Array.from(
+          new Map(
+            enrolledClassInfo.map((item: any) => [
+              item.id,
+              {
+                id: item.id,
+                name: item.name || 'Lớp đã đăng ký',
+              },
+            ])
+          ).values()
+        );
+
         console.log('📊 BookSessions - Enrolled class ids:', enrolledIds);
+
+        const packageScopedSessions: AvailableSession[] = Array.isArray(sessionsRes?.data)
+          ? sessionsRes.data
+          : [];
+
+        const studentScopedSessionsRaw: any[] = Array.isArray(studentSessionsRes?.sessions)
+          ? studentSessionsRes.sessions
+          : [];
+
+        const normalizedStudentScopedSessions: AvailableSession[] = studentScopedSessionsRaw
+          .map((session: any) => ({
+            id: session.id,
+            startTime: session.startTime,
+            endTime: session.endTime,
+            status: session.status || 'UPCOMING',
+            isBooked: Boolean(session.isBooked),
+            availableSlots: typeof session.availableSlots === 'number'
+              ? session.availableSlots
+              : (session.room?.capacity ?? session.class?.capacity ?? 1),
+            class: {
+              id: session.class?.id,
+              name: session.class?.name || 'Lớp học',
+              description: session.class?.description || '',
+              capacity: session.class?.capacity ?? session.room?.capacity ?? 0,
+              teacher: {
+                fullName: session.class?.teacher?.fullName || 'Chưa có giáo viên',
+              },
+            },
+            room: session.room ? { name: session.room.name } : undefined,
+          }))
+          .filter((session: AvailableSession) => Boolean(session.id) && Boolean(session.class?.id));
+
+        const mergedMap = new Map<string, AvailableSession>();
+        normalizedStudentScopedSessions.forEach((session) => mergedMap.set(session.id, session));
+        packageScopedSessions.forEach((session) => mergedMap.set(session.id, session));
+
+        const mergedSessions = Array.from(mergedMap.values()).filter((session) => {
+          const sessionTime = new Date(session.startTime).getTime();
+          return (
+            !Number.isNaN(sessionTime) &&
+            sessionTime >= start.getTime() &&
+            sessionTime <= end.getTime() &&
+            (enrolledIds.length === 0 || enrolledIds.includes(session.class?.id))
+          );
+        });
         
-        setSessions(sessionsRes?.data || []);
+        setSessions(mergedSessions);
         setUserPackages(packagesRes?.data || []);
         const uniqueEnrolledIds = Array.from(new Set(enrolledIds));
         setEnrolledClassIds(uniqueEnrolledIds);
+        setEnrolledClasses(uniqueEnrolledClasses);
 
         if (routeParams.classId && uniqueEnrolledIds.includes(routeParams.classId)) {
           setSelectedClassId(routeParams.classId);
@@ -306,18 +385,22 @@ export default function BookSessionsScreen() {
   const groupedSessions = groupSessionsByDate(visibleSessions);
   const totalCredits = getTotalCredits();
 
-  const enrolledClassOptions = enrolledClassIds
-    .map((id) => {
-      const firstSession = enrolledSessions.find((session) => session.class?.id === id);
-      return {
-        id,
-        name: firstSession?.class?.name || 'Lớp đã đăng ký',
-      };
-    })
-    .filter((item, index, arr) => arr.findIndex((x) => x.id === item.id) === index);
+  const enrolledClassOptions = enrolledClasses.length > 0
+    ? enrolledClasses
+    : enrolledClassIds.map((id) => {
+        const firstSession = enrolledSessions.find((session) => session.class?.id === id);
+        return {
+          id,
+          name: firstSession?.class?.name || 'Lớp đã đăng ký',
+        };
+      });
 
   const getSessionStatus = (session: AvailableSession) => {
     const rawStatus = String(session.status || '').toUpperCase();
+
+    if (!session.room?.name) {
+      return { label: 'Chưa xếp phòng', color: '#6b7280', disabled: true };
+    }
 
     if (session.isBooked) {
       return { label: 'Đã đặt chỗ', color: '#16a34a', disabled: true };
@@ -338,23 +421,23 @@ export default function BookSessionsScreen() {
     <SafeAreaView 
       key={`book-${isDark}-${forceUpdate}`}
       style={{ flex: 1, backgroundColor: isDark ? '#0f172a' : '#ffffff' }}>
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 24 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Text className={`${textPrimary} font-bold`} style={{ fontSize: 24 }}>Đặt chỗ buổi học</Text>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12 }}>
           <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 }}>
             <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>{totalCredits} credits</Text>
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16, gap: 8 }}>
           <TouchableOpacity
             onPress={() => setViewMode('enrolled')}
             style={{
+              minWidth: 150,
+              flexGrow: 1,
               backgroundColor: viewMode === 'enrolled' ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 9999,
-              marginRight: 8,
             }}
           >
             <Text style={{ color: viewMode === 'enrolled' ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600' }}>
@@ -365,6 +448,8 @@ export default function BookSessionsScreen() {
           <TouchableOpacity
             onPress={() => setViewMode('all')}
             style={{
+              minWidth: 150,
+              flexGrow: 1,
               backgroundColor: viewMode === 'all' ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
               paddingHorizontal: 12,
               paddingVertical: 8,
@@ -395,14 +480,19 @@ export default function BookSessionsScreen() {
         />
 
         {enrolledClassOptions.length > 1 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 12, maxHeight: 42 }}
+            contentContainerStyle={{ alignItems: 'center', paddingRight: 8 }}
+          >
             <TouchableOpacity
               onPress={() => setSelectedClassId(null)}
               style={{
                 backgroundColor: selectedClassId === null ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                borderRadius: 9999,
+                borderRadius: 8,
                 marginRight: 8,
               }}
             >
@@ -418,11 +508,15 @@ export default function BookSessionsScreen() {
                   backgroundColor: selectedClassId === item.id ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
                   paddingHorizontal: 12,
                   paddingVertical: 8,
-                  borderRadius: 9999,
+                  borderRadius: 8,
                   marginRight: 8,
                 }}
               >
-                <Text style={{ color: selectedClassId === item.id ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600' }}>
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{ color: selectedClassId === item.id ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600', maxWidth: 170 }}
+                >
                   {item.name}
                 </Text>
               </TouchableOpacity>
@@ -527,7 +621,7 @@ export default function BookSessionsScreen() {
                           shadowRadius: 8,
                         }}
                       >
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                        <View style={{ marginBottom: 12 }}>
                           <View style={{ flex: 1 }}>
                             <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 18, marginBottom: 4 }}>
                               {session.class.name}
@@ -562,28 +656,49 @@ export default function BookSessionsScreen() {
                               </Text>
                             </View>
                           </View>
-                          
-                          <View style={{ marginLeft: 12 }}>
-                            {sessionStatus.disabled ? (
-                              <View style={{ backgroundColor: sessionStatus.color, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
-                                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>{sessionStatus.label}</Text>
-                              </View>
-                            ) : (
-                              <TouchableOpacity
-                                style={{ backgroundColor: sessionStatus.color, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}
-                                onPress={() => handleBookSession(session.id)}
-                                disabled={bookingLoading === session.id || totalCredits === 0}
-                              >
-                                {bookingLoading === session.id ? (
-                                  <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                  <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>
-                                    Đặt chỗ (1 credit)
-                                  </Text>
-                                )}
-                              </TouchableOpacity>
-                            )}
+                        </View>
+
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                          <View
+                            style={{
+                              backgroundColor: sessionStatus.color,
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                              borderRadius: 8,
+                              minHeight: 40,
+                              justifyContent: 'center',
+                              flexGrow: 1,
+                            }}
+                          >
+                            <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600', textAlign: 'center' }}>
+                              {sessionStatus.label}
+                            </Text>
                           </View>
+
+                          {!sessionStatus.disabled && (
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor: '#1d4ed8',
+                                paddingHorizontal: 12,
+                                paddingVertical: 8,
+                                borderRadius: 8,
+                                minHeight: 40,
+                                justifyContent: 'center',
+                                flexGrow: 1,
+                                minWidth: 150,
+                              }}
+                              onPress={() => handleBookSession(session.id)}
+                              disabled={bookingLoading === session.id || totalCredits === 0}
+                            >
+                              {bookingLoading === session.id ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                              ) : (
+                                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600', textAlign: 'center' }}>
+                                  Đặt chỗ (1 credit)
+                                </Text>
+                              )}
+                            </TouchableOpacity>
+                          )}
                         </View>
                       </View>
                     );
