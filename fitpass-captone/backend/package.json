@@ -7,7 +7,7 @@
     "predev": "prisma db push && prisma generate",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && prisma generate",
-    "prestart": "prisma db push --accept-data-loss && prisma generate",
+    "prestart": "prisma db execute --file prisma/prestart-fix-attendance-status.sql --schema prisma/schema.prisma && prisma db push --accept-data-loss && prisma generate",
     "start": "node dist/server.js",
     "db:switch": "node scripts/switch-db.js",
     "db:local": "npm run db:switch local && npm run prisma:push",
