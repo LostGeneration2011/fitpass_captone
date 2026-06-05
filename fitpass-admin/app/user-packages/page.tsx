@@ -151,22 +151,22 @@ export default function UserPackagesPage() {
         </span>
       )
     },
-    { 
-      key: "user.fullName", 
+    {
+      key: "user",
       label: "Student Name",
-      render: (value: string, row: UserPackage) => (
+      render: (_value: unknown, row: UserPackage) => (
         <div>
-          <div className="font-medium">{value || row.userId}</div>
+          <div className="font-medium">{row.user?.fullName || row.user?.email || row.userId}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">{row.user?.email}</div>
         </div>
       )
     },
-    { 
-      key: "package.name", 
+    {
+      key: "package",
       label: "Package",
-      render: (value: string, row: UserPackage) => (
+      render: (_value: unknown, row: UserPackage) => (
         <div>
-          <div className="font-medium">{value || row.packageId}</div>
+          <div className="font-medium">{row.package?.name || row.packageId}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {row.package?.credits} credits - {row.package?.price?.toLocaleString()} VND
           </div>
