@@ -14,6 +14,17 @@ export class AttendanceService {
       throw new Error("Session not found");
     }
 
+    const now = new Date();
+    if (session.endTime <= now) {
+      if (session.status !== 'DONE') {
+        await prisma.session.update({
+          where: { id: sessionId },
+          data: { status: 'DONE' },
+        });
+      }
+      throw new Error("Session has already ended");
+    }
+
     // Check if student is enrolled in the class
     const enrollment = await prisma.enrollment.findUnique({
       where: {

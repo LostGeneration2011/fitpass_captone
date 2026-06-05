@@ -96,6 +96,14 @@ export class QRController {
         return res.status(404).json({ error: 'Session not found' });
       }
 
+      if (session.endTime <= new Date()) {
+        await prisma.session.update({
+          where: { id: sessionId },
+          data: { status: 'DONE' }
+        });
+        return res.status(400).json({ error: 'Session has already ended' });
+      }
+
       if (session.status !== 'ACTIVE') {
         return res.status(400).json({ error: 'Session is not active' });
       }

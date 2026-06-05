@@ -6,6 +6,27 @@ import { prisma } from './config/prisma';
 import app from './app';
 import setupWebSocket from './ws';
 
+const SESSION_AUTO_CLOSE_INTERVAL_MS = 60 * 1000;
+
+async function closeExpiredSessions() {
+  try {
+    const now = new Date();
+    const result = await prisma.session.updateMany({
+      where: {
+        status: { in: ['UPCOMING', 'ACTIVE'] },
+        endTime: { lte: now },
+      },
+      data: { status: 'DONE' },
+    });
+
+    if (result.count > 0) {
+      console.log(`⏰ Auto-closed ${result.count} expired session(s)`);
+    }
+  } catch (error) {
+    console.error('❌ Auto-close sessions error:', error);
+  }
+}
+
 // Load environment variables
 dotenv.config();
 
@@ -215,6 +236,11 @@ const JWT_SECRET =
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Socket.IO WebSocket ready`);
     console.log(`🔗 Simple WebSocket ready at /ws`);
+
+    void closeExpiredSessions();
+    setInterval(() => {
+      void closeExpiredSessions();
+    }, SESSION_AUTO_CLOSE_INTERVAL_MS);
   });
 }
 
