@@ -53,6 +53,45 @@ export default function AdminChatPage() {
   const messageListRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
   const previousMessageCountRef = useRef(0);
+  const seenIncomingMessageIdsRef = useRef<Set<string>>(new Set());
+
+  const trackIncomingMessage = (messageId?: string) => {
+    if (!messageId) return true;
+    if (seenIncomingMessageIdsRef.current.has(messageId)) return false;
+    seenIncomingMessageIdsRef.current.add(messageId);
+    if (seenIncomingMessageIdsRef.current.size > 2000) {
+      seenIncomingMessageIdsRef.current = new Set(Array.from(seenIncomingMessageIdsRef.current).slice(-1000));
+    }
+    return true;
+  };
+
+  const applyIncomingMessage = (data: any) => {
+    if (!trackIncomingMessage(data?.message?.id)) return;
+
+    setThreads((prev) => {
+      const index = prev.findIndex((item) => item.id === data.threadId);
+      if (index === -1) return prev;
+      const current = prev[index];
+      const nextThread = {
+        ...current,
+        lastMessageAt: data.message?.createdAt || new Date().toISOString(),
+        lastMessagePreview: data.message?.content || current.lastMessagePreview,
+      };
+      const next = [...prev];
+      next.splice(index, 1);
+      next.unshift(nextThread);
+      return next;
+    });
+
+    if (activeThreadRef.current && data.threadId === activeThreadRef.current) {
+      setMessages((prev) => {
+        if (prev.some((msg: any) => msg.id === data.message.id)) return prev;
+        return [...prev, data.message];
+      });
+    } else {
+      setUnreadByThread((prev) => ({ ...prev, [data.threadId]: (prev[data.threadId] || 0) + 1 }));
+    }
+  };
 
   const fetchThreads = async () => {
     setLoadingThreads(true);
@@ -126,6 +165,15 @@ export default function AdminChatPage() {
   }, [activeThread?.id]);
 
   useEffect(() => {
+    const unreadCount = Object.values(unreadByThread).reduce((sum, value) => sum + value, 0);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('chat:unread-changed', {
+        detail: { unreadCount },
+      }));
+    }
+  }, [unreadByThread]);
+
+  useEffect(() => {
     if (!activeThread?.id) return;
 
     const hasNewMessage = messages.length > previousMessageCountRef.current;
@@ -160,26 +208,7 @@ export default function AdminChatPage() {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'chat.message') {
-          setThreads((prev) => {
-            const index = prev.findIndex((item) => item.id === data.threadId);
-            if (index === -1) return prev;
-            const current = prev[index];
-            const nextThread = {
-              ...current,
-              lastMessageAt: data.message?.createdAt || new Date().toISOString(),
-              lastMessagePreview: data.message?.content || current.lastMessagePreview,
-            };
-            const next = [...prev];
-            next.splice(index, 1);
-            next.unshift(nextThread);
-            return next;
-          });
-          if (activeThreadRef.current && data.threadId === activeThreadRef.current) {
-            setMessages((prev) => {
-              if (prev.some((msg: any) => msg.id === data.message.id)) return prev;
-              return [...prev, data.message];
-            });
-          }
+          applyIncomingMessage(data);
         }
         if (data.type === 'chat.message_edited') {
           setMessages((prev) => prev.map((msg: any) => (msg.id === data.message.id ? data.message : msg)));
@@ -232,23 +261,7 @@ export default function AdminChatPage() {
     });
 
     socket.on('chat.message', (data: any) => {
-      setThreads((prev) => {
-        const index = prev.findIndex((item: any) => item.id === data.threadId);
-        if (index === -1) return prev;
-        const current = prev[index];
-        const next = [...prev];
-        next.splice(index, 1);
-        next.unshift({ ...current, lastMessageAt: data.message?.createdAt || new Date().toISOString(), lastMessagePreview: data.message?.content || current.lastMessagePreview });
-        return next;
-      });
-      if (activeThreadRef.current && data.threadId === activeThreadRef.current) {
-        setMessages((prev) => {
-          if (prev.some((msg: any) => msg.id === data.message?.id)) return prev;
-          return [...prev, data.message];
-        });
-      } else {
-        setUnreadByThread((prev) => ({ ...prev, [data.threadId]: (prev[data.threadId] || 0) + 1 }));
-      }
+      applyIncomingMessage(data);
     });
 
     socket.on('chat.typing', (data: any) => {

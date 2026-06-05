@@ -58,9 +58,17 @@ export default function Sidebar({ isOpen = false, toggleSidebar }: SidebarProps)
   const [unreadChat, setUnreadChat] = useState(0);
 
   useEffect(() => {
-    const handleChatUnread = () => setUnreadChat((prev) => prev + 1);
-    window.addEventListener('chat:unread-changed', handleChatUnread);
-    return () => window.removeEventListener('chat:unread-changed', handleChatUnread);
+    const handleChatUnread = (event: Event) => {
+      const customEvent = event as CustomEvent<{ unreadCount?: number }>;
+      if (typeof customEvent.detail?.unreadCount === 'number') {
+        setUnreadChat(Math.max(customEvent.detail.unreadCount, 0));
+      } else {
+        setUnreadChat((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener('chat:unread-changed', handleChatUnread as EventListener);
+    return () => window.removeEventListener('chat:unread-changed', handleChatUnread as EventListener);
   }, []);
 
   // Clear badge when navigating to chat
