@@ -238,7 +238,7 @@ export default function StudentTabNavigator() {
               activeOpacity={0.8}
             >
               <Ionicons name="qr-code" size={20} color={colors.active} />
-              <Text style={[styles.headerButtonText, { color: colors.headerButtonText }]}>Điểm danh</Text>
+              <Text style={[styles.headerButtonText, { color: colors.headerButtonText }]}>Điểm danh buổi đã đặt</Text>
             </TouchableOpacity>
           ),
         })}
@@ -251,11 +251,11 @@ export default function StudentTabNavigator() {
           headerRight: () => (
             <TouchableOpacity
               style={[styles.headerButton, isCompact && styles.headerButtonCompact, { backgroundColor: colors.headerButton }]}
-              onPress={() => navigation.navigate('BookSessions')}
+              onPress={() => navigation.navigate('BrowseClasses')}
               activeOpacity={0.8}
             >
               <Ionicons name="add-circle" size={20} color={colors.active} />
-              <Text style={[styles.headerButtonText, { color: colors.headerButtonText }]}>Đăng ký</Text>
+              <Text style={[styles.headerButtonText, { color: colors.headerButtonText }]}>Tham gia lớp</Text>
             </TouchableOpacity>
           ),
         })}
@@ -300,7 +300,7 @@ export default function StudentTabNavigator() {
         name="BookSessions" 
         component={BookSessionsScreen}
         options={{
-          title: 'Đăng ký lớp',
+          title: 'Đặt chỗ buổi học',
           tabBarButton: () => null,
           headerShown: true,
         }}
@@ -309,7 +309,7 @@ export default function StudentTabNavigator() {
         name="Check-in" 
         component={StudentCheckInScreen}
         options={{
-          title: 'Điểm danh',
+          title: 'Điểm danh buổi đã đặt',
           tabBarButton: () => null,
           headerShown: true,
         }}

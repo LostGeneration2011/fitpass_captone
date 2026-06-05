@@ -175,6 +175,11 @@ export const qrCheckIn = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "You are not enrolled in this class" });
     }
 
+    const booking = await attendanceService.getBookingByUserAndSession(user.id, sessionId);
+    if (!booking) {
+      return res.status(403).json({ error: "You must book this session before check-in" });
+    }
+
     // Create attendance record
     const attendance = await attendanceService.checkIn(sessionId, user.id, 'PRESENT');
     

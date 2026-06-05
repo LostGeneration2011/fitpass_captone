@@ -147,7 +147,7 @@ export default function StudentCheckInScreen() {
       key={`checkin-${isDark}-${forceUpdate}`}
       style={{ flex: 1, backgroundColor: isDark ? '#0f172a' : '#ffffff' }}>
       <ScrollView style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 24, backgroundColor: isDark ? '#0f172a' : '#ffffff' }}>
-        <Text className={`${textPrimary} font-bold`} style={{ fontSize: 24, marginBottom: 24 }}>Điểm danh</Text>
+        <Text className={`${textPrimary} font-bold`} style={{ fontSize: 24, marginBottom: 24 }}>Điểm danh buổi đã đặt</Text>
         
         {/* QR Scanner Section */}
         <View style={{
@@ -165,10 +165,10 @@ export default function StudentCheckInScreen() {
           <View style={{ alignItems: 'center', marginBottom: 16 }}>
             <Ionicons name="qr-code-outline" size={64} color="#3b82f6" />
             <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 20, marginTop: 16, marginBottom: 8 }}>
-              Scan QR Code
+              Quét mã QR buổi học
             </Text>
             <Text className={textMuted} style={{ textAlign: 'center' }}>
-              Use your device camera to scan the attendance QR code from your teacher
+              Chỉ điểm danh được cho buổi học bạn đã đặt chỗ trước đó
             </Text>
           </View>
           
@@ -280,7 +280,23 @@ export default function StudentCheckInScreen() {
                     barcodeTypes: ['qr'],
                   }}
                   onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-                />
+                >
+                  {/* Overlay khung viền lấy nét */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: '25%',
+                      left: '10%',
+                      width: '80%',
+                      height: 220,
+                      borderWidth: 3,
+                      borderColor: '#00FF00',
+                      borderRadius: 16,
+                      zIndex: 10,
+                    }}
+                    pointerEvents="none"
+                  />
+                </CameraView>
               )}
               
               <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 16 }}>

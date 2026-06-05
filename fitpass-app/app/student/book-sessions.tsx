@@ -254,7 +254,7 @@ export default function BookSessionsScreen() {
       style={{ flex: 1, backgroundColor: isDark ? '#0f172a' : '#ffffff' }}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 24 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Text className={`${textPrimary} font-bold`} style={{ fontSize: 24 }}>Book Sessions</Text>
+          <Text className={`${textPrimary} font-bold`} style={{ fontSize: 24 }}>Đặt chỗ buổi học</Text>
           <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 }}>
             <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>{totalCredits} credits</Text>
           </View>
@@ -290,7 +290,7 @@ export default function BookSessionsScreen() {
                 </View>
                 <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 20, marginBottom: 8 }}>Không có credits</Text>
                 <Text className={textSecondary} style={{ textAlign: 'center', lineHeight: 24, marginBottom: 16 }}>
-                  Bạn cần mua gói tập để nhận credits và book sessions
+                  Bạn cần mua gói tập để nhận credits và đặt chỗ buổi học
                 </Text>
                 <TouchableOpacity 
                   style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
@@ -315,9 +315,9 @@ export default function BookSessionsScreen() {
                 <View style={{ backgroundColor: '#2563eb', padding: 24, borderRadius: 9999, marginBottom: 16 }}>
                   <Ionicons name="calendar" size={32} color="#ffffff" />
                 </View>
-                <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 20, marginBottom: 8 }}>Chưa có sessions</Text>
+                <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 20, marginBottom: 8 }}>Chưa có buổi học khả dụng</Text>
                 <Text className={textSecondary} style={{ textAlign: 'center', lineHeight: 24 }}>
-                  Hiện tại chưa có sessions nào có sẵn để book
+                  Hiện tại chưa có buổi học nào khả dụng để đặt chỗ
                 </Text>
               </View>
             ) : (
@@ -384,7 +384,7 @@ export default function BookSessionsScreen() {
                           <View style={{ marginLeft: 12 }}>
                             {session.isBooked ? (
                               <View style={{ backgroundColor: '#16a34a', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
-                                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>Đã book</Text>
+                                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>Đã đặt chỗ</Text>
                               </View>
                             ) : isFullyBooked ? (
                               <View style={{ backgroundColor: '#4b5563', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
@@ -400,7 +400,7 @@ export default function BookSessionsScreen() {
                                   <ActivityIndicator size="small" color="#fff" />
                                 ) : (
                                   <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>
-                                    Book (1 credit)
+                                    Đặt chỗ (1 credit)
                                   </Text>
                                 )}
                               </TouchableOpacity>

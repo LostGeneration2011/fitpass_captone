@@ -239,7 +239,8 @@ export const userPackagesAPI = {
   purchase: (data: any) => apiPost('/user-packages/purchase', data),
   activate: (data: any) => apiPost('/user-packages/activate', data),
   useCredits: (data: any) => apiPost('/user-packages/use-credits', data),
-  getBookings: () => apiGet('/user-packages/bookings'),
+  getBookings: (params?: { userId?: string; classId?: string; sessionId?: string; page?: number; limit?: number }) =>
+    apiGet(`/user-packages/bookings${toQueryString(params as Record<string, unknown> | undefined)}`),
   getSessions: () => apiGet('/user-packages/sessions'),
 };
 

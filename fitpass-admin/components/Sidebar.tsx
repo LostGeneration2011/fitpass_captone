@@ -26,6 +26,7 @@ const menuItems = [
   { name: 'Buổi học', href: '/sessions', icon: CalendarDaysIcon },
   { name: 'Phòng học', href: '/rooms', icon: BuildingOfficeIcon },
   { name: 'Ghi danh', href: '/enrollments', icon: UserGroupIcon },
+  { name: 'Đặt chỗ buổi học', href: '/bookings', icon: CalendarDaysIcon },
   { name: 'Điểm danh', href: '/attendance', icon: ClipboardDocumentCheckIcon },
   { name: 'Người dùng', href: '/users', icon: UsersIcon },
   { name: 'Gói tập', href: '/packages', icon: CubeIcon },

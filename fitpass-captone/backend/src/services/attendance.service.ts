@@ -28,6 +28,20 @@ export class AttendanceService {
       throw new Error("Student is not enrolled in this class");
     }
 
+    // Enforce business rule: students must have a booking for this session.
+    const booking = await prisma.booking.findUnique({
+      where: {
+        userId_sessionId: {
+          userId: studentId,
+          sessionId,
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new Error("Student has not booked this session");
+    }
+
     // Check if already checked in
     const existing = await prisma.attendance.findUnique({
       where: {
@@ -164,6 +178,17 @@ export class AttendanceService {
           classId
         }
       }
+    });
+  }
+
+  async getBookingByUserAndSession(userId: string, sessionId: string) {
+    return await prisma.booking.findUnique({
+      where: {
+        userId_sessionId: {
+          userId,
+          sessionId,
+        },
+      },
     });
   }
 }

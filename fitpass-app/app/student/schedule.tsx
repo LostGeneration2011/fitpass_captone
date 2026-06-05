@@ -904,10 +904,10 @@ export default function StudentScheduleScreen() {
                       
                       {/* Action steps */}
                       <View className="w-full space-y-3 rounded-xl p-4" style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(241, 245, 249, 0.8)', borderWidth: 1, borderColor: isDark ? 'rgba(71, 85, 105, 0.5)' : 'rgba(203, 213, 225, 0.5)' }}>
-                        <Text className={`${textPrimary} font-bold text-sm mb-2`}>📋 Các bước để book session:</Text>
+                        <Text className={`${textPrimary} font-bold text-sm mb-2`}>📋 Quy trình chuẩn Enroll - Booking - Check-in:</Text>
                         <View className="flex-row items-start">
                           <Text className="text-blue-500 font-bold mr-2">1.</Text>
-                          <Text className={`${textSecondary} text-xs flex-1`}>Đăng ký lớp học (tab "Lớp học" → "Tìm thêm lớp học")</Text>
+                          <Text className={`${textSecondary} text-xs flex-1`}>Tham gia lớp học (tab "Lớp học" → "Tham gia lớp")</Text>
                         </View>
                         <View className="flex-row items-start">
                           <Text className="text-blue-500 font-bold mr-2">2.</Text>
@@ -915,11 +915,15 @@ export default function StudentScheduleScreen() {
                         </View>
                         <View className="flex-row items-start">
                           <Text className="text-blue-500 font-bold mr-2">3.</Text>
-                          <Text className={`${textSecondary} text-xs flex-1`}>Book session cụ thể (tab "Dashboard" → "Book Sessions")</Text>
+                          <Text className={`${textSecondary} text-xs flex-1`}>Đặt chỗ buổi học cụ thể (tab "Trang chủ" → "Đặt buổi mới")</Text>
+                        </View>
+                        <View className="flex-row items-start">
+                          <Text className="text-blue-500 font-bold mr-2">4.</Text>
+                          <Text className={`${textSecondary} text-xs flex-1`}>Điểm danh tại lớp bằng QR ở tab "Lịch học"</Text>
                         </View>
                         <View className="flex-row items-start">
                           <Text className="text-green-500 font-bold mr-2">✓</Text>
-                          <Text className="text-green-500 text-xs flex-1 font-semibold">Sessions đã book sẽ hiển thị ở đây!</Text>
+                          <Text className="text-green-500 text-xs flex-1 font-semibold">Buổi đã đặt sẽ hiển thị và quản lý tại màn này.</Text>
                         </View>
                       </View>
                     </View>

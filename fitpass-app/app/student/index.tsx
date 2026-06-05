@@ -304,6 +304,25 @@ export default function StudentHomeScreen() {
               </View>
             </View>
 
+            {/* Learning Flow */}
+            <View
+              className={`${cardClass} rounded-2xl p-4`}
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.2,
+                shadowRadius: 10,
+                borderWidth: 1,
+                borderColor: cardBorder,
+              }}
+            >
+              <Text className={`text-base font-bold ${textPrimary} mb-3`}>Luồng chuẩn học viên</Text>
+              <Text className={`${textSecondary} text-sm`}>1. Tham gia lớp</Text>
+              <Text className={`${textSecondary} text-sm`}>2. Mua gói để có credits</Text>
+              <Text className={`${textSecondary} text-sm`}>3. Đặt chỗ buổi học</Text>
+              <Text className={`${textSecondary} text-sm`}>4. Điểm danh bằng QR tại buổi đã đặt</Text>
+            </View>
+
             {/* Quick Actions */}
             <View className={`${cardClass} rounded-2xl p-6`}
                  style={{

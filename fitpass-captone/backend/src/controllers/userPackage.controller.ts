@@ -452,13 +452,39 @@ export const cancelBooking = async (req: Request, res: Response) => {
 export const getBookings = async (req: Request, res: Response) => {
   try {
     const userId = req.userId; // From auth middleware
+    const userRole = (req as any).user?.role;
     const { limit = 20, page = 1 } = req.query;
+    const queryUserId = req.query.userId as string | undefined;
+    const querySessionId = req.query.sessionId as string | undefined;
+    const queryClassId = req.query.classId as string | undefined;
 
     const skip = (Number(page) - 1) * Number(limit);
 
+    const whereClause: any = {};
+    if (userRole === 'ADMIN') {
+      if (queryUserId) whereClause.userId = queryUserId;
+    } else {
+      whereClause.userId = userId || '';
+    }
+
+    if (querySessionId) {
+      whereClause.sessionId = querySessionId;
+    }
+
+    if (queryClassId) {
+      whereClause.session = { classId: queryClassId };
+    }
+
     const bookings = await prisma.booking.findMany({
-      where: { userId: userId || '' },
+      where: whereClause,
       include: {
+        user: userRole === 'ADMIN' ? {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          }
+        } : false,
         session: {
           include: {
             class: {
@@ -481,7 +507,7 @@ export const getBookings = async (req: Request, res: Response) => {
     });
 
     const total = await prisma.booking.count({
-      where: { userId: userId || '' }
+      where: whereClause
     });
 
     res.json({
@@ -512,11 +538,32 @@ export const getAvailableSessions = async (req: Request, res: Response) => {
     console.log('🔍 getAvailableSessions called for userId:', userId);
     console.log('🔍 Query params:', { startDate, endDate });
     
+    const activeEnrollments = await prisma.enrollment.findMany({
+      where: {
+        studentId: userId || '',
+        status: 'ACTIVE',
+      },
+      select: { classId: true },
+    });
+
+    const enrolledClassIds = activeEnrollments.map((item) => item.classId);
+
+    if (enrolledClassIds.length === 0) {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
     const whereClause: any = {
       status: { in: ['UPCOMING', 'ACTIVE'] }, // Allow both UPCOMING and ACTIVE sessions
       class: {
-        status: 'APPROVED'
-      }
+        status: 'APPROVED',
+        id: { in: enrolledClassIds },
+      },
+      roomId: {
+        not: null,
+      },
     };
 
     const now = new Date();
@@ -576,11 +623,14 @@ export const getAvailableSessions = async (req: Request, res: Response) => {
     
     const bookedSessionIds = userBookings.map(b => b.sessionId);
 
-    const sessionsWithAvailability = sessions.map(session => ({
-      ...session,
-      isBooked: bookedSessionIds.includes(session.id),
-      availableSlots: (session.class?.capacity || 0) - session._count.bookings
-    }));
+    const sessionsWithAvailability = sessions.map(session => {
+      const effectiveCapacity = session.room?.capacity ?? session.class?.capacity ?? 0;
+      return {
+        ...session,
+        isBooked: bookedSessionIds.includes(session.id),
+        availableSlots: Math.max(effectiveCapacity - session._count.bookings, 0),
+      };
+    });
 
     console.log('🔍 Final sessions with availability count:', sessionsWithAvailability.length);
 
