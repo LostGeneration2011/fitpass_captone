@@ -42,30 +42,13 @@ export class AttendanceService {
       throw new Error("Student has not booked this session");
     }
 
-    // Check if already checked in
-    const existing = await prisma.attendance.findUnique({
+    // Idempotent check-in: create on first scan, update on repeats.
+    return await prisma.attendance.upsert({
       where: {
         sessionId_studentId: { sessionId, studentId }
-      }
-    });
-
-    if (existing) {
-      // Update existing attendance
-      return await prisma.attendance.update({
-        where: {
-          sessionId_studentId: { sessionId, studentId }
-        },
-        data: { status, checkedInAt: new Date() },
-        include: {
-          student: { select: { id: true, fullName: true, email: true } },
-          session: { select: { id: true, startTime: true, endTime: true } }
-        }
-      });
-    }
-
-    // Create new attendance record
-    return await prisma.attendance.create({
-      data: { sessionId, studentId, status },
+      },
+      create: { sessionId, studentId, status },
+      update: { status, checkedInAt: new Date() },
       include: {
         student: { select: { id: true, fullName: true, email: true } },
         session: { select: { id: true, startTime: true, endTime: true } }

@@ -385,7 +385,7 @@ export const getAttendanceByStudent = async (req: Request, res: Response) => {
 // GET /api/attendance/admin/all — admin only, returns all attendance records
 export const getAllAttendanceForAdmin = async (req: Request, res: Response) => {
   try {
-    const { sessionId, classId, studentId, page, limit } = req.query;
+    const { sessionId, classId, studentId, status, date, startDate, endDate, page, limit } = req.query;
     const take = limit ? parseInt(limit as string, 10) : 100;
     const skip = page ? (parseInt(page as string, 10) - 1) * take : 0;
 
@@ -393,6 +393,42 @@ export const getAllAttendanceForAdmin = async (req: Request, res: Response) => {
     if (sessionId) where.sessionId = sessionId;
     if (classId) where.session = { classId };
     if (studentId) where.studentId = studentId;
+    if (status) where.status = status;
+
+    if (date) {
+      const start = new Date(date as string);
+      if (!Number.isNaN(start.getTime())) {
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+        where.checkedInAt = {
+          gte: start,
+          lt: end,
+        };
+      }
+    }
+
+    if (startDate || endDate) {
+      const range: any = {};
+      if (startDate) {
+        const parsedStart = new Date(startDate as string);
+        if (!Number.isNaN(parsedStart.getTime())) {
+          range.gte = parsedStart;
+        }
+      }
+      if (endDate) {
+        const parsedEnd = new Date(endDate as string);
+        if (!Number.isNaN(parsedEnd.getTime())) {
+          range.lt = parsedEnd;
+        }
+      }
+
+      if (Object.keys(range).length > 0) {
+        where.checkedInAt = {
+          ...(where.checkedInAt || {}),
+          ...range,
+        };
+      }
+    }
 
     const attendances = await prisma.attendance.findMany({
       where,
