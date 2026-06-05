@@ -10,7 +10,6 @@ type User = {
   fullName: string;
   role: 'ADMIN' | 'TEACHER' | 'STUDENT';
   emailVerified: boolean;
-  isActive?: boolean;
   createdAt: string;
   _count?: {
     teachingClasses?: number;
@@ -63,12 +62,7 @@ export default function UsersPage() {
       const data = await usersAPI.getAll();
       // Backend returns { users: [...] }, extract the users array
       const usersList = data.users || data || [];
-      const normalizedUsers = Array.isArray(usersList)
-        ? (Array.isArray(usersList) ? usersList : []).map((u: any) => ({
-            ...u,
-            isActive: typeof u.isActive === 'boolean' ? u.isActive : Boolean(u.emailVerified),
-          }))
-        : [];
+      const normalizedUsers = Array.isArray(usersList) ? usersList : [];
       setUsers(normalizedUsers);
     } catch (err: any) {
       console.error('Error fetching users:', err);
@@ -150,15 +144,6 @@ export default function UsersPage() {
       await fetchUsers();
     } catch (err: any) {
       setError(getApiErrorMessage(err, "Failed to update email verification"));
-    }
-  };
-
-  const toggleActiveStatus = async (id: string, newStatus: boolean) => {
-    try {
-      await usersAPI.update(id, { emailVerified: newStatus });
-      await fetchUsers();
-    } catch (err: any) {
-      setError(getApiErrorMessage(err, "Failed to update user status"));
     }
   };
 
@@ -331,20 +316,6 @@ export default function UsersPage() {
               )
             },
             {
-              key: 'isActive',
-              label: 'Hoạt động',
-              sortable: true,
-              filterable: false,
-              render: (value) => (
-                <span className={`px-2 py-1 text-xs rounded font-medium ${
-                  value ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
-                  'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                }`}>
-                  {value ? 'Active' : 'Inactive'}
-                </span>
-              )
-            },
-            {
               key: 'createdAt',
               label: 'Ngày tạo',
               sortable: true,
@@ -358,23 +329,14 @@ export default function UsersPage() {
               filterable: false,
               render: (value, user) => (
                 <div className="flex items-center gap-1">
-                  {user.isActive ? (
-                    <button 
-                      className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded transition-colors ${
-                        user.isActive ? 'bg-gray-500 text-white hover:bg-gray-600' : 'bg-green-600 text-white hover:bg-green-700'
-                      }`}
-                      onClick={() => toggleActiveStatus(user.id, !user.isActive)}
-                    >
-                      Deactivate
-                    </button>
-                  ) : (
-                    <button 
-                      className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-green-600 text-white hover:bg-green-700 transition-colors"
-                      onClick={() => toggleActiveStatus(user.id, !user.isActive)}
-                    >
-                      Activate
-                    </button>
-                  )}
+                  <button
+                    className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded transition-colors ${
+                      user.emailVerified ? 'bg-gray-500 text-white hover:bg-gray-600' : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                    onClick={() => toggleEmailVerification(user.id, user.emailVerified)}
+                  >
+                    {user.emailVerified ? 'Unverify' : 'Verify'}
+                  </button>
                   <button 
                     className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
                     onClick={() => openEdit(user)}

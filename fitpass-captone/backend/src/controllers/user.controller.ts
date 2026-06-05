@@ -50,7 +50,7 @@ export const createUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { fullName, role, email, avatar } = req.body;
+    const { fullName, role, email, avatar, emailVerified } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: "User ID is required" });
@@ -60,7 +60,7 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid role" });
     }
 
-    const user = await userService.updateUser(id, { fullName, role, email, avatar });
+    const user = await userService.updateUser(id, { fullName, role, email, avatar, emailVerified });
     return res.json({ message: "User updated successfully", user });
   } catch (err: any) {
     return res.status(400).json({ error: err.message });

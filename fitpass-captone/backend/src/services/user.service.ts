@@ -11,6 +11,7 @@ export class UserService {
         email: true,
         fullName: true,
         role: true,
+        emailVerified: true,
         avatar: true,
         createdAt: true,
         updatedAt: true
@@ -28,6 +29,7 @@ export class UserService {
         email: true,
         fullName: true,
         role: true,
+        emailVerified: true,
         avatar: true,
         createdAt: true,
         updatedAt: true,
@@ -49,7 +51,7 @@ export class UserService {
   }
 
   // UPDATE user (admin only)
-  async updateUser(id: string, data: { fullName?: string; role?: UserRole; email?: string; avatar?: string | null }) {
+  async updateUser(id: string, data: { fullName?: string; role?: UserRole; email?: string; avatar?: string | null; emailVerified?: boolean }) {
     const existingUser = await prisma.user.findUnique({
       where: { id }
     });
@@ -75,11 +77,13 @@ export class UserService {
       role?: UserRole;
       email?: string;
       avatar?: string | null;
+      emailVerified?: boolean;
     } = {};
 
     if (typeof data.fullName !== 'undefined') updateData.fullName = data.fullName;
     if (typeof data.role !== 'undefined') updateData.role = data.role;
     if (typeof data.email !== 'undefined') updateData.email = data.email;
+    if (typeof data.emailVerified !== 'undefined') updateData.emailVerified = data.emailVerified;
 
     if (typeof data.avatar !== 'undefined') {
       if (data.avatar === null || data.avatar === '') {
@@ -117,6 +121,7 @@ export class UserService {
         email: true,
         fullName: true,
         role: true,
+        emailVerified: true,
         avatar: true,
         createdAt: true,
         updatedAt: true
@@ -201,6 +206,7 @@ export class UserService {
         email: true,
         fullName: true,
         role: true,
+        emailVerified: true,
         avatar: true,
         createdAt: true,
         updatedAt: true

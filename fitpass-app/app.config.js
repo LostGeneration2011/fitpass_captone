@@ -1,8 +1,22 @@
 import dotenv from 'dotenv';
+import fs from 'fs';
 
-// Load environment variables (supports .env.local created by auto-manager)
-dotenv.config({ path: '.env.local' });
-dotenv.config();
+// Mode-aware env loading to avoid .env.local always overriding online settings.
+const envMode = process.env.FITPASS_ENV || 'default';
+
+if (envMode === 'local') {
+  if (fs.existsSync('.env.local')) {
+    dotenv.config({ path: '.env.local', override: true });
+  }
+  dotenv.config();
+} else if (envMode === 'online') {
+  if (fs.existsSync('.env.online')) {
+    dotenv.config({ path: '.env.online', override: true });
+  }
+  dotenv.config();
+} else {
+  dotenv.config();
+}
 
 export default {
   expo: {
