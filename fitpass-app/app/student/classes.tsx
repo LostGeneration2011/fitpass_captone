@@ -110,6 +110,14 @@ export default function StudentClassesScreen() {
     (navigation as any).navigate('ClassDetail', { classId: enrollment.class.id });
   };
 
+  const handleBookSession = (enrollment: any) => {
+    if (!enrollment?.class?.id) return;
+    (navigation as any).navigate('BookSessions', {
+      classId: enrollment.class.id,
+      className: enrollment.class?.name,
+    });
+  };
+
   if (loading) {
     return (
       <SafeAreaView className={`flex-1 ${screenClass}`}>
@@ -143,6 +151,23 @@ export default function StudentClassesScreen() {
             <Text className="text-white font-semibold ml-2">Xem lịch sessions đã book</Text>
             <Ionicons name="arrow-forward" size={20} color="#fff" style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
+
+          {enrollments.length === 1 && (
+            <TouchableOpacity
+              onPress={() => handleBookSession(enrollments[0])}
+              className="bg-emerald-600 rounded-xl p-3 flex-row items-center justify-center mt-3"
+              style={{
+                shadowColor: '#10b981',
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.35,
+                shadowRadius: 6,
+              }}
+            >
+              <Ionicons name="flash" size={20} color="#fff" />
+              <Text className="text-white font-semibold ml-2">Đặt buổi học ngay cho lớp này</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
+          )}
         </View>
         <ScrollView
           className="flex-1"
@@ -253,6 +278,19 @@ export default function StudentClassesScreen() {
                     </View>
 
                     <View className="flex-row space-x-3 mt-6">
+                      <TouchableOpacity
+                        onPress={() => handleBookSession(enrollment)}
+                        className="flex-1 bg-emerald-600 rounded-lg py-3 flex-row items-center justify-center"
+                        style={{
+                          shadowColor: '#10b981',
+                          shadowOffset: { width: 0, height: 3 },
+                          shadowOpacity: 0.3,
+                          shadowRadius: 6,
+                        }}>
+                        <Ionicons name="calendar" size={20} color="#fff" />
+                        <Text className="text-white font-medium ml-2">Đặt buổi học</Text>
+                      </TouchableOpacity>
+
                       <TouchableOpacity 
                         onPress={handleScanQR}
                         className="flex-1 bg-blue-600 rounded-lg py-3 flex-row items-center justify-center"

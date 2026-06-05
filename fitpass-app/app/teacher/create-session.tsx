@@ -15,6 +15,33 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useThemeClasses } from '../../lib/theme';
 
+const getTodayViDateString = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const normalizeDateInput = (input: string) => {
+  const value = input.trim();
+
+  // Preferred format: DD/MM/YYYY
+  const viMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (viMatch) {
+    const [, day, month, year] = viMatch;
+    return `${year}-${month}-${day}`;
+  }
+
+  // Backward-compatible format: YYYY-MM-DD
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    return value;
+  }
+
+  return null;
+};
+
 export default function CreateSession() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -32,7 +59,7 @@ export default function CreateSession() {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    date: '',
+    date: getTodayViDateString(),
     startTime: '',
     endTime: '',
   });
@@ -50,10 +77,29 @@ export default function CreateSession() {
 
     try {
       setLoading(true);
+
+      const normalizedDate = normalizeDateInput(formData.date);
+      if (!normalizedDate) {
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: 'Ngày học phải theo định dạng DD/MM/YYYY',
+        });
+        return;
+      }
       
       // Combine date and time
-      const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
-      const endDateTime = new Date(`${formData.date}T${formData.endTime}:00`);
+      const startDateTime = new Date(`${normalizedDate}T${formData.startTime}:00`);
+      const endDateTime = new Date(`${normalizedDate}T${formData.endTime}:00`);
+
+      if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: 'Ngày hoặc giờ không hợp lệ',
+        });
+        return;
+      }
 
       // Validate times
       if (endDateTime <= startDateTime) {
@@ -134,13 +180,13 @@ export default function CreateSession() {
                   color: isDark ? '#ffffff' : '#000000'
                 }}
                 className="border rounded-lg px-4 py-3"
-                placeholder="YYYY-MM-DD (ví dụ: 2025-12-10)"
+                placeholder="DD/MM/YYYY (ví dụ: 10/12/2025)"
                 placeholderTextColor="#94a3b8"
                 value={formData.date}
                 onChangeText={(text) => setFormData({...formData, date: text})}
               />
               <Text className={`${textMuted} text-sm mt-2`}>
-                Định dạng: YYYY-MM-DD (năm-tháng-ngày)
+                Định dạng mặc định: DD/MM/YYYY (ngày-tháng-năm)
               </Text>
             </View>
 
@@ -210,7 +256,7 @@ export default function CreateSession() {
               borderColor: isDark ? '#475569' : '#e2e8f0'
             }} className="border rounded-lg p-4">
               <Text className={`${textSecondary} font-medium mb-2`}>Ví dụ:</Text>
-              <Text className={`${textMuted} text-sm`}>📅 Ngày: 2025-12-10</Text>
+              <Text className={`${textMuted} text-sm`}>📅 Ngày: 10/12/2025</Text>
               <Text className={`${textMuted} text-sm`}>🕘 Bắt đầu: 09:00</Text>
               <Text className={`${textMuted} text-sm`}>🕙 Kết thúc: 10:30</Text>
             </View>

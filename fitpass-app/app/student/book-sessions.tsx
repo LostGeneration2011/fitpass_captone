@@ -8,12 +8,13 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  TextInput,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { getUser } from '../../lib/auth';
-import { apiGet, apiPost } from '../../lib/api';
+import { apiGet, apiPost, enrollmentAPI } from '../../lib/api';
 import { refreshEmitter } from '../../lib/refreshEmitter';
 import { useTheme } from '../../lib/theme';
 import { useThemeClasses } from '../../lib/theme';
@@ -49,8 +50,10 @@ interface UserPackage {
 
 export default function BookSessionsScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const routeParams = ((route as any)?.params || {}) as { classId?: string; className?: string };
   const { isDark } = useTheme();
-  const { textPrimary, textSecondary, textMuted } = useThemeClasses();
+  const { textPrimary, textSecondary } = useThemeClasses();
 
   const [sessions, setSessions] = useState<AvailableSession[]>([]);
   const [userPackages, setUserPackages] = useState<UserPackage[]>([]);
@@ -58,6 +61,10 @@ export default function BookSessionsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [bookingLoading, setBookingLoading] = useState<string | null>(null);
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [enrolledClassIds, setEnrolledClassIds] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'enrolled' | 'all'>('enrolled');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
 
   useEffect(() => {
     setForceUpdate(prev => prev + 1);
@@ -77,7 +84,7 @@ export default function BookSessionsScreen() {
         end.setDate(end.getDate() + 30);
         const sessionsQuery = `/user-packages/sessions?startDate=${encodeURIComponent(start.toISOString())}&endDate=${encodeURIComponent(end.toISOString())}&limit=300`;
 
-        const [sessionsRes, packagesRes] = await Promise.all([
+        const [sessionsRes, packagesRes, enrollmentsRes] = await Promise.all([
           apiGet(sessionsQuery).catch(e => {
             console.error('❌ Sessions API error:', e);
             return { data: [] };
@@ -85,16 +92,41 @@ export default function BookSessionsScreen() {
           apiGet('/user-packages').catch(e => {
             console.error('❌ Packages API error:', e);
             return { data: [] };
-          })
+          }),
+          enrollmentAPI.getByStudent(user.id).catch(e => {
+            console.error('❌ Enrollments API error:', e);
+            return [];
+          }),
         ]);
         
         console.log('📊 BookSessions - Sessions response:', sessionsRes);
         console.log('📊 BookSessions - Packages response:', packagesRes);
         console.log('📊 BookSessions - Sessions data:', sessionsRes?.data);
         console.log('📊 BookSessions - Sessions count:', sessionsRes?.data?.length || 0);
+
+        const enrolledIds = Array.isArray(enrollmentsRes)
+          ? enrollmentsRes
+              .filter((e: any) => {
+                const classStatus = String(e?.class?.status || '').toUpperCase();
+                return !classStatus || classStatus === 'APPROVED' || classStatus === 'ACTIVE';
+              })
+              .map((e: any) => e?.class?.id)
+              .filter((id: any): id is string => typeof id === 'string' && id.length > 0)
+          : [];
+        console.log('📊 BookSessions - Enrolled class ids:', enrolledIds);
         
         setSessions(sessionsRes?.data || []);
         setUserPackages(packagesRes?.data || []);
+        const uniqueEnrolledIds = Array.from(new Set(enrolledIds));
+        setEnrolledClassIds(uniqueEnrolledIds);
+
+        if (routeParams.classId && uniqueEnrolledIds.includes(routeParams.classId)) {
+          setSelectedClassId(routeParams.classId);
+          setViewMode('enrolled');
+        } else if (!routeParams.classId && uniqueEnrolledIds.length === 1) {
+          setSelectedClassId(uniqueEnrolledIds[0]);
+          setViewMode('enrolled');
+        }
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -245,8 +277,62 @@ export default function BookSessionsScreen() {
     );
   }
 
-  const groupedSessions = groupSessionsByDate(sessions);
+  const enrolledClassSet = new Set(enrolledClassIds);
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const aIsEnrolledClass = enrolledClassSet.has(a.class?.id);
+    const bIsEnrolledClass = enrolledClassSet.has(b.class?.id);
+
+    if (aIsEnrolledClass !== bIsEnrolledClass) {
+      return aIsEnrolledClass ? -1 : 1;
+    }
+
+    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+  });
+
+  const enrolledSessions = sortedSessions.filter((session) => enrolledClassSet.has(session.class?.id));
+  const baseSessions = viewMode === 'enrolled' ? enrolledSessions : sortedSessions;
+  const classFilteredSessions = selectedClassId
+    ? baseSessions.filter((session) => session.class?.id === selectedClassId)
+    : baseSessions;
+  const visibleSessions = normalizedSearch
+    ? classFilteredSessions.filter((session) => {
+        const className = (session.class?.name || '').toLowerCase();
+        const teacherName = (session.class?.teacher?.fullName || '').toLowerCase();
+        return className.includes(normalizedSearch) || teacherName.includes(normalizedSearch);
+      })
+    : classFilteredSessions;
+  const groupedSessions = groupSessionsByDate(visibleSessions);
   const totalCredits = getTotalCredits();
+
+  const enrolledClassOptions = enrolledClassIds
+    .map((id) => {
+      const firstSession = enrolledSessions.find((session) => session.class?.id === id);
+      return {
+        id,
+        name: firstSession?.class?.name || 'Lớp đã đăng ký',
+      };
+    })
+    .filter((item, index, arr) => arr.findIndex((x) => x.id === item.id) === index);
+
+  const getSessionStatus = (session: AvailableSession) => {
+    const rawStatus = String(session.status || '').toUpperCase();
+
+    if (session.isBooked) {
+      return { label: 'Đã đặt chỗ', color: '#16a34a', disabled: true };
+    }
+
+    if (rawStatus === 'CANCELLED' || rawStatus === 'SUSPENDED' || rawStatus === 'INACTIVE') {
+      return { label: 'Tạm dừng', color: '#6b7280', disabled: true };
+    }
+
+    if (session.availableSlots <= 0) {
+      return { label: 'Đầy', color: '#4b5563', disabled: true };
+    }
+
+    return { label: 'Còn chỗ', color: '#2563eb', disabled: false };
+  };
 
   return (
     <SafeAreaView 
@@ -259,6 +345,90 @@ export default function BookSessionsScreen() {
             <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>{totalCredits} credits</Text>
           </View>
         </View>
+
+        <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => setViewMode('enrolled')}
+            style={{
+              backgroundColor: viewMode === 'enrolled' ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 9999,
+              marginRight: 8,
+            }}
+          >
+            <Text style={{ color: viewMode === 'enrolled' ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600' }}>
+              Lớp đã đăng ký ({enrolledSessions.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setViewMode('all')}
+            style={{
+              backgroundColor: viewMode === 'all' ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 9999,
+            }}
+          >
+            <Text style={{ color: viewMode === 'all' ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600' }}>
+              Tất cả ({sortedSessions.length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          style={{
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            borderColor: isDark ? '#475569' : '#cbd5e1',
+            borderWidth: 1,
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            color: isDark ? '#ffffff' : '#0f172a',
+            marginBottom: 12,
+          }}
+          placeholder="Tìm theo tên lớp hoặc giáo viên"
+          placeholderTextColor="#94a3b8"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+
+        {enrolledClassOptions.length > 1 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+            <TouchableOpacity
+              onPress={() => setSelectedClassId(null)}
+              style={{
+                backgroundColor: selectedClassId === null ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 9999,
+                marginRight: 8,
+              }}
+            >
+              <Text style={{ color: selectedClassId === null ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600' }}>
+                Tất cả lớp đã đăng ký
+              </Text>
+            </TouchableOpacity>
+            {enrolledClassOptions.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => setSelectedClassId(item.id)}
+                style={{
+                  backgroundColor: selectedClassId === item.id ? '#2563eb' : (isDark ? '#334155' : '#e2e8f0'),
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 9999,
+                  marginRight: 8,
+                }}
+              >
+                <Text style={{ color: selectedClassId === item.id ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), fontWeight: '600' }}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
         
         <ScrollView 
           style={{ flex: 1 }}
@@ -315,10 +485,22 @@ export default function BookSessionsScreen() {
                 <View style={{ backgroundColor: '#2563eb', padding: 24, borderRadius: 9999, marginBottom: 16 }}>
                   <Ionicons name="calendar" size={32} color="#ffffff" />
                 </View>
-                <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 20, marginBottom: 8 }}>Chưa có buổi học khả dụng</Text>
-                <Text className={textSecondary} style={{ textAlign: 'center', lineHeight: 24 }}>
-                  Hiện tại chưa có buổi học nào khả dụng để đặt chỗ
+                <Text className={`${textPrimary} font-semibold`} style={{ fontSize: 20, marginBottom: 8 }}>
+                  {viewMode === 'enrolled' ? 'Lớp đã đăng ký chưa có buổi học mở' : 'Chưa có buổi học khả dụng'}
                 </Text>
+                <Text className={textSecondary} style={{ textAlign: 'center', lineHeight: 24 }}>
+                  {viewMode === 'enrolled'
+                    ? 'Bạn chưa có buổi học mở trong các lớp đã đăng ký. Bạn có thể xem tất cả để đặt lớp khác.'
+                    : 'Hiện tại chưa có buổi học nào khả dụng để đặt chỗ'}
+                </Text>
+                {viewMode === 'enrolled' && sortedSessions.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setViewMode('all')}
+                    style={{ marginTop: 16, backgroundColor: '#2563eb', paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10 }}
+                  >
+                    <Text style={{ color: '#ffffff', fontWeight: '600' }}>Xem tất cả buổi học</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ) : (
               Object.entries(groupedSessions).map(([date, dateSessions]) => (
@@ -327,7 +509,7 @@ export default function BookSessionsScreen() {
                   {dateSessions.map((session) => {
                     const startTime = formatDateTime(session.startTime);
                     const endTime = formatDateTime(session.endTime);
-                    const isFullyBooked = session.availableSlots <= 0;
+                    const sessionStatus = getSessionStatus(session);
                     
                     return (
                       <View 
@@ -382,17 +564,13 @@ export default function BookSessionsScreen() {
                           </View>
                           
                           <View style={{ marginLeft: 12 }}>
-                            {session.isBooked ? (
-                              <View style={{ backgroundColor: '#16a34a', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
-                                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>Đã đặt chỗ</Text>
-                              </View>
-                            ) : isFullyBooked ? (
-                              <View style={{ backgroundColor: '#4b5563', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
-                                <Text style={{ color: '#d1d5db', fontSize: 14, fontWeight: '500' }}>Hết chỗ</Text>
+                            {sessionStatus.disabled ? (
+                              <View style={{ backgroundColor: sessionStatus.color, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
+                                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '500' }}>{sessionStatus.label}</Text>
                               </View>
                             ) : (
                               <TouchableOpacity
-                                style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}
+                                style={{ backgroundColor: sessionStatus.color, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}
                                 onPress={() => handleBookSession(session.id)}
                                 disabled={bookingLoading === session.id || totalCredits === 0}
                               >
