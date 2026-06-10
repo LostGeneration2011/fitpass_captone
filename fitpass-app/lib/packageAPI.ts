@@ -74,7 +74,7 @@ export const userPackageAPI = {
   useCredits: async (sessionId: string, credits: number) => {
     try {
       console.log('📦 UserPackage API - Calling apiPost for credit usage:', { sessionId, credits });
-      const data = await apiPost('/user-packages/use-credits', { sessionId, credits });
+      const data = await apiPost('/user-packages/use-credits', { sessionId, amount: credits });
       console.log('📦 UserPackage API - useCredits received data:', data);
       return data;
     } catch (error) {

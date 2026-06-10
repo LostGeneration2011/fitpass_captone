@@ -206,8 +206,17 @@ export const activatePackage = async (req: Request, res: Response) => {
 // Use credits to book session
 export const useCredits = async (req: Request, res: Response) => {
   try {
-    const { sessionId, amount = 1 } = req.body;
+    const { sessionId } = req.body;
+    const rawAmount = req.body?.amount ?? req.body?.credits ?? 1;
+    const amount = Number(rawAmount);
     const userId = req.userId; // From auth middleware
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Số credits sử dụng không hợp lệ'
+      });
+    }
 
     if (!sessionId) {
       return res.status(400).json({
@@ -310,22 +319,51 @@ export const useCredits = async (req: Request, res: Response) => {
       }
 
       // Find an active package with enough credits (handle null separately)
-      const userPackage = await tx.userPackage.findFirst({
+      const currentTime = new Date();
+      let userPackage = await tx.userPackage.findFirst({
         where: {
-          userId,
+          userId: userId || '',
           status: 'ACTIVE',
-          creditsLeft: { gte: amount }
+          creditsLeft: { gte: amount },
+          expiresAt: { gt: currentTime }
         },
         orderBy: { expiresAt: 'asc' } // Use packages closest to expiry first
       });
 
+      // Data-healing path: package was paid but remained SUSPENDED due interrupted activation flow.
       if (!userPackage) {
-        throw new Error('Không đủ credits hoặc không có gói tập còn hiệu lực');
+        const paidSuspended = await tx.userPackage.findFirst({
+          where: {
+            userId: userId || '',
+            status: 'SUSPENDED',
+            expiresAt: { gt: currentTime },
+            transactions: {
+              some: {
+                status: 'COMPLETED'
+              }
+            }
+          },
+          include: { package: true },
+          orderBy: { purchasedAt: 'desc' }
+        });
+
+        if (paidSuspended) {
+          const fixed = await tx.userPackage.update({
+            where: { id: paidSuspended.id },
+            data: {
+              status: 'ACTIVE',
+              creditsLeft: paidSuspended.creditsLeft > 0 ? paidSuspended.creditsLeft : paidSuspended.package.credits
+            }
+          });
+
+          if (fixed.creditsLeft >= amount) {
+            userPackage = fixed;
+          }
+        }
       }
 
-      // Check if package is expired (skip if null = never expires)
-      if (userPackage.expiresAt && userPackage.expiresAt <= new Date()) {
-        throw new Error('Gói tập đã hết hạn');
+      if (!userPackage) {
+        throw new Error('Không đủ credits hoặc không có gói tập còn hiệu lực');
       }
 
       // Deduct credits (unless unlimited)
