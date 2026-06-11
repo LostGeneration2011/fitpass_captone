@@ -72,7 +72,12 @@ export default function StudentHomeScreen() {
         ]);
 
         if (packagesRes.status === 'fulfilled') {
-          setUserPackages(packagesRes.value?.data || []);
+          const normalizedPackages = Array.isArray(packagesRes.value)
+            ? packagesRes.value
+            : Array.isArray(packagesRes.value?.data)
+              ? packagesRes.value.data
+              : [];
+          setUserPackages(normalizedPackages);
         } else {
           setUserPackages([]);
         }

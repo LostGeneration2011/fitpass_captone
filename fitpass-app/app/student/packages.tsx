@@ -128,9 +128,12 @@ export default function PackagesScreen() {
         setPackages([]);
       }
 
-      if (userPackagesResponse.success) {
-        setUserPackages(userPackagesResponse.data);
-      }
+      const normalizedUserPackages = Array.isArray(userPackagesResponse)
+        ? userPackagesResponse
+        : Array.isArray((userPackagesResponse as any)?.data)
+          ? (userPackagesResponse as any).data
+          : [];
+      setUserPackages(normalizedUserPackages);
     } catch (error: any) {
       console.error('📦 Load packages error:', error);
       console.error('📦 Error details:', JSON.stringify(error, null, 2));

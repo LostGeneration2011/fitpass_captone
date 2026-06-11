@@ -90,7 +90,7 @@ export default function BookSessionsScreen() {
         end.setDate(end.getDate() + 90);
         const sessionsQuery = `/user-packages/sessions?startDate=${encodeURIComponent(start.toISOString())}&endDate=${encodeURIComponent(end.toISOString())}&limit=300`;
 
-        const [sessionsRes, packagesRes, enrollmentsRes, studentSessionsRes] = await Promise.all([
+        const [sessionsRes, studentSessionsRes, packagesRes, enrollmentsRes] = await Promise.all([
           apiGet(sessionsQuery).catch(e => {
             console.error('❌ Sessions API error:', e);
             return { data: [] };
@@ -111,7 +111,7 @@ export default function BookSessionsScreen() {
         
         console.log('📊 BookSessions - Sessions response (package scope):', sessionsRes);
         console.log('📊 BookSessions - Sessions response (student scope):', studentSessionsRes);
-        console.log('📊 BookSessions - Packages response:', packagesRes);
+        console.log('📊 BookSessions - User packages response:', packagesRes);
         console.log('📊 BookSessions - Sessions data:', sessionsRes?.data);
         console.log('📊 BookSessions - Sessions count:', sessionsRes?.data?.length || 0);
 
@@ -193,8 +193,14 @@ export default function BookSessionsScreen() {
           );
         });
         
+        const normalizedUserPackages = Array.isArray(packagesRes)
+          ? packagesRes
+          : Array.isArray(packagesRes?.data)
+            ? packagesRes.data
+            : [];
+
         setSessions(mergedSessions);
-        setUserPackages(packagesRes?.data || []);
+        setUserPackages(normalizedUserPackages);
         const uniqueEnrolledIds = Array.from(new Set(enrolledIds));
         setEnrolledClassIds(uniqueEnrolledIds);
         setEnrolledClasses(uniqueEnrolledClasses);
@@ -261,7 +267,7 @@ export default function BookSessionsScreen() {
   };
 
   const getTotalCredits = () => {
-    return userPackages.reduce((total, pkg) => total + pkg.creditsLeft, 0);
+    return userPackages.reduce((total, pkg) => total + Math.max(0, Number(pkg?.creditsLeft || 0)), 0);
   };
 
   const handleBookSession = async (sessionId: string) => {
@@ -313,6 +319,11 @@ export default function BookSessionsScreen() {
         }
       }
       
+      const normalizedError = String(errorMessage || '').toLowerCase();
+      if (normalizedError.includes('credit')) {
+        await loadData();
+      }
+
       Toast.show({
         type: 'error',
         text1: 'Không thể book',
