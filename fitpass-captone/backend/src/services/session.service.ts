@@ -80,7 +80,10 @@ export class SessionService {
         room: { select: { id: true, name: true, capacity: true } },
         _count: { select: { attendances: true } }
       },
-      orderBy: { startTime: 'asc' }
+      orderBy: [
+        { createdAt: 'desc' },
+        { startTime: 'asc' }
+      ]
     });
   }
 

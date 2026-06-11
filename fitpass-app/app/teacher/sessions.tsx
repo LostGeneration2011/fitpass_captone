@@ -14,7 +14,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUser } from "../../lib/auth";
 import { sessionsAPI, classAPI } from "../../lib/api";
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeClasses } from '../../lib/theme';
@@ -143,6 +143,12 @@ export default function TeacherSessionsScreen() {
   useEffect(() => {
     loadSessions();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadSessions();
+    }, [])
+  );
 
   useEffect(() => {
     if (!filtersHydrated || !classId) return;

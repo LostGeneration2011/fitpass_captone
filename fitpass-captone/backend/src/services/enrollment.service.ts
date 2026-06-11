@@ -41,11 +41,11 @@ export class EnrollmentService {
       throw new Error('User package not found for this student');
     }
 
-    if (userPackage.status !== 'ACTIVE' || userPackage.expiresAt < new Date()) {
+    if (userPackage.status !== 'ACTIVE' || userPackage.expiresAt <= new Date()) {
       throw new Error('User package is expired or inactive');
     }
 
-    if (userPackage.usedCredits >= userPackage.package.credits) {
+    if (userPackage.creditsLeft < 1) {
       throw new Error('Gói tập đã hết credits');
     }
 
@@ -86,6 +86,9 @@ export class EnrollmentService {
         await tx.userPackage.update({
           where: { id: userPackageId },
           data: {
+            creditsLeft: {
+              decrement: 1
+            },
             usedCredits: {
               increment: 1
             }
@@ -256,6 +259,19 @@ export class EnrollmentService {
             id: true, 
             name: true, 
             description: true, 
+            status: true,
+            sessions: {
+              include: {
+                room: {
+                  select: {
+                    id: true,
+                    name: true,
+                    capacity: true
+                  }
+                }
+              },
+              orderBy: { startTime: 'asc' }
+            },
             teacher: { select: { fullName: true } }
           } 
         }
@@ -283,11 +299,19 @@ export class EnrollmentService {
       await prisma.$transaction(async (tx) => {
         // If enrollment was paid with credits, refund the credit
         if (enrollment.userPackageId && enrollment.userPackage) {
+          const latestPackage = await tx.userPackage.findUnique({
+            where: { id: enrollment.userPackageId },
+            select: { usedCredits: true }
+          });
+
           await tx.userPackage.update({
             where: { id: enrollment.userPackageId },
             data: {
+              creditsLeft: {
+                increment: 1
+              },
               usedCredits: {
-                decrement: 1
+                set: Math.max((latestPackage?.usedCredits || 0) - 1, 0)
               }
             }
           });
@@ -345,11 +369,19 @@ export class EnrollmentService {
 
         // Refund credit if applicable
         if (enrollment.userPackageId && enrollment.userPackage) {
+          const latestPackage = await tx.userPackage.findUnique({
+            where: { id: enrollment.userPackageId },
+            select: { usedCredits: true }
+          });
+
           await tx.userPackage.update({
             where: { id: enrollment.userPackageId },
             data: {
+              creditsLeft: {
+                increment: 1
+              },
               usedCredits: {
-                decrement: 1
+                set: Math.max((latestPackage?.usedCredits || 0) - 1, 0)
               }
             }
           });

@@ -78,7 +78,13 @@ export default function SessionsPage() {
         roomsAPI.getAll().catch(() => []),
       ]);
       const sessions = sessionsRes.sessions || sessionsRes.data || sessionsRes;
-      setItems(Array.isArray(sessions) ? sessions : []);
+      const sessionItems = Array.isArray(sessions) ? [...sessions] : [];
+      sessionItems.sort((a: any, b: any) => {
+        const aCreated = new Date(a?.createdAt || a?.updatedAt || a?.startTime || 0).getTime();
+        const bCreated = new Date(b?.createdAt || b?.updatedAt || b?.startTime || 0).getTime();
+        return bCreated - aCreated;
+      });
+      setItems(sessionItems);
       setClasses(Array.isArray(classesRes) ? classesRes : classesRes.classes || []);
       const users = Array.isArray(usersRes) ? usersRes : usersRes.users || [];
       setTeachers(users.filter((u: any) => u.role === 'TEACHER'));
