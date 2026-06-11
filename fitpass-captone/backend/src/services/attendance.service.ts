@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma";
-import { AttendanceStatus } from "@prisma/client";
+import { AttendanceStatus, Prisma } from "@prisma/client";
 
 export class AttendanceService {
   // POST check-in
@@ -53,18 +53,30 @@ export class AttendanceService {
       throw new Error("Student has not booked this session");
     }
 
-    // Idempotent check-in: create on first scan, update on repeats.
-    return await prisma.attendance.upsert({
-      where: {
-        sessionId_studentId: { sessionId, studentId }
-      },
-      create: { sessionId, studentId, status },
-      update: { status, checkedInAt: new Date() },
-      include: {
-        student: { select: { id: true, fullName: true, email: true } },
-        session: { select: { id: true, startTime: true, endTime: true } }
+    // Idempotent check-in with race-safe fallback.
+    try {
+      return await prisma.attendance.create({
+        data: { sessionId, studentId, status },
+        include: {
+          student: { select: { id: true, fullName: true, email: true } },
+          session: { select: { id: true, startTime: true, endTime: true } }
+        }
+      });
+    } catch (error: any) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return await prisma.attendance.update({
+          where: {
+            sessionId_studentId: { sessionId, studentId }
+          },
+          data: { status, checkedInAt: new Date() },
+          include: {
+            student: { select: { id: true, fullName: true, email: true } },
+            session: { select: { id: true, startTime: true, endTime: true } }
+          }
+        });
       }
-    });
+      throw error;
+    }
   }
 
   // GET attendance by class/session

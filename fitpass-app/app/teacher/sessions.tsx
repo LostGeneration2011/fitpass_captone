@@ -52,6 +52,8 @@ export default function TeacherSessionsScreen() {
       try {
         if (classId) {
           setSelectedClassId(classId);
+          setSelectedStatus('ALL');
+          setSearchQuery('');
           setFiltersHydrated(true);
           return;
         }
@@ -153,7 +155,19 @@ export default function TeacherSessionsScreen() {
   useEffect(() => {
     if (!filtersHydrated || !classId) return;
     setSelectedClassId(classId);
+    setSelectedStatus('ALL');
+    setSearchQuery('');
   }, [classId, filtersHydrated]);
+
+  useEffect(() => {
+    if (!filtersHydrated) return;
+    if (selectedClassId === 'ALL') return;
+
+    const classExists = teacherClasses.some((teacherClass: any) => teacherClass.id === selectedClassId);
+    if (!classExists) {
+      setSelectedClassId('ALL');
+    }
+  }, [teacherClasses, selectedClassId, filtersHydrated]);
 
   const filteredSessions = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -177,7 +191,7 @@ export default function TeacherSessionsScreen() {
         const dateLabel = new Date(session.startTime).toLocaleDateString().toLowerCase();
         return classLabel.includes(normalizedQuery) || dateLabel.includes(normalizedQuery);
       })
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
   }, [allSessions, selectedClassId, selectedStatus, searchQuery]);
 
   const sections = useMemo(() => {
