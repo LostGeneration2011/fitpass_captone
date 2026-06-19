@@ -187,6 +187,30 @@ export const activatePackage = async (req: Request, res: Response) => {
       creditsLeft: updatedPackage.creditsLeft
     });
 
+    // Notify user about successful payment/activation
+    try {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: userPackage.userId,
+          title: 'Thanh toán thành công',
+          body: `Gói "${updatedPackage.package.name}" đã được kích hoạt. Bạn có ${updatedPackage.creditsLeft} credits để đặt lịch.`,
+          type: 'PAYMENT_SUCCESS',
+        },
+      });
+      const io = (global as any).io;
+      if (io) {
+        io.to(`user_${userPackage.userId}`).emit('notification', {
+          eventId: `notification:${notification.id}`,
+          notificationId: notification.id,
+          userId: userPackage.userId,
+          type: notification.type,
+          title: notification.title,
+          body: notification.body,
+          createdAt: notification.createdAt,
+        });
+      }
+    } catch (_) { /* non-fatal */ }
+
     res.json({
       success: true,
       data: updatedPackage,

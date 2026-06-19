@@ -140,6 +140,29 @@ export class QRController {
         });
       }
 
+      // Notify student about successful attendance
+      try {
+        const notification = await prisma.notification.create({
+          data: {
+            userId: user.id,
+            title: 'Điểm danh thành công',
+            body: `Bạn đã điểm danh thành công cho lớp "${session.class.name}".`,
+            type: 'ATTENDANCE_MARKED',
+          },
+        });
+        if (io) {
+          io.to(`user_${user.id}`).emit('notification', {
+            eventId: `notification:${notification.id}`,
+            notificationId: notification.id,
+            userId: user.id,
+            type: notification.type,
+            title: notification.title,
+            body: notification.body,
+            createdAt: notification.createdAt,
+          });
+        }
+      } catch (_) { /* non-fatal */ }
+
       return res.json({
         message: 'Check-in successful via QR',
         sessionId: sessionId,

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { EnrollmentService } from "../services/enrollment.service";
+import { prisma } from "../config/prisma";
 
 const enrollmentService = new EnrollmentService();
 
@@ -44,7 +45,32 @@ export const createEnrollment = async (req: Request, res: Response) => {
     // Handle both old format (direct enrollment object) and new format (result object)
     const enrollment = result.enrollment || result;
     const message = result.message || "Enrolled successfully";
-    
+
+    // Notify student about confirmed enrollment
+    try {
+      const className = enrollment?.class?.name || 'lớp học';
+      const notification = await prisma.notification.create({
+        data: {
+          userId: studentId,
+          title: 'Đăng ký lớp thành công',
+          body: `Bạn đã đăng ký thành công lớp "${className}".`,
+          type: 'ENROLLMENT_CONFIRMED',
+        },
+      });
+      const io = (global as any).io;
+      if (io) {
+        io.to(`user_${studentId}`).emit('notification', {
+          eventId: `notification:${notification.id}`,
+          notificationId: notification.id,
+          userId: studentId,
+          type: notification.type,
+          title: notification.title,
+          body: notification.body,
+          createdAt: notification.createdAt,
+        });
+      }
+    } catch (_) { /* non-fatal */ }
+
     return res.status(201).json({ message, enrollment, success: result.success || true });
   } catch (err: any) {
     // Provide structured error responses

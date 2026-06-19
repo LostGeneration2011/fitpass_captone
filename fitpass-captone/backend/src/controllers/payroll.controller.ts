@@ -143,6 +143,32 @@ export const generateMonthlyPayroll = async (req: Request, res: Response): Promi
       await prisma.salaryRecord.createMany({
         data: payrollRecords
       });
+
+      // Notify each teacher about their new salary record
+      try {
+        const io = (global as any).io;
+        for (const record of payrollRecords) {
+          const notification = await prisma.notification.create({
+            data: {
+              userId: record.teacherId,
+              title: 'Bảng lương đã sẵn sàng',
+              body: `Bảng lương tháng ${month}/${year} của bạn đã được tạo: ${record.totalAmount.toLocaleString('vi-VN')} VNĐ (${record.totalHours} giờ).`,
+              type: 'SALARY_READY',
+            },
+          });
+          if (io) {
+            io.to(`user_${record.teacherId}`).emit('notification', {
+              eventId: `notification:${notification.id}`,
+              notificationId: notification.id,
+              userId: record.teacherId,
+              type: notification.type,
+              title: notification.title,
+              body: notification.body,
+              createdAt: notification.createdAt,
+            });
+          }
+        }
+      } catch (_) { /* non-fatal */ }
     }
 
     res.json({
