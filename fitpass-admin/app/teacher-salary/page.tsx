@@ -30,9 +30,23 @@ type PaymentHistory = {
   note: string;
 };
 
+type PayrollRecord = {
+  id: string;
+  teacherId: string;
+  teacherName: string;
+  month: number;
+  year: number;
+  totalHours: number;
+  hourlyRate: number;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+};
+
 export default function TeacherSalaryPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [allTeachers, setAllTeachers] = useState<Teacher[]>([]);
+  const [pendingPayrolls, setPendingPayrolls] = useState<PayrollRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [minOwed, setMinOwed] = useState("");
@@ -71,10 +85,33 @@ export default function TeacherSalaryPage() {
     }
   };
 
+  const fetchPendingPayrolls = async () => {
+    try {
+      const data = await salaryAPI.getPayrollHistory('PENDING');
+      const payrollList = Array.isArray(data) ? data : [];
+      const normalized = payrollList.map((record: any) => ({
+        id: record.id,
+        teacherId: record.teacherId,
+        teacherName: record.teacher?.fullName || record.teacher?.email || 'Unknown',
+        month: record.month,
+        year: record.year,
+        totalHours: record.totalHours || 0,
+        hourlyRate: record.hourlyRate || 0,
+        totalAmount: record.totalAmount || 0,
+        status: record.status || 'PENDING',
+        createdAt: record.createdAt || new Date().toISOString(),
+      }));
+      setPendingPayrolls(normalized);
+    } catch (err) {
+      console.error('Error fetching pending payrolls:', err);
+      setPendingPayrolls([]);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await fetchTeachers();
+      await Promise.all([fetchTeachers(), fetchPendingPayrolls()]);
       setLoading(false);
     };
     loadData();
@@ -453,6 +490,60 @@ export default function TeacherSalaryPage() {
           <div className="stats-card">
             <div className="stats-number text-green-600">{formatCurrency(stats.totalPaid)}</div>
             <div className="stats-label">Tổng đã trả trong tháng</div>
+          </div>
+        </div>
+
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bảng lương batch đã tạo</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Các record PENDING từ bảng salaryRecord sẽ hiện ở đây để admin demo duyệt và thanh toán.
+              </p>
+            </div>
+            <button
+              className="btn btn-secondary"
+              onClick={fetchPendingPayrolls}
+            >
+              Làm mới payroll
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-amber-200 text-left text-gray-700 dark:border-amber-900/40 dark:text-gray-300">
+                  <th className="py-2 pr-4">Giáo viên</th>
+                  <th className="py-2 pr-4">Kỳ lương</th>
+                  <th className="py-2 pr-4">Số giờ</th>
+                  <th className="py-2 pr-4">Lương/giờ</th>
+                  <th className="py-2 pr-4">Tổng tiền</th>
+                  <th className="py-2 pr-4">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingPayrolls.length > 0 ? pendingPayrolls.slice(0, 10).map((record) => (
+                  <tr key={record.id} className="border-b border-amber-100 last:border-b-0 dark:border-amber-900/20">
+                    <td className="py-3 pr-4 font-medium text-gray-900 dark:text-gray-100">{record.teacherName}</td>
+                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{record.month}/{record.year}</td>
+                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{record.totalHours} giờ</td>
+                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(record.hourlyRate)}</td>
+                    <td className="py-3 pr-4 font-semibold text-amber-700 dark:text-amber-300">{formatCurrency(record.totalAmount)}</td>
+                    <td className="py-3 pr-4">
+                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                        {record.status}
+                      </span>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={6} className="py-4 text-center text-gray-500 dark:text-gray-400">
+                      Chưa có payroll PENDING để hiển thị.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
